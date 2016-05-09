@@ -35,7 +35,7 @@ git+git://github.com/ebrelsford/django-inplace/@master
 git+git://github.com/ebrelsford/django-inplace-activity-stream/@master
 
 # Required for custom data in django-activity-stream
-django-jsonfield==0.9.13
+django-jsonfield==0.9.19
 git+git://github.com/ebrelsford/Django-monitor/@master
 django-reversion==1.10.2
 django.js==0.8.1
