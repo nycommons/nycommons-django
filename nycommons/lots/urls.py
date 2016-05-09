@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 import livinglots_lots.urls as llurls
 
@@ -7,8 +7,7 @@ from .views import (LotsCountViewWithAcres, LotsGeoJSONCentroid,
                     LotsKML, LotsGeoJSON)
 
 
-urlpatterns = patterns('',
-
+urlpatterns = [
     url(r'^geojson-centroid/', LotsGeoJSONCentroid.as_view(),
         name='nola_lot_geojson_centroid'),
     url(r'^geojson-polygon/', LotsGeoJSONPolygon.as_view(),
@@ -20,4 +19,4 @@ urlpatterns = patterns('',
     url(r'^kml/', LotsKML.as_view(), name='kml'),
     url(r'^geojson/', LotsGeoJSON.as_view(), name='geojson'),
 
-) + llurls.urlpatterns
+] + llurls.urlpatterns

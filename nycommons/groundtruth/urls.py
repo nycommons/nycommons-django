@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.db.models.signals import post_save
 
 import django_monitor
@@ -8,7 +8,7 @@ from .models import GroundtruthRecord
 from .views import AddGroundtruthRecordView
 
 
-urlpatterns = patterns('',
+urlpatterns = (
 
     url(r'^add/$', AddGroundtruthRecordView.as_view(),
         name='add_groundtruthrecord'),

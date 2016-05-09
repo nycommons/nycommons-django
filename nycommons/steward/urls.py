@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.db.models.signals import post_save
 
 import django_monitor
@@ -8,7 +8,7 @@ from .models import StewardNotification
 from .views import AddStewardNotificationView
 
 
-urlpatterns = patterns('',
+urlpatterns = (
 
     url(r'^add/$', AddStewardNotificationView.as_view(),
         name='add_stewardnotification'),

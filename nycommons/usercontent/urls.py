@@ -1,9 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from .views import AddFileView, AddNoteView, AddPhotoView
 
 
-urlpatterns = patterns('',
+urlpatterns = (
 
     url(r'^photos/add/$',
         AddPhotoView.as_view(),

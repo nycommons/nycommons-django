@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from livinglots import get_organizer_model
 from livinglots_organize.forms import OrganizerForm
@@ -8,7 +8,7 @@ import livinglots_organize.urls as llurls
 from lots.models import Lot
 
 
-urlpatterns = llurls.urlpatterns + patterns('',
+urlpatterns = llurls.urlpatterns + [
 
     url(r'^add/',
         AddParticipantView.as_view(
@@ -18,4 +18,4 @@ urlpatterns = llurls.urlpatterns + patterns('',
         ),
         name='add_organizer'),
 
-)
+]
