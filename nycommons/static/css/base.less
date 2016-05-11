@@ -1,0 +1,25 @@
+body {
+    font-family: @body-font-family;
+    overflow-x: hidden;
+
+    // Make room for fixed navbar on smartphones
+    @media (max-width: @screen-xs-max) {
+        margin-top: 60px;
+    }
+}
+
+.page-wrapper {
+    .make-sm-column(10);
+    .make-sm-column-offset(1);
+
+    &-row {
+        .make-row(0);
+        min-height: 80vh;
+        padding-bottom: 50px;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}

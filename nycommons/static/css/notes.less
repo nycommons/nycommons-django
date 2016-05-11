@@ -1,15 +1,29 @@
-.note-list {
-    .user-content-list();
-
-    &-item {
+.usercontent-list {
+    .note {
         .user-content-list-item();
-    }
 
-    .note-added-by-name {
-        .user-content-added-by-name();
-    }
-}
+        &-added {
+            .user-content-added();
+        }
 
-.note-added {
-    .user-content-added();
+        &-added-by {
+            .user-content-added-by();
+        }
+
+        &-added-by-name {
+            .user-content-added-by-name();
+        }
+
+        &-meta {
+            .user-content-meta();
+        }
+
+        &-separator {
+            .user-content-separator();
+        }
+
+        &-details {
+            .user-content-content();
+        }
+    }
 }

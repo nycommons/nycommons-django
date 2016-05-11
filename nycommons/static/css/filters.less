@@ -1,3 +1,50 @@
-.filter-projects-row {
-    .make-row(0);
+.filter-select {
+    margin-left: 10%;
+    width: 80%;
+}
+
+.filter-section {
+    border-bottom: 1px solid black;
+    padding-bottom: 10px;
+    padding-top: 10px;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.filter-owner {
+    margin-top: 10px;
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    &-list {
+        list-style: none;
+        margin: 0;
+        padding-left: 0;
+    }
+
+    &-label {
+        width: 90%;
+    }
+
+    select {
+        .filter-select();
+    }
+}
+
+.filter-section-boundaries {
+    &-item {
+        margin-top: 10px;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    select {
+        .filter-select();
+    }
 }

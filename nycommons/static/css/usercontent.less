@@ -1,0 +1,30 @@
+.usercontent-list {
+    .user-content-list();
+
+    &-admin-actions {
+        .btn {
+            .btn-xs();
+            .btn-warning();
+            margin-bottom: 5px;
+        }
+    }
+}
+
+.user-content-actions {
+    display: none;
+    left: -@user-content-actions-width;
+    position: absolute;
+    width: @user-content-actions-width;
+
+    &-permalink {
+        background-image: @permalink-image;
+        display: block;
+        height: 30px;
+        width: 30px;
+    }
+}
+
+.user-content-separator {
+    border-bottom: 1px solid darken(@fill-color, 20%);
+    padding-top: 35px;
+}

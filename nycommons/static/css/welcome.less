@@ -1,11 +1,26 @@
+@welcome-text-color: white;
+
 .map-welcome {
+    background-image: url('../img/welcome_texture.png');
+    background-size: cover;
+    color: @welcome-text-color;
+
+    @media (max-width: @screen-xs-max) {
+        background-image: none;
+        background-color: @green;
+    }
+
     h1 {
-        font-family: 'Oswald', sans-serif;
-        font-size: 56px;
-        font-weight: 300;
+        .header-font();
+        cursor: pointer;
+        font-size: 28px;
+        font-style: italic;
         margin: 0;
-        padding-left: 35px;
-        text-transform: uppercase;
+        padding-left: @header-left-padding;
+
+        @media (max-width: @screen-xs-max) {
+            padding-left: @xs-padding;
+        }
     }
 
     &-close-button,
@@ -14,12 +29,17 @@
     &-open-button,
     &-open-button:active,
     &-open-button:hover {
-        color: black;
-        float: right;
-        font-size: 16px;
-        margin-right: 50px;
-        margin-top: 10px;
+        color: @welcome-text-color;
+        font-family: Arial, sans-serif;
+        font-size: 18px;
+        font-style: normal;
+        margin-left: -25px;
         text-decoration: none;
+
+        // Don't bother showing on small screens
+        @media (max-width: @screen-xs-max) {
+            display: none;
+        }
     }
 
     &.closed .map-welcome-close-button {
@@ -32,12 +52,21 @@
 
     &.closed .map-welcome-open-button {
         display: inline-block;
+
+        @media (max-width: @screen-xs-max) {
+            display: none;
+        }
     }
 
     &-body {
-        padding-left: 35px;
+        font-size: 16px;
+        padding-bottom: 10px;
+        padding-left: @header-left-padding;
         padding-right: 35px;
-        padding-bottom: 20px;
-        padding-top: 10px;
+
+        @media (max-width: @screen-xs-max) {
+            padding-left: @xs-padding;
+            padding-right: @xs-padding;
+        }
     }
 }

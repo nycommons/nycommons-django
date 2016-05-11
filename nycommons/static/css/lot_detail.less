@@ -9,9 +9,8 @@
 
 .lot-detail {
     &-page h1 {
-        font-family: 'Oswald', sans-serif;
+        .header-font();
         font-size: 28px;
-        font-weight: 300;
         margin-top: 15px;
     }
 
@@ -21,14 +20,18 @@
     }
 
     &-page h2 {
-        font-family: 'Oswald', sans-serif;
+        .header-font();
         font-size: 22px;
-        font-weight: 300;
         margin-top: 15px;
     }
 
     &-page .alert {
         margin-top: 20px;
+    }
+
+    &-section {
+        margin-bottom: 50px;
+        margin-top: 50px;
     }
 
     &-actions .btn {
@@ -37,8 +40,8 @@
     }
 
     &-organizers h2 {
-        background: #58595b;
-        color: white;
+        background: @fill-color;
+        color: @foreground-color;
         padding-left: 5px;
         padding-bottom: 10px;
         padding-top: 10px;
@@ -52,34 +55,84 @@
         width: 100%;
         height: 300px;
         margin-top: 15px;
+        transition: height 0.5s ease;
+
+        &.no-streetview {
+            height: 100px;
+        }
     }
 
     &-header-streetview-error {
         display: none;
+        float: left;
+        margin-left: 25%;
     }
 
     &-info-box {
-        background-color: rgba(151, 176, 61, 0.1); /* #97b03d in RGB */
+        background-color: @fill-color;
         margin-top: 15px;
         padding: 10px;
     }
 
     .lot-add-page h1 {
-        font-family: 'Oswald', sans-serif;
+        .header-font();
         font-size: 56px;
-        font-weight: 300;
         margin: 0;
         text-transform: uppercase;
     }
 
     &-organizer-intro h3 {
-        color: #2593c6;
-        font-family: 'Oswald', sans-serif;
+        .header-font();
+        color: @brand-primary;
         margin: 0;
         text-transform: uppercase;
     }
 
-    &-organizers .block-lot-detail-organizer-intro {
-        font-size: 14px;
+    &-organizers {
+        .block-lot-detail-organizer-intro {
+            font-size: 14px;
+        }
+
+        .organizer-list {
+            &-private {
+                display: none;
+            }
+        }
+    }
+
+    &-stewardproject {
+        &-organizer-name {
+            .user-content-added-by-name();
+        }
+
+        &-row {
+            .make-row(0);
+        }
+
+        &-left {
+            .make-sm-column(6, 0);
+        }
+
+        &-right {
+            .make-sm-column(6);
+        }
+
+        &-facebook-feed {
+            border: none;
+            overflow: hidden;
+            width: 100%;
+            height: 395px;
+        }
+    }
+
+}
+
+.nearby-lots-list {
+    list-style: none;
+    padding-left: 0;
+
+    &-item {
+        margin-bottom: 5px;
+        margin-top: 5px;
     }
 }

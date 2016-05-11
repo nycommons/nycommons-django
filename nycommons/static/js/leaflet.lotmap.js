@@ -1,34 +1,62 @@
+var _ = require('underscore');
+var filters = require('./filters');
+var Handlebars = require('handlebars');
 var L = require('leaflet');
 var mapstyles = require('./map.styles');
+var Spinner = require('spin.js');
 
-require('leaflet.bing');
-require('leaflet.dataoptions');
-require('leaflet.handlebars');
-require('leaflet.hash');
-require('leaflet.usermarker');
+require('livinglots.addlot');
+require('livinglots.emailparticipants');
+require('livinglots.boundaries');
+require('leaflet-plugins-bing');
+require('leaflet-dataoptions');
+require('leaflet-hash');
+require('leaflet-usermarker');
 
 require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 
 
 L.LotMap = L.Map.extend({
-
-    boundariesLayer: null,
     centroidsLayer: null,
+    currentFilters: {},
     polygonsLayer: null,
     lotLayerTransitionPoint: 15,
     previousZoom: null,
     userLayer: null,
     userLocationZoom: 16,
 
+    filters: null,
+
+    compiledPopupTemplate: null,
+
+    getPopupTemplate: function () {
+        if (this.compiledPopupTemplate) {
+            return this.compiledPopupTemplate;
+        }
+        var source = $("#popup-template").html();
+        this.compiledPopupTemplate = Handlebars.compile(source);
+        return this.compiledPopupTemplate;
+    },
+
     lotLayerOptions: {
         onEachFeature: function (feature, layer) {
             layer.on({
                 'click': function (event) {
+                    // Trigger a click on the body to close all overlaymenus
+                    $('body').trigger('click');
+
                     var latlng = event.latlng,
                         x = this._map.latLngToContainerPoint(latlng).x,
                         y = this._map.latLngToContainerPoint(latlng).y - 100,
-                        point = this._map.containerPointToLatLng([x, y]);
+                        point = this._map.containerPointToLatLng([x, y]),
+                        template = this._map.getPopupTemplate();
+                    this.bindPopup('<div id="popup"></div>').openPopup();
+                    var spinner = new Spinner().spin($('#popup')[0]);
+                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.properties.id }), function (data) {
+                        spinner.stop();
+                        $('#popup').append(template(data));
+                    });
                     return this._map.setView(point, this._map._zoom);
                 },
                 'mouseover': function (event) {
@@ -41,7 +69,8 @@ L.LotMap = L.Map.extend({
         },
         pointToLayer: function (feature, latlng) {
             var options = {};
-            if (feature.properties.has_organizers) {
+            var layers = feature.properties.layers.split(',');
+            if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
                 options.hasOrganizers = true;
             }
             return L.lotMarker(latlng, options);
@@ -52,10 +81,7 @@ L.LotMap = L.Map.extend({
                 fillOpacity: 1,
                 stroke: 0
             };
-            style.fillColor = mapstyles[feature.properties.layer];
-            if (!style.fillColor) {
-                style.fillColor = '#000000';
-            }
+            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
             return style;
         },
         popupOptions: {
@@ -63,18 +89,6 @@ L.LotMap = L.Map.extend({
             maxWidth: 250,
             minWidth: 250,
             offset: [0, 0]
-        },
-        handlebarsTemplateSelector: '#popup-template',
-        getTemplateContext: function (layer) {
-            if (!layer.feature) {
-                throw 'noFeatureForContext';
-            }
-            return {
-                detailUrl: Django.url('lots:lot_detail', {
-                    pk: layer.feature.properties.id
-                }),
-                feature: layer.feature
-            };
         }
     },
 
@@ -83,10 +97,31 @@ L.LotMap = L.Map.extend({
         this.addBaseLayer();
         var hash = new L.Hash(this);
 
-        this.boundariesLayer = L.geoJson(null, {
-            color: '#58595b',
-            fill: false
-        }).addTo(this);
+        if (options.filterParams) {
+            this.currentFilters = filters.paramsToFilters(options.filterParams);
+        }
+
+        // When new lots are added ensure they should be displayed
+        var map = this;
+        this.on('layeradd', function (event) {
+            // Dig through the layers of layers
+            if (!event.layer.on) { return; }
+            event.layer.on('layeradd', function (event) {
+                // Some layers (eg, drawn lots) don't have eachLayer. Skip.
+                if (!event.layer.eachLayer) { return; }
+                event.layer.eachLayer(function (lot) {
+                    if (!lot.feature || !lot.feature.properties.layers) {
+                        return;
+                    }
+                    if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
+                        lot.show();
+                    }
+                    else {
+                        lot.hide();
+                    }
+                });
+            });
+        });
 
         this.on('zoomend', function () {
             var currentZoom = this.getZoom();
@@ -114,10 +149,25 @@ L.LotMap = L.Map.extend({
             }
             this.previousZoom = currentZoom;
         });
+
+        this.on('boundarieschange', function () {
+            this.updateDisplayedLots();
+        });
+    },
+
+    buildLotFilterParams: function (options) {
+        return filters.filtersToParams(this, options);
+    },
+
+    getParamsQueryString: function (options, overrides) {
+        var params = this.buildLotFilterParams(options);
+        return $.param(_.extend(params, overrides));
     },
 
     addBaseLayer: function () {
-        var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(this);
+        var streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+            attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+        }).addTo(this);
         var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
 
         L.control.layers({
@@ -126,9 +176,9 @@ L.LotMap = L.Map.extend({
         }).addTo(this);
     },
 
-    addLotsLayer: function (params) {
-        this.addCentroidsLayer(params);
-        this.addPolygonsLayer(params);
+    addLotsLayer: function () {
+        this.addCentroidsLayer();
+        this.addPolygonsLayer();
         if (this.getZoom() <= this.lotLayerTransitionPoint) {
             this.addLayer(this.centroidsLayer);
             this.removeLayer(this.polygonsLayer);
@@ -139,7 +189,7 @@ L.LotMap = L.Map.extend({
         }
     },
 
-    addCentroidsLayer: function (params) {
+    addCentroidsLayer: function () {
         if (this.centroidsLayer) {
             this.removeLayer(this.centroidsLayer);
         }
@@ -155,13 +205,14 @@ L.LotMap = L.Map.extend({
         this.centroidsLayer = L.lotLayer(url, options, this.lotLayerOptions);
     },
 
-    addPolygonsLayer: function (params) {
+    addPolygonsLayer: function () {
         if (this.polygonsLayer) {
             this.removeLayer(this.polygonsLayer);
         }
         var url = this.options.lotPolygonsUrl;
 
         var options = {
+            maxZoom: 19,
             serverZooms: [16],
             unique: function (feature) {
                 return feature.id;
@@ -172,16 +223,43 @@ L.LotMap = L.Map.extend({
         this.polygonsLayer = L.lotLayer(url, options, layerOptions);
     },
 
-    updateDisplayedLots: function (params) {
-        this.removeLayer(this.centroidsLayer);
-        this.removeLayer(this.polygonsLayer);
-        this.addLotsLayer(params);
+    updateFilters: function (params) {
+        this.currentFilters = filters.paramsToFilters(params);
+        this.updateDisplayedLots();
+        this.fire('filterschanged', this.currentFilters);
     },
 
-    addUserLayer: function (latlng) {
+    updateDisplayedLots: function () {
+        var map = this;
+        function updateDisplayedLotsForLayer(layer) {
+            if (layer && layer.vectorLayer) {
+                // Lots are nested in tiles so we need to do two layers of 
+                // eachLayer to get to them all
+                layer.vectorLayer.eachLayer(function (tileLayer) {
+                    tileLayer.eachLayer(function (lot) {
+                        if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
+                            lot.show();
+                        }
+                        else {
+                            lot.hide();
+                        }
+                    });
+                });
+            }
+        }
+
+        updateDisplayedLotsForLayer(this.centroidsLayer);
+        updateDisplayedLotsForLayer(this.polygonsLayer);
+    },
+
+    addUserLayer: function (latlng, opts) {
+        opts = opts || {};
         this.userLayer = L.userMarker(latlng, {
             smallIcon: true,
         }).addTo(this);
+        if (opts.popupContent) {
+            this.userLayer.bindPopup(opts.popupContent).openPopup();
+        }
         this.setView(latlng, this.userLocationZoom);
     },
 
@@ -189,20 +267,7 @@ L.LotMap = L.Map.extend({
         if (this.userLayer) {
             this.removeLayer(this.userLayer);
         }
-    },
-
-    removeBoundaries: function (data, options) {
-        this.boundariesLayer.clearLayers();
-    },
-
-    updateBoundaries: function (data, options) {
-        this.boundariesLayer.clearLayers();
-        this.boundariesLayer.addData(data);
-        if (options.zoomToBounds) {
-            this.fitBounds(this.boundariesLayer.getBounds());
-        }
     }
-
 });
 
 L.lotMap = function (id, options) {

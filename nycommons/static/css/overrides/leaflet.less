@@ -1,3 +1,60 @@
+.leaflet-container {
+    font-family: @body-font-family;
+
+    a {
+        color: @link-color;
+    }
+
+    .btn {
+        color: @btn-default-color;
+    }
+
+    .leaflet-control-attribution {
+        background: fadeout(white, 5%);
+        font-size: 12px;
+        padding: 4px;
+
+        @media (max-width: @screen-xs-max) {
+            font-size: 8px;
+            padding: 0;
+        }
+    }
+}
+
+.leaflet-control-zoom {
+    a {
+        color: @foreground-color;
+    }
+}
+
 .leaflet-control-loading {
     background-image: data-uri("../img/loading.gif");
+}
+
+.leaflet-control-layers-toggle {
+    background-image: data-uri("../node_modules/leaflet/dist/images/layers.png");
+}
+
+.leaflet-draw-toolbar a {
+	background-image: data-uri('../node_modules/leaflet-draw/dist/images/spritesheet.png');
+}
+
+.leaflet-retina {
+    .leaflet-control-layers-toggle {
+        background-image: data-uri("../node_modules/leaflet/dist/images/layers-2x.png");
+    }
+
+    .leaflet-draw-toolbar a {
+        background-image: data-uri('../node_modules/leaflet-draw/dist/images/spritesheet-2x.png');
+    }
+}
+
+.leaflet-draw-actions a {
+    background-color: white;
+}
+
+@media print {
+    .leaflet-control-container {
+        display: none;
+    }
 }

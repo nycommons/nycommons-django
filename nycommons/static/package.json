@@ -1,10 +1,14 @@
 {
-  "name": "livinglots-static",
+  "name": "livinglots-nyc",
   "version": "0.0.0",
-  "description": "Static media for livinglots",
+  "description": "Static media for livinglots-nyc",
   "author": "Eric Brelsford",
   "license": "BSD-2-Clause",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/596acres/livinglots-nyc"
+  },
   "dependencies": {
     "bootstrap": "^3.3.2",
     "fancybox": "^2.1.7",
@@ -12,17 +16,21 @@
     "jquery-infinite-scroll": "git://github.com/paulirish/infinite-scroll",
     "leaflet": "~0.7.3",
     "leaflet-dataoptions": "^1.0.0",
+    "leaflet-draw": "^0.2.3",
     "leaflet-hash": "^0.2.1",
     "leaflet-loading": "^0.1.15",
-    "leaflet-pip": "^0.1.1",
     "leaflet-plugins": "^1.2.0",
     "leaflet-tilelayer-vector": "git://github.com/ebrelsford/leaflet-tilelayer-vector",
     "leaflet-usermarker": "^1.0.0",
-    "livinglots-map": "git://github.com/596acres/livinglots-map",
+    "livinglots.addlot": "git://github.com/596acres/livinglots.addlot#v0.2.0",
+    "livinglots.boundaries": "git://github.com/596acres/livinglots.boundaries#v0.1.1",
+    "livinglots.emailparticipants": "git://github.com/596acres/livinglots.emailparticipants#v0.2.3",
     "proj4": "^2.3.3",
     "select2": "^3.5.2-browserify",
     "spin.js": "^2.0.2",
     "tinymce": "^4.1.7",
+    "turf-inside": "^1.1.4",
+    "turf-point": "^2.0.1",
     "underscore": "^1.7.0"
   },
   "devDependencies": {

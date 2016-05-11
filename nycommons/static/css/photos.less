@@ -1,0 +1,44 @@
+.usercontent-list {
+    .photo {
+        .user-content-list-item();
+
+        &-added {
+            .user-content-added();
+        }
+
+        &-added-by {
+            .user-content-added-by();
+        }
+
+        &-added-by-name {
+            .user-content-added-by-name();
+        }
+
+        &-meta {
+            .user-content-meta();
+        }
+
+        &-image {
+            display: block;
+
+            img {
+                height: auto;
+                max-width: 100%;
+            }
+        }
+
+        &-details {
+            .user-content-content();
+            margin-bottom: 10px;
+            margin-top: 10px;
+
+            .photo-name {
+                font-size: 18px;
+            }
+
+            .photo-description {
+                display: block;
+            }
+        }
+    }
+}

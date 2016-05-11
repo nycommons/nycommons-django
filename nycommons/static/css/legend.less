@@ -1,0 +1,59 @@
+.legend {
+    background: fadeout(@fill-color, 10%);
+    border: 3px solid @foreground-color;
+    bottom: 10px;
+    left: 25px;
+    padding: 5px;
+    position: absolute;
+    z-index: 5000;
+
+    // Flush left on smaller screens
+    @media (max-width: @screen-xs-max) {
+        left: 0;
+    }
+
+    &-marker {
+        background: black;
+        border-radius: 10px;
+        display: inline-block;
+        height: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        width: 10px;
+
+        &-organized {
+            margin-left: 5px;
+            margin-right: 5px;
+            background: data-uri("../img/action_star_small.png");
+            height: 20px;
+            width: 20px;
+        }
+
+        &-public {
+            background: @lot-public-color;
+        }
+
+        &-private {
+            background: @lot-private-color;
+        }
+
+        &-project {
+            background: @lot-access-color;
+        }
+    }
+
+    &-label {
+        display: inline;
+        font-weight: 300;
+        line-height: 22px;
+        text-transform: uppercase;
+
+        &-organized {
+            vertical-align: top;
+        }
+    }
+
+    @media print {
+        display: none;
+    }
+}

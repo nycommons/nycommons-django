@@ -21,6 +21,10 @@ module.exports = function(grunt) {
         },
 
         cssmin: {
+            options: {
+                // Don't rebase urls. This was breaking relative urls.
+                rebase: false
+            },
             minify: {
                 src: '<%= less.production.dest %>',
                 dest: 'css/style.min.css'
@@ -31,7 +35,7 @@ module.exports = function(grunt) {
             all: {
                 files: {
                     src: [
-                        "js/*.js",
+                        'js/*.js',
                         '!<%= browserify.dev.dest %>',
                         '!<%= browserify.production.dest %>',
                         '!<%= uglify.production.dest %>'
@@ -43,18 +47,13 @@ module.exports = function(grunt) {
         less: {
             dev: {
                 options: {
-                    paths: ["css"],
                     sourceMap: true,
                     sourceMapFileInline: true
                 },
-                src: "css/style.less",
-                dest: "css/style.dev.css"
+                src: 'css/style.less',
+                dest: 'css/style.dev.css'
             },
             production: {
-                options: {
-                    paths: ['css'],
-                    yuicompress: true
-                },
                 src: '<%= less.dev.src %>',
                 dest: 'css/style.css'
             }
@@ -69,13 +68,13 @@ module.exports = function(grunt) {
 
         watch: {
             jshint: {
-                files: ["js/*.js"],
-                tasks: ["jshint"]
+                files: ['js/*.js'],
+                tasks: ['jshint']
             },
 
             less: {
-                files: ["css/*.less", "css/*/*.less"],
-                tasks: ["less", "cssmin"]
+                files: ['css/*.less', 'css/*/*.less'],
+                tasks: ['less', 'cssmin']
             },
 
             uglify: {
@@ -92,5 +91,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask("dev", ["browserify", "watch"]);
+    grunt.registerTask('dev', ['browserify', 'watch']);
 };

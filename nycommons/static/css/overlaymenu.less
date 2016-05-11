@@ -1,17 +1,23 @@
+@overlaymenu-bg-color: @fill-color;
+@overlaymenu-border-color: @foreground-color;
+
 .overlaymenu {
-    background: rgba(256, 256, 256, 0.95);
-    border: 3px solid #2593c6;
+    background: @fill-color;
+    border: 3px solid @overlaymenu-border-color;
     display: none;
     padding: 15px;
     position: absolute;
     width: 250px;
     z-index: 5005;
+
+    &-filter {
+        padding-right: 0;
+    }
 }
 
 .overlaymenu h2 {
-    font-family: 'Oswald', sans-serif;
+    .header-font();
     font-size: 28px;
-    font-weight: 400;
     margin-top: 15px;
     text-transform: uppercase;
 }
@@ -29,8 +35,8 @@
 }
 
 .overlaymenu-tip {
-    background: rgba(256, 256, 256, 0.95);
-    border: 3px solid #2593c6;
+    background: @overlaymenu-bg-color;
+    border: 3px solid @overlaymenu-border-color;
     border-bottom: 0;
     border-right: 0;
     display: block;
@@ -49,25 +55,6 @@
 .overlaymenu-menu-content {
     max-height: 400px;
     min-height: 150px;
+    overflow-x: hidden;
     overflow-y: auto;
-}
-
-.overlaymenu-admin .overlaymenu-menu-content {
-    min-height: 10px;
-}
-
-.overlaymenu-details,
-.overlaymenu-filter,
-.overlaymenu-news {
-    width: 350px;
-}
-
-.overlaymenu-details .overlaymenu-tip-container,
-.overlaymenu-filter .overlaymenu-tip-container,
-.overlaymenu-news .overlaymenu-tip-container {
-    left: 140px;
-}
-
-.overlaymenu-news .activity-stream-container {
-    min-height: 200px;
 }

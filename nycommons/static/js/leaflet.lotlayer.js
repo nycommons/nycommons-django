@@ -1,7 +1,9 @@
 var L = require('leaflet');
+var _ = require('underscore');
 
-require('TileLayer.GeoJSON');
+require('leaflet-tilelayer-vector');
 
+var ie = require('./ie');
 require('./leaflet.geojson.tile');
 require('./leaflet.lotmultipolygon');
 require('./leaflet.lotpolygon');
@@ -49,10 +51,11 @@ L.LotGeoJson = L.GeoJSON.extend({
         var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
             coords = geometry.coordinates,
             layers = [],
-            latlng, latlngs, i, len;
+            latlng, latlngs, i, len,
+            options = L.extend({}, vectorOptions),
+            lotLayers = geojson.properties.layers.split(',');
 
-        var options = L.extend({}, vectorOptions);
-        if (geojson.properties.has_organizers) {
+        if (_.contains(lotLayers, 'organizing') || _.contains(lotLayers, 'in_use_started_here')) {
             options.hasOrganizers = true;
         }
 
@@ -79,7 +82,7 @@ L.LotGeoJson = L.GeoJSON.extend({
                 throw new Error('Invalid GeoJSON object.');
             }
             latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
-            return new L.LotPolygon(latlngs, options);
+            return L.lotPolygon(latlngs, options);
 
         case 'MultiLineString':
             latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
@@ -116,6 +119,11 @@ L.LotLayer = L.TileLayer.Vector.extend({
     initialize: function (url, options, geojsonOptions) {
         options.tileCacheFactory = L.tileCache;
         options.layerFactory = L.lotGeoJson;
+
+        // Don't use web workers for IE
+        if (ie.detect()) {
+            options.workerFactory = L.noWorker;
+        }
         L.TileLayer.Vector.prototype.initialize.call(this, url, options,
                                                       geojsonOptions);
     },

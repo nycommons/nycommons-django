@@ -7,12 +7,13 @@
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 
-require('leaflet.dataoptions');
+require('leaflet-dataoptions');
 
 require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 var mapstyles = require('./map.styles');
 var StreetView = require('./streetview');
+require('./overlaymenu');
 
 
 var vectorLayerOptions = {
@@ -33,20 +34,14 @@ function getLotLayerOptions(lotPk) {
         },
         style: function (feature) {
             var style = {
-                fillColor: '#000000',
-                fillOpacity: 1,
-                stroke: 0
+                fillOpacity: 0.2,
+                stroke: false
             };
+            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
 
             // Style this lot distinctly
             if (feature.properties.id === lotPk) {
-                style.stroke = true;
-                style.color = '#FF0000';
-            }
-
-            style.fillColor = mapstyles[feature.properties.layer];
-            if (!style.fillColor) {
-                style.fillColor = '#000000';
+                style.fillOpacity = 1;
             }
             return style;
         }
@@ -63,9 +58,39 @@ function addLotsLayer(map) {
     var lotsLayer = L.lotLayer(url, vectorLayerOptions, lotLayerOptions).addTo(map);
 }
 
+function initFacebookLink($link) {
+    var url = 'http://www.facebook.com/sharer/sharer.php?' + $.param({
+        u: window.location.href
+    });
+    $link.attr('href', url);
+}
+
+function initTwitterLink($link) {
+    var url = 'http://twitter.com/intent/tweet?' + $.param({
+        related: '596acres',
+        text: $link.data('tweet'),
+        url: window.location.href
+    });
+    $link.attr('href', url);
+}
+
 $(document).ready(function () {
     if ($('.lot-detail-page').length > 0) {
-        var map = L.map('lot-detail-map');
+        var map = L.map('lot-detail-map', {
+            doubleClickZoom: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            touchZoom: false
+        });
+
+        var bbox = map.options.bbox;
+        if (bbox) {
+            map.fitBounds([
+                [bbox[1], bbox[0]],   
+                [bbox[3], bbox[2]]   
+            ], { padding: [20, 20], maxZoom: 18 });
+        }
+
         addBaseLayer(map);
         addLotsLayer(map);
         StreetView.load_streetview(
@@ -75,4 +100,38 @@ $(document).ready(function () {
             $('.lot-detail-header-streetview-error')
         );
     }
+
+    $('.overlay-nearby-button').overlaymenu({
+        menu: '.overlaymenu-nearby'
+    });
+
+    $('.btn-add-to-group').click(function () {
+        if (!confirm("Group these two lots? This will move notes, organizers, and other content to the group and is very difficult to undo.")) {
+            return false;
+        }
+        var url = Django.url('lots:add_to_group', { pk: $(this).data('lot') });
+        $.post(url, { lot_to_add: $(this).data('lot-to-add') }, function (data) {
+            window.location = Django.url('lots:lot_detail', { pk: data.group });
+        });
+        return false;
+    });
+
+    $('.btn-remove-from-group').click(function () {
+        if (!confirm("Remove this lot from the group?")) {
+            return false;
+        }
+        var url = Django.url('lots:remove_from_group', { pk: $(this).data('lot') });
+        $.post(url, {}, function (data) {
+            window.location = Django.url('lots:lot_detail', { pk: data.former_group });
+        });
+        return false;
+    });
+
+    $('.btn-show-private-organizers').click(function () {
+        $('.organizer-list-private').slideToggle();
+        return false;
+    });
+
+    initFacebookLink($('.share-facebook'));
+    initTwitterLink($('.share-twitter'));
 });
