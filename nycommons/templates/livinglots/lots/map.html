@@ -37,18 +37,18 @@
     {% endverbatim %}
 </script>
 
-<section class="map-welcome hidden-print">
-    <h1>
-        {% trans "Welcome!" %}
-        <a href="#" class="map-welcome-close-button">close</a>
-        <a href="#" class="map-welcome-open-button">show</a>
-    </h1>
-    <div class="map-welcome-body">
-        {% feincms_render_region feincms_page "welcome" request %}
-    </div>
-</section>
+<div id="map"
+    data-l-zoom="11"
+    data-l-center="[40.73, -73.99]"
+    data-l-loading-control="true"
+    data-l-scroll-wheel-zoom="false"
 
-<div id="map-header" class="hidden-xs hidden-print">
+    data-l-lot-centroids-url="{% inplace_setting LOT_CENTROIDS_URL %}"
+    data-l-lot-polygons-url="{% inplace_setting LOT_POLYGONS_URL %}"
+>
+</div>
+
+<div class="hidden-xs hidden-print map-details">
     <div class="map-header-content">
         <div class="map-header-currently-viewing">
             <h2>You are currently viewing</h2>
@@ -108,40 +108,30 @@
     </div>
 </div>
 
-<div id="map"
-    data-l-zoom="11"
-    data-l-center="[40.73, -73.99]"
-    data-l-loading-control="true"
-    data-l-scroll-wheel-zoom="false"
-
-    data-l-lot-centroids-url="{% inplace_setting LOT_CENTROIDS_URL %}"
-    data-l-lot-polygons-url="{% inplace_setting LOT_POLYGONS_URL %}"
->
-    <div id="map-legend" class="hidden-print">
-        <div>
-            <span class="legend-marker legend-marker-public"></span>
-            <label class="legend-label">
-                {% trans "publicly-owned land" %}
-            </label>
-        </div>
-        <div>
-            <span class="legend-marker legend-marker-private"></span>
-            <label class="legend-label">
-                {% trans "private land belonging to an owner who wants to see it used" %}
-            </label>
-        </div>
-        <div>
-            <span class="legend-marker legend-marker-project"></span>
-            <label class="legend-label">
-                {% trans "project" %}
-            </label>
-        </div>
-        <div>
-            <span class="legend-marker legend-marker-organized"></span>
-            <label class="legend-label legend-label-organized">
-                {% trans "lot being organized" %}
-            </label>
-        </div>
+<div id="map-legend" class="hidden-print">
+    <div>
+        <span class="legend-marker legend-marker-public"></span>
+        <label class="legend-label">
+            {% trans "publicly-owned land" %}
+        </label>
+    </div>
+    <div>
+        <span class="legend-marker legend-marker-private"></span>
+        <label class="legend-label">
+            {% trans "private land belonging to an owner who wants to see it used" %}
+        </label>
+    </div>
+    <div>
+        <span class="legend-marker legend-marker-project"></span>
+        <label class="legend-label">
+            {% trans "project" %}
+        </label>
+    </div>
+    <div>
+        <span class="legend-marker legend-marker-organized"></span>
+        <label class="legend-label legend-label-organized">
+            {% trans "lot being organized" %}
+        </label>
     </div>
 </div>
 
