@@ -297,6 +297,7 @@ $(document).ready(function () {
         }
 
         var map = L.lotMap('map', mapOptions);
+        map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
         initializeNYCHA(map);

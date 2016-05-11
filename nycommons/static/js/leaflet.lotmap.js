@@ -172,8 +172,8 @@ L.LotMap = L.Map.extend({
 
         L.control.layers({
             streets: streets,
-            satellite: bing
-        }).addTo(this);
+            satellite: bing,
+        }, null, { position: 'bottomright' }).addTo(this);
     },
 
     addLotsLayer: function () {

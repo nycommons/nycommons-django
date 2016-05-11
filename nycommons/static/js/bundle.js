@@ -681,8 +681,8 @@ L.LotMap = L.Map.extend({
 
         L.control.layers({
             streets: streets,
-            satellite: bing
-        }).addTo(this);
+            satellite: bing,
+        }, null, { position: 'bottomright' }).addTo(this);
     },
 
     addLotsLayer: function () {
@@ -1707,6 +1707,7 @@ $(document).ready(function () {
         }
 
         var map = L.lotMap('map', mapOptions);
+        map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
         initializeNYCHA(map);
@@ -28801,7 +28802,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
