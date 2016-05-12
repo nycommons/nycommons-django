@@ -6874,6 +6874,9 @@ fieldset[disabled] .overlaymenu-details .details-show-organizing.active {
     width: 8.33333333%;
   }
 }
+.map-sidebar .map-header-content {
+  border-top: 15px solid #bf1e2d;
+}
 .map-sidebar .map-header-content-filters {
   display: none;
 }

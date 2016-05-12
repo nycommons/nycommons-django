@@ -56,27 +56,25 @@
 </button>
 
 <div class="map-sidebar">
-    <div class="hidden-xs hidden-print map-details sidebar-section">
-        <div class="map-header-content">
-            <div class="map-header-content-default">
-                <div>
-                    Who owns NYC's public spaces?
-                </div>
-                <div>
-                    Type an address, zip, or neighborhood to find out!
-                </div>
-                <div class="map-search">
-                    <form class="map-search-form" data-bounds="[-74.304657,40.476203,-73.678436,40.939452]" data-city="New York" data-state="NY" data-error-message="Could not find your location. Try again?" data-warning-selector="map-search.warning">
-                        <input id="search" name="search" placeholder="{% trans "Search by address, zip code" %}" type="text" />
-                        <button class="map-search-submit btn btn-default" type="submit">{% trans "GO" %}</button>
-                        <div class="warning" style="display: none;"></div>
-                    </form>
-                </div>
+    <div class="hidden-xs hidden-print sidebar-section map-header-content">
+        <div class="map-header-content-default">
+            <div>
+                Who owns NYC's public spaces?
             </div>
+            <div>
+                Type an address, zip, or neighborhood to find out!
+            </div>
+            <div class="map-search">
+                <form class="map-search-form" data-bounds="[-74.304657,40.476203,-73.678436,40.939452]" data-city="New York" data-state="NY" data-error-message="Could not find your location. Try again?" data-warning-selector="map-search.warning">
+                    <input id="search" name="search" placeholder="{% trans "Search by address, zip code" %}" type="text" />
+                    <button class="map-search-submit btn btn-default" type="submit">{% trans "GO" %}</button>
+                    <div class="warning" style="display: none;"></div>
+                </form>
+            </div>
+        </div>
 
-            <div class="map-header-content-filters">
-                {% include "livinglots/lots/filters.html" %}
-            </div>
+        <div class="map-header-content-filters">
+            {% include "livinglots/lots/filters.html" %}
         </div>
     </div>
 
