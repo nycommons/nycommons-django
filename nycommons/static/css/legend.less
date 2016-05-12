@@ -1,18 +1,4 @@
-#map-legend {
-    background: fadeout(@fill-color, 10%);
-    border: 3px solid @foreground-color;
-    bottom: 10px;
-    left: 25px;
-    position: absolute;
-    z-index: 5000;
-}
-
 .legend {
-    background: fadeout(@fill-color, 10%);
-    border: 3px solid @foreground-color;
-    bottom: 10px;
-    left: 25px;
-    padding: 5px;
     position: absolute;
     z-index: 5000;
 
@@ -55,7 +41,7 @@
         display: inline;
         font-weight: 300;
         line-height: 22px;
-        text-transform: uppercase;
+        text-transform: capitalize;
 
         &-organized {
             vertical-align: top;

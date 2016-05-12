@@ -55,90 +55,60 @@
     <span class="icon-bar"></span>
 </button>
 
-<div class="hidden-xs hidden-print map-details">
-    <div class="map-header-content">
-        <div class="map-header-currently-viewing">
-            <h2>You are currently viewing</h2>
-            <ul>
-                <li>
-                    <span id="no-known-use-acres"></span>
-                    acres of opportunity on
-                    <span id="no-known-use-count"></span>
-                    lots
-                </li>
-                <li>
-                    <span id="in-use-acres"></span>
-                    acres of community projects on 
-                    <span id="in-use-count"></span>
-                    lots
-                </li>
-            </ul>
-        </div>
-
-        <div class="col-sm-2">
-            <a class="btn btn-default overlay-details-button btn-block" href="#">
-                details
-            </a>
-            <a class="btn btn-default overlay-download-button btn-block" href="#">
-                download
-            </a>
-        </div>
-
-        <div class="col-sm-4">
+<div class="map-sidebar">
+    <div class="hidden-xs hidden-print map-details sidebar-section">
+        <div class="map-header-content">
+            <div>
+                Who owns NYC's public spaces?
+            </div>
+            <div>
+                Type an address, zip, or neighborhood to find out!
+            </div>
             <div class="map-search">
-                <form class="map-search-form row" data-bounds="[-74.304657,40.476203,-73.678436,40.939452]" data-city="New York" data-state="NY" data-error-message="Could not find your location. Try again?" data-warning-selector="map-search.warning">
-                    <input class="col-sm-6" id="search" name="search" placeholder="{% trans "Search by address, zip code" %}" type="text" />
-                    <button class="map-search-submit col-sm-2 btn btn-default" type="submit">{% trans "GO" %}</button>
+                <form class="map-search-form" data-bounds="[-74.304657,40.476203,-73.678436,40.939452]" data-city="New York" data-state="NY" data-error-message="Could not find your location. Try again?" data-warning-selector="map-search.warning">
+                    <input id="search" name="search" placeholder="{% trans "Search by address, zip code" %}" type="text" />
+                    <button class="map-search-submit btn btn-default" type="submit">{% trans "GO" %}</button>
                     <div class="warning" style="display: none;"></div>
                 </form>
             </div>
-
-            {% if user.is_superuser %}
-                <div class="row">
-                    <a class="overlay-admin-button btn btn-warning" href="#">
-                        {% trans "admin" %}
-                    </a>
-                </div>
-            {% endif %}
         </div>
+    </div>
 
-        <div class="col-sm-1">
-            <a class="btn btn-default overlay-filter-button" href="#">
-                filter
+    <div id="map-legend" class="sidebar-section hidden-print">
+        <div>
+            X Properties
+            <a class="overlay-details-button" href="#">
+                Details
+            </a>
+            <a class="overlay-filter-button" href="#">
+                Filter
             </a>
         </div>
-        <div class="col-sm-1">
-            <a class="btn btn-default overlay-news-button" href="#">
-                news
-            </a>
-        </div>
-    </div>
-</div>
 
-<div id="map-legend" class="hidden-print">
-    <div>
-        <span class="legend-marker legend-marker-public"></span>
-        <label class="legend-label">
-            {% trans "publicly-owned land" %}
-        </label>
-    </div>
-    <div>
-        <span class="legend-marker legend-marker-private"></span>
-        <label class="legend-label">
-            {% trans "private land belonging to an owner who wants to see it used" %}
-        </label>
-    </div>
-    <div>
-        <span class="legend-marker legend-marker-project"></span>
-        <label class="legend-label">
-            {% trans "project" %}
-        </label>
-    </div>
-    <div>
-        <span class="legend-marker legend-marker-organized"></span>
-        <label class="legend-label legend-label-organized">
-            {% trans "lot being organized" %}
-        </label>
+        <div>
+            <span class="legend-marker legend-marker-priority"></span>
+            <label class="legend-label">
+                {% trans "priority" %}
+            </label>
+        </div>
+        <div>
+            <span class="legend-marker legend-marker-private"></span>
+            <label class="legend-label">
+                {% trans "organizing" %}
+            </label>
+        </div>
+        <div>
+            <span class="legend-marker legend-marker-project"></span>
+            <label class="legend-label">
+                {% trans "project" %}
+            </label>
+        </div>
+        <div>
+            <span class="legend-marker legend-marker-organized"></span>
+            <label class="legend-label legend-label-organized">
+                {% trans "lot being organized" %}
+            </label>
+        </div>
     </div>
 </div>
 

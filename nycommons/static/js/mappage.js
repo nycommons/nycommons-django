@@ -228,10 +228,6 @@ function prepareOverlayMenus(map) {
         menu: '.overlaymenu-download'
     });
 
-    $('.overlay-admin-button').overlaymenu({
-        menu: '.overlaymenu-admin'
-    });
-
     $('.overlay-details-button')
         .overlaymenu({
             menu: '.overlaymenu-details'
