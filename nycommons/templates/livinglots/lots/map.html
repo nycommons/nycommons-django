@@ -76,12 +76,16 @@
         <div class="map-header-content-filters">
             {% include "livinglots/lots/filters.html" %}
         </div>
+
+        <div class="map-header-content-details">
+            {% include "livinglots/lots/details.html" %}
+        </div>
     </div>
 
     <div id="map-legend" class="map-legend sidebar-section hidden-print">
         <div>
             X Properties
-            <a class="overlay-details-button" href="#">
+            <a class="details-button" href="#">
                 Details
             </a>
             <a class="filter-button" href="#">
@@ -114,10 +118,6 @@
             </label>
         </div>
     </div>
-</div>
-
-<div class="overlaymenu overlaymenu-details">
-    {% include "livinglots/lots/details.html" %}
 </div>
 
 <div class="overlaymenu overlaymenu-download">

@@ -12,6 +12,7 @@
   "dependencies": {
     "bootstrap": "^3.3.2",
     "fancybox": "^2.1.7",
+    "flightjs": "^1.5.1",
     "handlebars": "^2.0.0",
     "jquery-infinite-scroll": "git://github.com/paulirish/infinite-scroll",
     "leaflet": "~0.7.3",

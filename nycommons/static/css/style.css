@@ -6363,11 +6363,9 @@ fieldset[disabled] .btn-show-details.active {
 .overlaymenu-admin .overlaymenu-menu-content {
   min-height: 10px;
 }
-.overlaymenu-details,
 .overlaymenu-news {
   width: 350px;
 }
-.overlaymenu-details .overlaymenu-tip-container,
 .overlaymenu-news .overlaymenu-tip-container {
   left: 140px;
 }
@@ -6880,6 +6878,7 @@ fieldset[disabled] .overlaymenu-details .details-show-organizing.active {
 .map-sidebar .map-header-content {
   border-top: 15px solid #bf1e2d;
 }
+.map-sidebar .map-header-content-details,
 .map-sidebar .map-header-content-filters {
   display: none;
 }

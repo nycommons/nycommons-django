@@ -229,19 +229,6 @@ function prepareOverlayMenus(map) {
         menu: '.overlaymenu-download'
     });
 
-    $('.overlay-details-button')
-        .overlaymenu({
-            menu: '.overlaymenu-details'
-        })
-        .on('overlaymenuopen', function () {
-            var spinner = new Spinner({
-                left: '50%',
-                top: '50%'
-            }).spin($('.details-overview')[0]);
-            updateDetailsLink(map);
-            updateOwnershipOverview(map);
-        });
-
     $('.overlay-news-button')
         .overlaymenu({
             menu: '.overlaymenu-news'
@@ -263,11 +250,6 @@ function prepareOverlayMenus(map) {
                 });
             });
         });
-
-    $('.overlay-filter-button').overlaymenu({
-        menu: '.overlaymenu-filter'
-    });
-
 
 }
 
