@@ -1643,6 +1643,7 @@ function prepareOverlayMenus(map) {
         menu: '.overlaymenu-download'
     });
 
+    // TODO button no longer exists but we should load recent activity
     $('.overlay-news-button')
         .overlaymenu({
             menu: '.overlaymenu-news'
@@ -1923,6 +1924,9 @@ var legend = flight.component(function () {
 var defaultSidebarContent = flight.component(function () {
 }, defaultSidebarContentMixin);
 
+var recentActivity = flight.component(function () {
+}, defaultSidebarContentMixin);
+
 var sidebarHeaderButton = flight.component(function () {
     this.click = function (event, name) {
         $(document).trigger('sidebarHeaderContentShown', {
@@ -1945,6 +1949,7 @@ $(document).ready(function () {
 
     legend.attachTo('.map-legend');
     defaultSidebarContent.attachTo('.map-header-content-default');
+    recentActivity.attachTo('.recent-activity');
 });
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js":[function(require,module,exports){
@@ -30324,7 +30329,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

@@ -229,6 +229,7 @@ function prepareOverlayMenus(map) {
         menu: '.overlaymenu-download'
     });
 
+    // TODO button no longer exists but we should load recent activity
     $('.overlay-news-button')
         .overlaymenu({
             menu: '.overlaymenu-news'

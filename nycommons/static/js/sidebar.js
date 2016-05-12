@@ -52,6 +52,9 @@ var legend = flight.component(function () {
 var defaultSidebarContent = flight.component(function () {
 }, defaultSidebarContentMixin);
 
+var recentActivity = flight.component(function () {
+}, defaultSidebarContentMixin);
+
 var sidebarHeaderButton = flight.component(function () {
     this.click = function (event, name) {
         $(document).trigger('sidebarHeaderContentShown', {
@@ -74,4 +77,5 @@ $(document).ready(function () {
 
     legend.attachTo('.map-legend');
     defaultSidebarContent.attachTo('.map-header-content-default');
+    recentActivity.attachTo('.recent-activity');
 });

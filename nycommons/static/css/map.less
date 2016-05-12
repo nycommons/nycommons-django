@@ -18,33 +18,6 @@
 @star-width: 143px;
 @news-button-z-index: @ui-z-index + 100;
 
-.overlay-news-button {
-    .button-variant(black, transparent, transparent);
-
-    &:active,
-    &.active {
-        .box-shadow(none);
-    }
-
-    height: @news-button-height;
-    position: absolute;
-    white-space: normal;
-    width: @news-button-width;
-    z-index: @news-button-z-index;
-
-    &-background {
-        background-image: data-uri('../../static/img/star_large.png');
-        background-repeat: no-repeat;
-        background-size: contain;
-        height: @star-height;
-        position: absolute;
-        width: @star-width;
-        left: -(@star-width / 2) + (@news-button-width / 2) + (@grid-gutter-width / 2);
-        top: -(@star-height / 2) + (@news-button-height / 2);
-        z-index: @news-button-z-index - 1;
-    }
-}
-
 .btn-show-details {
     .make-md-column(4);
     .button-variant(@foreground-color; white; @foreground-color);
@@ -58,33 +31,6 @@
 .overlaymenu {
     &-admin .overlaymenu-menu-content {
         min-height: 10px;
-    }
-
-    &-news {
-        width: 350px;
-    }
-
-    &-news .overlaymenu-tip-container {
-        left: 140px;
-    }
-
-    &-news {
-        z-index: @news-button-z-index + 1;
-
-        .overlaymenu-tip {
-            height: 40px;
-            width: 20px;
-
-            &-container {
-                height: 15px;
-                left: 115px;
-                margin-top: -30px;
-            }
-        }
-
-        .activity-stream-container {
-            min-height: 200px;
-        }
     }
 
     &-details {
