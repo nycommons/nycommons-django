@@ -33,6 +33,9 @@ urlpatterns += (
     url('^activity/', include('actstream.urls')),
     url('^activity-stream/', include('inplace_activity_stream.urls')),
 
+    # Inplace
+    url(r'^inplace/', include('inplace.urls', 'inplace')),
+
     # Django.js
     url(r'^djangojs/', include('djangojs.urls')),
 
