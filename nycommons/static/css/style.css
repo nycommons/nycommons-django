@@ -6776,6 +6776,9 @@ fieldset[disabled] .overlaymenu-details .details-show-organizing.active {
   margin-top: 10px;
   padding: 5px;
 }
+.map-sidebar .sidebar-section .close {
+  float: right;
+}
 @media (max-width: 767px) {
   .map-sidebar .map-details {
     display: none !important;
