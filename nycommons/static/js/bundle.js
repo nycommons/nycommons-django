@@ -1902,7 +1902,7 @@ var sidebarHeaderContent = flight.component(function () {
     });
 });
 
-var legend = flight.component(function () {
+function defaultSidebarContentMixin () {
     this.hide = function (event) {
         this.$node.hide();
     };
@@ -1915,22 +1915,13 @@ var legend = flight.component(function () {
         this.on(document, 'sidebarHeaderContentShown', this.hide);
         this.on(document, 'sidebarHeaderContentHidden', this.show);
     });
-});
+}
+
+var legend = flight.component(function () {
+}, defaultSidebarContentMixin);
 
 var defaultSidebarContent = flight.component(function () {
-    this.hide = function (event) {
-        this.$node.hide();
-    };
-
-    this.show = function (event) {
-        this.$node.show();
-    };
-
-    this.after('initialize', function () {
-        this.on(document, 'sidebarHeaderContentShown', this.hide);
-        this.on(document, 'sidebarHeaderContentHidden', this.show);
-    });
-});
+}, defaultSidebarContentMixin);
 
 var sidebarHeaderButton = flight.component(function () {
     this.click = function (event, name) {
@@ -30333,7 +30324,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
