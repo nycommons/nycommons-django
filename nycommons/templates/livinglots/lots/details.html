@@ -21,15 +21,26 @@
 </script>
 
 <div>
-    <a href="#" class="close">Close</a>
-    <section class="details-overview"></section>
+    <div class="details-header">
+        <div class="details-header-text">
+            X properties
+        </div>
+        <div class="details-header-actions">
+            <a class="close" href="#">
+                {% trans "Close" %}
+            </a>
+            <a class="details-print" href="#">
+                {% trans "Print" %}
+            </a>
+            <a class="details-permalink" target="_blank" href="#">
+                {% trans "Link to this view" %}
+            </a>
+            <a class="details-downloads" href="#">
+                {% trans "Downloads" %}
+            </a>
+        </div>
+    </div>
+    <div class="details-body">
 
-    <section class="details-buttons hidden-print">
-        <a class="details-button details-link btn btn-default btn-block" target="_blank" href="#">
-            {% trans "Link to this view" %}
-        </a>
-        <a class="details-button details-print btn btn-default btn-block" href="#">
-            {% trans "Print" %}
-        </a>
-    </section>
+    </div>
 </div>

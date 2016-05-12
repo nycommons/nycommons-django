@@ -74,5 +74,26 @@
             display: none;
         }
 
+        .details-header {
+            .make-row(0);
+
+            &-text {
+                .make-md-column(6);
+            }
+
+            &-actions {
+                .make-md-column(6);
+                a {
+                    float: right;
+                    padding: 0 5px;
+                }
+            }
+        }
+
+        .details-body {
+            min-height: 400px;
+            min-width: 800px;
+        }
+
     }
 }
