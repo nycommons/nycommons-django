@@ -75,6 +75,10 @@ $(document).ready(function () {
             return false;
         });
     }
+
+    $('.menu-button').click(function () {
+        $('.menu-expanded').toggle();
+    });
 });
 
 
