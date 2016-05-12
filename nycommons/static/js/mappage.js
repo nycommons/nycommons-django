@@ -22,6 +22,7 @@ require('leaflet-loading');
 require('./handlebars.helpers');
 require('./map.search.js');
 require('./overlaymenu');
+require('./sidebar');
 
 
 // Watch out for IE 8

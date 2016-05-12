@@ -6235,12 +6235,6 @@ footer .footer-middle-right p:first-of-type {
     height: 10cm;
   }
 }
-.overlay-filter-button.visible-xs {
-  position: absolute;
-  right: 60px;
-  top: 10px;
-  z-index: 5000;
-}
 .overlay-news-button {
   color: black;
   background-color: transparent;
@@ -6370,12 +6364,10 @@ fieldset[disabled] .btn-show-details.active {
   min-height: 10px;
 }
 .overlaymenu-details,
-.overlaymenu-filter,
 .overlaymenu-news {
   width: 350px;
 }
 .overlaymenu-details .overlaymenu-tip-container,
-.overlaymenu-filter .overlaymenu-tip-container,
 .overlaymenu-news .overlaymenu-tip-container {
   left: 140px;
 }
@@ -6881,6 +6873,9 @@ fieldset[disabled] .overlaymenu-details .details-show-organizing.active {
     float: left;
     width: 8.33333333%;
   }
+}
+.map-sidebar .map-header-content-filters {
+  display: none;
 }
 .map-welcome {
   background-image: url('../img/welcome_texture.png');
