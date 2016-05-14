@@ -186,6 +186,13 @@ INSTALLED_APPS = (
     'livinglots_usercontent.photos',
 
     #
+    # nycdata
+    #
+    'nycdata',
+    'nycdata.citycouncildistricts',
+    'nycdata.communitydistricts',
+
+    #
     # first-party, project-specific
     #
     'activities',
