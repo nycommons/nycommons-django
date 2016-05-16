@@ -1477,6 +1477,7 @@ require('./handlebars.helpers');
 var locateButton = require('./locate').locateButton;
 require('./map.search.js');
 require('./overlaymenu');
+var searchButton = require('./search').searchButton;
 require('./sidebar');
 
 
@@ -1742,6 +1743,7 @@ $(document).ready(function () {
         prepareOverlayMenus(map);
 
         locateButton.attachTo('.map-header-locate-btn', { map: map });
+        searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
 
         $('.details-print').click(function () {
             window.print();
@@ -1804,7 +1806,7 @@ $(document).ready(function () {
     }
 });
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","./leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","./locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/locate.js","./map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","./overlaymenu":"/home/eric/Documents/596/nycommons/nycommons/static/js/overlaymenu.js","./sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js","./singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","./welcome":"/home/eric/Documents/596/nycommons/nycommons/static/js/welcome.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
+},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","./leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","./locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/locate.js","./map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","./overlaymenu":"/home/eric/Documents/596/nycommons/nycommons/static/js/overlaymenu.js","./search":"/home/eric/Documents/596/nycommons/nycommons/static/js/search.js","./sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js","./singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","./welcome":"/home/eric/Documents/596/nycommons/nycommons/static/js/welcome.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
 var _ = require('underscore');
 var proj4 = require('proj4');
 require('./proj4.defs');
@@ -1912,7 +1914,25 @@ var proj4 = require('proj4');
 
 proj4.defs('EPSG:2263', '+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs');
 
-},{"proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js":[function(require,module,exports){
+},{"proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/search.js":[function(require,module,exports){
+var flight = require('flightjs');
+
+var searchButton = flight.component(function () {
+    this.click = function (event) {
+        $(this.attr.searchBar).toggle();
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.click);
+    });
+});
+
+module.exports = {
+    searchButton: searchButton
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js":[function(require,module,exports){
 //
 // sidebar.js
 //
@@ -30372,7 +30392,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

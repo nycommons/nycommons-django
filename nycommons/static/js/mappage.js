@@ -23,6 +23,7 @@ require('./handlebars.helpers');
 var locateButton = require('./locate').locateButton;
 require('./map.search.js');
 require('./overlaymenu');
+var searchButton = require('./search').searchButton;
 require('./sidebar');
 
 
@@ -288,6 +289,7 @@ $(document).ready(function () {
         prepareOverlayMenus(map);
 
         locateButton.attachTo('.map-header-locate-btn', { map: map });
+        searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
 
         $('.details-print').click(function () {
             window.print();

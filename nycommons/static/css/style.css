@@ -6679,6 +6679,13 @@ fieldset[disabled] .overlaymenu-details .details-show-organizing.active {
     margin: 0;
   }
 }
+.map-search {
+  display: none;
+  left: 0;
+  position: absolute;
+  top: 0;
+  z-index: 5000;
+}
 .map-sidebar {
   position: absolute;
   left: 15px;
