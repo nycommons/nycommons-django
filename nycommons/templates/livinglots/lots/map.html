@@ -124,45 +124,33 @@
     </div>
 </div>
 
-<div class="overlaymenu overlaymenu-download">
-    <div class="overlaymenu-tip-container">
-        <div class="overlaymenu-tip"></div>
-    </div>
+<div class="download-menu">
+    <section style="margin-bottom: 10px;">
+        {% blocktrans %}
+            Download currently viewed lots. GeoJSON and KML are mapping 
+            formats, so you can make your own maps!
+        {% endblocktrans %}
+    </section>
 
-    <div class="overlaymenu-menu-content">
-        <section style="margin-bottom: 10px;">
-            {% blocktrans %}
-                Download currently viewed lots. GeoJSON and KML are mapping 
-                formats, so you can make your own maps!
-            {% endblocktrans %}
-        </section>
-
-        <section class="details-buttons hidden-print">
-            <a href="#" class="btn btn-default btn-block export export-csv" data-baseurl="{% url "lots:csv" %}?">
-                {% trans "spreadsheet" %}
-            </a>
-            <a href="#" class="btn btn-default btn-block export export-geojson" data-baseurl="{% url "lots:geojson" %}?download=yes&">
-                {% trans "GeoJSON" %}
-            </a>
-            <a href="#" class="btn btn-default btn-block export export-kml" data-baseurl="{% url "lots:kml" %}?">
-                {% trans "KML" %}
-            </a>
-        </section>
-    </div>
+    <section class="details-buttons hidden-print">
+        <a href="#" class="btn btn-default btn-block export export-csv" data-baseurl="{% url "lots:csv" %}?">
+            {% trans "spreadsheet" %}
+        </a>
+        <a href="#" class="btn btn-default btn-block export export-geojson" data-baseurl="{% url "lots:geojson" %}?download=yes&">
+            {% trans "GeoJSON" %}
+        </a>
+        <a href="#" class="btn btn-default btn-block export export-kml" data-baseurl="{% url "lots:kml" %}?">
+            {% trans "KML" %}
+        </a>
+    </section>
 </div>
 
-<div class="overlaymenu overlaymenu-admin">
-    <div class="overlaymenu-tip-container">
-        <div class="overlaymenu-tip"></div>
-    </div>
-
-    <div class="overlaymenu-menu-content">
-        <section>
-            <a class="admin-button-add-lot btn btn-default btn-block">
-                {% trans "add lot" %}
-            </a>
-        </section>
-    </div>
+<div class="admin-menu">
+    <section>
+        <a class="admin-button-add-lot btn btn-default btn-block">
+            {% trans "add lot" %}
+        </a>
+    </section>
 </div>
 
 <div class="map-search">

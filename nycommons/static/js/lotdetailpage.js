@@ -13,7 +13,6 @@ require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 var mapstyles = require('./map.styles');
 var StreetView = require('./streetview');
-require('./overlaymenu');
 
 
 var vectorLayerOptions = {
@@ -100,10 +99,6 @@ $(document).ready(function () {
             $('.lot-detail-header-streetview-error')
         );
     }
-
-    $('.overlay-nearby-button').overlaymenu({
-        menu: '.overlaymenu-nearby'
-    });
 
     $('.btn-add-to-group').click(function () {
         if (!confirm("Group these two lots? This will move notes, organizers, and other content to the group and is very difficult to undo.")) {

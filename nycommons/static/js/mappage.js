@@ -22,7 +22,6 @@ require('leaflet-loading');
 require('./handlebars.helpers');
 var locateButton = require('./locate').locateButton;
 require('./map.search.js');
-require('./overlaymenu');
 var searchButton = require('./search').searchButton;
 require('./sidebar');
 
@@ -226,35 +225,24 @@ function setFiltersUIFromQueryParams(params) {
     }
 }
 
-function prepareOverlayMenus(map) {
-    $('.overlay-download-button').overlaymenu({
-        menu: '.overlaymenu-download'
+// TODO button no longer exists but we should load recent activity
+/*
+var spinner = new Spinner().spin($('.activity-stream')[0]);
+
+var url = Django.url('activity_list');
+$('.activity-stream').load(url, function () {
+    $('.action-list').infinitescroll({
+        loading: {
+            finishedMsg: 'No more activities to load.'
+        },
+        behavior: 'local',
+        binder: $('.overlaymenu-news .overlaymenu-menu-content'),
+        itemSelector: 'li.action',
+        navSelector: '.activity-stream-nav',
+        nextSelector: '.activity-stream-nav a:first'
     });
-
-    // TODO button no longer exists but we should load recent activity
-    $('.overlay-news-button')
-        .overlaymenu({
-            menu: '.overlaymenu-news'
-        })
-        .on('overlaymenuopen', function () {
-            var spinner = new Spinner().spin($('.activity-stream')[0]);
-
-            var url = Django.url('activity_list');
-            $('.activity-stream').load(url, function () {
-                $('.action-list').infinitescroll({
-                    loading: {
-                        finishedMsg: 'No more activities to load.'
-                    },
-                    behavior: 'local',
-                    binder: $('.overlaymenu-news .overlaymenu-menu-content'),
-                    itemSelector: 'li.action',
-                    navSelector: '.activity-stream-nav',
-                    nextSelector: '.activity-stream-nav a:first'
-                });
-            });
-        });
-
-}
+});
+*/
 
 $(document).ready(function () {
     if ($('.map-page').length > 0) {
@@ -285,8 +273,6 @@ $(document).ready(function () {
         initializeNYCHA(map);
 
         map.addLotsLayer();
-
-        prepareOverlayMenus(map);
 
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
