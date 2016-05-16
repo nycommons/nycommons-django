@@ -552,9 +552,6 @@ L.LotMap = L.Map.extend({
         onEachFeature: function (feature, layer) {
             layer.on({
                 'click': function (event) {
-                    // Trigger a click on the body to close all overlaymenus
-                    $('body').trigger('click');
-
                     var latlng = event.latlng,
                         x = this._map.latLngToContainerPoint(latlng).x,
                         y = this._map.latLngToContainerPoint(latlng).y - 100,
@@ -1068,7 +1065,6 @@ require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 var mapstyles = require('./map.styles');
 var StreetView = require('./streetview');
-require('./overlaymenu');
 
 
 var vectorLayerOptions = {
@@ -1156,10 +1152,6 @@ $(document).ready(function () {
         );
     }
 
-    $('.overlay-nearby-button').overlaymenu({
-        menu: '.overlaymenu-nearby'
-    });
-
     $('.btn-add-to-group').click(function () {
         if (!confirm("Group these two lots? This will move notes, organizers, and other content to the group and is very difficult to undo.")) {
             return false;
@@ -1191,7 +1183,7 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 });
 
-},{"./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./overlaymenu":"/home/eric/Documents/596/nycommons/nycommons/static/js/overlaymenu.js","./streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
+},{"./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
 //
 // main.js
 //
@@ -1463,7 +1455,6 @@ var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
 var singleminded = require('./singleminded');
-var initWelcome = require('./welcome').init;
 var oasis = require('./oasis');
 var filters = require('./filters');
 var styles = require('./map.styles');
@@ -1476,7 +1467,6 @@ require('leaflet-loading');
 require('./handlebars.helpers');
 var locateButton = require('./locate').locateButton;
 require('./map.search.js');
-require('./overlaymenu');
 var searchButton = require('./search').searchButton;
 require('./sidebar');
 
@@ -1680,35 +1670,24 @@ function setFiltersUIFromQueryParams(params) {
     }
 }
 
-function prepareOverlayMenus(map) {
-    $('.overlay-download-button').overlaymenu({
-        menu: '.overlaymenu-download'
+// TODO button no longer exists but we should load recent activity
+/*
+var spinner = new Spinner().spin($('.activity-stream')[0]);
+
+var url = Django.url('activity_list');
+$('.activity-stream').load(url, function () {
+    $('.action-list').infinitescroll({
+        loading: {
+            finishedMsg: 'No more activities to load.'
+        },
+        behavior: 'local',
+        binder: $('.overlaymenu-news .overlaymenu-menu-content'),
+        itemSelector: 'li.action',
+        navSelector: '.activity-stream-nav',
+        nextSelector: '.activity-stream-nav a:first'
     });
-
-    // TODO button no longer exists but we should load recent activity
-    $('.overlay-news-button')
-        .overlaymenu({
-            menu: '.overlaymenu-news'
-        })
-        .on('overlaymenuopen', function () {
-            var spinner = new Spinner().spin($('.activity-stream')[0]);
-
-            var url = Django.url('activity_list');
-            $('.activity-stream').load(url, function () {
-                $('.action-list').infinitescroll({
-                    loading: {
-                        finishedMsg: 'No more activities to load.'
-                    },
-                    behavior: 'local',
-                    binder: $('.overlaymenu-news .overlaymenu-menu-content'),
-                    itemSelector: 'li.action',
-                    navSelector: '.activity-stream-nav',
-                    nextSelector: '.activity-stream-nav a:first'
-                });
-            });
-        });
-
-}
+});
+*/
 
 $(document).ready(function () {
     if ($('.map-page').length > 0) {
@@ -1739,8 +1718,6 @@ $(document).ready(function () {
         initializeNYCHA(map);
 
         map.addLotsLayer();
-
-        prepareOverlayMenus(map);
 
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
@@ -1794,8 +1771,6 @@ $(document).ready(function () {
             e.preventDefault();
         });
 
-        initWelcome();
-
         $('.admin-button-add-lot').click(function () {
             map.enterLotAddMode();
         });
@@ -1806,7 +1781,7 @@ $(document).ready(function () {
     }
 });
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","./leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","./locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/locate.js","./map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","./overlaymenu":"/home/eric/Documents/596/nycommons/nycommons/static/js/overlaymenu.js","./search":"/home/eric/Documents/596/nycommons/nycommons/static/js/search.js","./sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js","./singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","./welcome":"/home/eric/Documents/596/nycommons/nycommons/static/js/welcome.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
+},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","./leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","./locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/locate.js","./map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","./search":"/home/eric/Documents/596/nycommons/nycommons/static/js/search.js","./sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/sidebar.js","./singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
 var _ = require('underscore');
 var proj4 = require('proj4');
 require('./proj4.defs');
@@ -1828,88 +1803,7 @@ module.exports = {
     }
 };
 
-},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/overlaymenu.js":[function(require,module,exports){
-//
-// overlaymenu.js
-//
-// Overlay / dropdown menus, like modals but less intrusive
-//
-
-var _ = require('underscore');
-
-
-function show(button, menu) {
-    var offset = button.offset(),
-        outerWidth = button.outerWidth(),
-        outerHeight = button.outerHeight(),
-        menuWidth = menu.outerWidth();
-
-    button.trigger('overlaymenuopen');
-
-    menu
-        .show()
-        .offset({
-            left: offset.left + outerWidth - menuWidth,
-            top: offset.top + outerHeight + 13
-        });
-
-    // If user hits <Esc>, hide menu
-    $('body')
-        .on('keyup.overlaymenu', function (event) {
-            if (event.which === 27) {
-                hide(button, menu);
-            }
-        });
-}
-
-function hide(button, menu) {
-    button.trigger('overlaymenuclose');
-    menu.hide();
-
-    // Remove event handler that will hide menus
-    $('body').off('keyup.overlaymenu');
-}
-
-function isVisible(menu) {
-    return menu.is(':visible');
-}
-
-function isInMenu(target, menu) {
-    return (target[0] === menu[0] ||
-            _.find(target.parents(), function (ele) { return ele === menu[0]; }));
-}
-
-$.fn.overlaymenu = function (options) {
-    var button = this,
-        menu = $(options.menu);
-
-    $('*').click(function (e) {
-        var target = $(e.target);
-
-        // If user not clicking in menu, consider hiding or showing it
-        if (!isInMenu(target, menu)) {
-            if (_.contains(button, target[0])) {
-                // If button clicked, show or hide the menu appropriately
-                if (isVisible(menu)) {
-                    hide(target, menu);
-                }
-                else {
-                    show(target, menu);
-                }
-                return false;
-            }
-            else {
-                // Something else was clicked--hide the menu
-                if (isVisible(menu)) {
-                    hide(button, menu);
-                }
-            }
-        }
-    });
-    return this;
-};
-
-},{"underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js":[function(require,module,exports){
+},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js":[function(require,module,exports){
 var proj4 = require('proj4');
 
 proj4.defs('EPSG:2263', '+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs');
@@ -2095,22 +1989,6 @@ function load_streetview(lon, lat, $elem, $errorBox) {
 
 module.exports = {
     load_streetview: load_streetview
-};
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/welcome.js":[function(require,module,exports){
-//
-// Welcome header
-//
-
-module.exports = {
-    init: function () {
-        $('.map-welcome-toggle').click(function (e) {
-            $('.map-welcome').toggleClass('closed');
-            $('.map-welcome-body').slideToggle();
-            e.preventDefault();
-            return false;
-        });
-    }
 };
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
@@ -30392,7 +30270,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
