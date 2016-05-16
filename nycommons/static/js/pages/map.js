@@ -8,8 +8,6 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var singleminded = require('../singleminded');
-var oasis = require('../oasis');
 var filters = require('../filters');
 var styles = require('../map.styles');
 
@@ -23,6 +21,8 @@ require('../map.search.js');
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
+var oasis = require('../lib/oasis');
+var singleminded = require('../lib/singleminded');
 
 
 // Watch out for IE 8

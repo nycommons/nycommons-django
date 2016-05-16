@@ -1121,7 +1121,116 @@ L.lotPolygon = function (latlngs, options) {
     return new L.LotPolygon(latlngs, options);
 };
 
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
+},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
+var _ = require('underscore');
+var proj4 = require('proj4');
+require('./proj4.defs');
+
+var baseUrl = 'http://www.oasisnyc.net/map.aspx',
+    vacantLotsParams = {
+        categories: 'TRANSREF,PARKS_OPENSPACE,PROPERTY_INFO,BOUNDARIES',
+        etabs: 1,
+        mainlayers: 'LU_VACANT,NYCT_bus,LOTS,Cache_Transit',
+        labellayers: 'PARKS',
+        zoom: 8
+    };
+
+module.exports = {
+    vacantLotsUrl: function (latitude, longitude) {
+        var xy = proj4('EPSG:4326', 'EPSG:2263').forward([longitude, latitude]);
+        var params = _.extend({}, vacantLotsParams, { x: xy[0], y: xy[1] });
+        return [baseUrl, $.param(params)].join('?');
+    }
+};
+
+},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/proj4.defs.js":[function(require,module,exports){
+var proj4 = require('proj4');
+
+proj4.defs('EPSG:2263', '+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs');
+
+},{"proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js":[function(require,module,exports){
+var thoughts = {};
+
+function forget(name) {
+    var request = thoughts[name];
+
+    // If request exists and does not have a DONE state, abort it
+    if (request && request.readyState != 4) {
+        request.abort();
+    }
+
+    thoughts[name] = null;
+}
+
+function remember(params) {
+    var name = params.name,
+        jqxhr = params.jqxhr;
+
+    forget(name);
+
+    jqxhr.done(function() {
+        // Don't bother remembering requests we've finished
+        forget(name);
+    });
+    thoughts[name] = jqxhr;
+}
+
+module.exports = {
+    forget: forget,
+    remember: remember
+};
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js":[function(require,module,exports){
+
+
+function get_heading(lon0, lat0, lon1, lat1) {
+    // Don't bother with great-circle calculations--should be close!
+    var r = Math.atan2(-(lon1 - lon0), (lat1 - lat0));
+    if (r < 0) {
+        r += 2 * Math.PI;
+    }
+    var d = r * (180 / Math.PI);
+
+    // Convert to google's heading: "True north is 0°, east is 90°,
+    // south is 180°, west is 270°."
+    if (d >= 45 && d < 135) { d += 180; }
+    else if (d >= 225 && d < 315) { d -= 180; }
+    return d;
+}
+
+function load_streetview(lon, lat, $elem, $errorBox) {
+    var service = new google.maps.StreetViewService();
+
+    if (!(lon && lat)) {
+        return;
+    }
+    var latLng = new google.maps.LatLng(lat, lon);
+
+    service.getPanoramaByLocation(latLng, 50, function (result, status) {
+        if (status === google.maps.StreetViewStatus.OK) {
+            var lon0 = result.location.latLng.lng(),
+                lat0 = result.location.latLng.lat();
+
+            var pano = new google.maps.StreetViewPanorama($elem[0], {
+                pano: result.location.pano,
+                pov: {
+                    heading: get_heading(lon0, lat0, lon, lat),
+                    pitch: 0,
+                },
+            });
+        }
+        else {
+            $elem.addClass('no-streetview');
+            $errorBox.show();
+        }
+    });
+}
+
+module.exports = {
+    load_streetview: load_streetview
+};
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
 //
 // main.js
 //
@@ -1381,29 +1490,7 @@ module.exports = {
     init: init
 };
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
-var _ = require('underscore');
-var proj4 = require('proj4');
-require('./proj4.defs');
-
-var baseUrl = 'http://www.oasisnyc.net/map.aspx',
-    vacantLotsParams = {
-        categories: 'TRANSREF,PARKS_OPENSPACE,PROPERTY_INFO,BOUNDARIES',
-        etabs: 1,
-        mainlayers: 'LU_VACANT,NYCT_bus,LOTS,Cache_Transit',
-        labellayers: 'PARKS',
-        zoom: 8
-    };
-
-module.exports = {
-    vacantLotsUrl: function (latitude, longitude) {
-        var xy = proj4('EPSG:4326', 'EPSG:2263').forward([longitude, latitude]);
-        var params = _.extend({}, vacantLotsParams, { x: xy[0], y: xy[1] });
-        return [baseUrl, $.param(params)].join('?');
-    }
-};
-
-},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js":[function(require,module,exports){
+},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js":[function(require,module,exports){
 //
 // addorganizer.js
 //
@@ -1447,7 +1534,7 @@ require('leaflet-dataoptions');
 require('../leaflet.lotlayer');
 require('../leaflet.lotmarker');
 var mapstyles = require('../map.styles');
-var StreetView = require('../streetview');
+var StreetView = require('../lib/streetview');
 
 
 var vectorLayerOptions = {
@@ -1566,7 +1653,7 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 });
 
-},{"../leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","../leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","../streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","../leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -1577,8 +1664,6 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var singleminded = require('../singleminded');
-var oasis = require('../oasis');
 var filters = require('../filters');
 var styles = require('../map.styles');
 
@@ -1592,6 +1677,8 @@ require('../map.search.js');
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
+var oasis = require('../lib/oasis');
+var singleminded = require('../lib/singleminded');
 
 
 // Watch out for IE 8
@@ -1904,94 +1991,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","../oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","../singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js":[function(require,module,exports){
-var proj4 = require('proj4');
-
-proj4.defs('EPSG:2263', '+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs');
-
-},{"proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js":[function(require,module,exports){
-var thoughts = {};
-
-function forget(name) {
-    var request = thoughts[name];
-
-    // If request exists and does not have a DONE state, abort it
-    if (request && request.readyState != 4) {
-        request.abort();
-    }
-
-    thoughts[name] = null;
-}
-
-function remember(params) {
-    var name = params.name,
-        jqxhr = params.jqxhr;
-
-    forget(name);
-
-    jqxhr.done(function() {
-        // Don't bother remembering requests we've finished
-        forget(name);
-    });
-    thoughts[name] = jqxhr;
-}
-
-module.exports = {
-    forget: forget,
-    remember: remember
-};
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js":[function(require,module,exports){
-
-
-function get_heading(lon0, lat0, lon1, lat1) {
-    // Don't bother with great-circle calculations--should be close!
-    var r = Math.atan2(-(lon1 - lon0), (lat1 - lat0));
-    if (r < 0) {
-        r += 2 * Math.PI;
-    }
-    var d = r * (180 / Math.PI);
-
-    // Convert to google's heading: "True north is 0°, east is 90°,
-    // south is 180°, west is 270°."
-    if (d >= 45 && d < 135) { d += 180; }
-    else if (d >= 225 && d < 315) { d -= 180; }
-    return d;
-}
-
-function load_streetview(lon, lat, $elem, $errorBox) {
-    var service = new google.maps.StreetViewService();
-
-    if (!(lon && lat)) {
-        return;
-    }
-    var latLng = new google.maps.LatLng(lat, lon);
-
-    service.getPanoramaByLocation(latLng, 50, function (result, status) {
-        if (status === google.maps.StreetViewStatus.OK) {
-            var lon0 = result.location.latLng.lng(),
-                lat0 = result.location.latLng.lat();
-
-            var pano = new google.maps.StreetViewPanorama($elem[0], {
-                pano: result.location.pano,
-                pov: {
-                    heading: get_heading(lon0, lat0, lon, lat),
-                    pitch: 0,
-                },
-            });
-        }
-        else {
-            $elem.addClass('no-streetview');
-            $errorBox.show();
-        }
-    });
-}
-
-module.exports = {
-    load_streetview: load_streetview
-};
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
+},{"../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.2
  * http://getbootstrap.com/javascript/#buttons
@@ -30270,7 +30270,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

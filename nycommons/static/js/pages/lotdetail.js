@@ -12,7 +12,7 @@ require('leaflet-dataoptions');
 require('../leaflet.lotlayer');
 require('../leaflet.lotmarker');
 var mapstyles = require('../map.styles');
-var StreetView = require('../streetview');
+var StreetView = require('../lib/streetview');
 
 
 var vectorLayerOptions = {
