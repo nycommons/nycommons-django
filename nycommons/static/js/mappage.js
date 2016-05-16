@@ -9,7 +9,6 @@ var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
 var singleminded = require('./singleminded');
-var initWelcome = require('./welcome').init;
 var oasis = require('./oasis');
 var filters = require('./filters');
 var styles = require('./map.styles');
@@ -325,8 +324,6 @@ $(document).ready(function () {
             window.location.href = url;
             e.preventDefault();
         });
-
-        initWelcome();
 
         $('.admin-button-add-lot').click(function () {
             map.enterLotAddMode();
