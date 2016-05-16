@@ -19,10 +19,10 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('./handlebars.helpers');
-var locateButton = require('./locate').locateButton;
 require('./map.search.js');
-var searchButton = require('./search').searchButton;
-require('./sidebar');
+var locateButton = require('./components/locate').locateButton;
+var searchButton = require('./components/search').searchButton;
+require('./components/sidebar');
 
 
 // Watch out for IE 8
