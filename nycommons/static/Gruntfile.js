@@ -9,14 +9,14 @@ module.exports = function(grunt) {
                     watch: true
                 },
                 src: 'js/main.js',
-                dest: 'js/bundle.dev.js'
+                dest: 'js/dist/bundle.dev.js'
             },
             production: {
                 options: {
                     watch: true
                 },
                 src: '<%= browserify.dev.src %>',
-                dest: 'js/bundle.js'
+                dest: 'js/dist/bundle.js'
             }
         },
 
@@ -62,7 +62,7 @@ module.exports = function(grunt) {
         uglify: {
             production: {
                 src: '<%= browserify.production.dest %>',
-                dest: 'js/bundle.min.js'
+                dest: 'js/dist/bundle.min.js'
             }
         },
 

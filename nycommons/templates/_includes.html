@@ -14,7 +14,7 @@
 <script src="//maps.googleapis.com/maps/api/js?sensor=false"></script>
 
 {% if debug %}
-    <script src="{% static "js/bundle.dev.js" %}"></script>
+    <script src="{% static "js/dist/bundle.dev.js" %}"></script>
 {% else %}
-    <script src="{% static "js/bundle.min.js" %}"></script>
+    <script src="{% static "js/dist/bundle.min.js" %}"></script>
 {% endif %}

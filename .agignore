@@ -1,4 +1,5 @@
 node_modules
+dist/*
 style.dev.css
 style.min.css
 style.css
