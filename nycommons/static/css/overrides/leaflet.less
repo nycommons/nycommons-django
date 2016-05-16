@@ -21,14 +21,48 @@
     }
 }
 
+.leaflet-bottom .leaflet-control {
+    margin-bottom: 3px;
+}
+
+.leaflet-right .leaflet-control {
+    margin-right: 3px;
+}
+
+.leaflet-bar {
+    border: 0;
+    clear: none;
+    float: right;
+
+    a {
+        border: 0;
+        border-radius: 0;
+        float: left;
+        margin-right: 3px;
+    }
+}
+
+.leaflet-touch {
+    .leaflet-bar {
+        .leaflet-bar();
+    }
+}
+
 .leaflet-control-zoom {
     a {
-        color: @foreground-color;
+        background-color: @foreground-color;
+        color: @white;
     }
 }
 
 .leaflet-control-loading {
     background-image: data-uri("../img/loading.gif");
+}
+
+.leaflet-control-layers {
+    clear: none;
+    float: right;
+    margin: 0 3px 0 0;
 }
 
 .leaflet-control-layers-toggle {
