@@ -191,6 +191,8 @@ INSTALLED_APPS = (
     'nycdata',
     'nycdata.citycouncildistricts',
     'nycdata.communitydistricts',
+    'nycdata.parcels',
+    'nycdata.postoffices',
 
     #
     # first-party, project-specific
