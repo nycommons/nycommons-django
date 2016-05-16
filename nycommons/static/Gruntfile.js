@@ -27,7 +27,7 @@ module.exports = function(grunt) {
             },
             minify: {
                 src: '<%= less.production.dest %>',
-                dest: 'css/style.min.css'
+                dest: 'css/dist/style.min.css'
             }
         },
 
@@ -51,11 +51,11 @@ module.exports = function(grunt) {
                     sourceMapFileInline: true
                 },
                 src: 'css/style.less',
-                dest: 'css/style.dev.css'
+                dest: 'css/dist/style.dev.css'
             },
             production: {
                 src: '<%= less.dev.src %>',
-                dest: 'css/style.css'
+                dest: 'css/dist/style.css'
             }
         },
 
