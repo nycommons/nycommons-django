@@ -20,6 +20,7 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('./handlebars.helpers');
+var locateButton = require('./locate').locateButton;
 require('./map.search.js');
 require('./overlaymenu');
 require('./sidebar');
@@ -285,6 +286,8 @@ $(document).ready(function () {
         map.addLotsLayer();
 
         prepareOverlayMenus(map);
+
+        locateButton.attachTo('.map-header-locate-btn', { map: map });
 
         $('.details-print').click(function () {
             window.print();
