@@ -9,10 +9,10 @@ var L = require('leaflet');
 
 require('leaflet-dataoptions');
 
-require('./leaflet.lotlayer');
-require('./leaflet.lotmarker');
-var mapstyles = require('./map.styles');
-var StreetView = require('./streetview');
+require('../leaflet.lotlayer');
+require('../leaflet.lotmarker');
+var mapstyles = require('../map.styles');
+var StreetView = require('../streetview');
 
 
 var vectorLayerOptions = {

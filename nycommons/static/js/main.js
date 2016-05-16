@@ -85,6 +85,6 @@ $(document).ready(function () {
 /*
  * Page-specific modules
  */
-require('./addorganizer.js');
-require('./mappage.js');
-require('./lotdetailpage.js');
+require('./pages/addorganizer.js');
+require('./pages/map.js');
+require('./pages/lotdetail.js');

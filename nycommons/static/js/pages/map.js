@@ -8,21 +8,21 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var singleminded = require('./singleminded');
-var oasis = require('./oasis');
-var filters = require('./filters');
-var styles = require('./map.styles');
+var singleminded = require('../singleminded');
+var oasis = require('../oasis');
+var filters = require('../filters');
+var styles = require('../map.styles');
 
-require('./leaflet.lotmap');
+require('../leaflet.lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
-require('./handlebars.helpers');
-require('./map.search.js');
-var locateButton = require('./components/locate').locateButton;
-var searchButton = require('./components/search').searchButton;
-require('./components/sidebar');
+require('../handlebars.helpers');
+require('../map.search.js');
+var locateButton = require('../components/locate').locateButton;
+var searchButton = require('../components/search').searchButton;
+require('../components/sidebar');
 
 
 // Watch out for IE 8

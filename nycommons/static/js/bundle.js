@@ -1,33 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/addorganizer.js":[function(require,module,exports){
-//
-// addorganizer.js
-//
-// Scripts that only run when adding an organizer.
-//
-
-function showOrHideFacebookPage() {
-    // Only show facebook page input if organizer is a cbo
-    var type = $(':input[name=type] option:selected').text(),
-        $facebookPage = $(':input[name=facebook_page]').parents('.form-group');
-
-    if (type === 'community based organization') {
-        $facebookPage.show();
-    }
-    else {
-        $facebookPage.hide();
-    }
-}
-
-$(document).ready(function () {
-    if ($('.add-organizer-page').length > 0) {
-        showOrHideFacebookPage();
-
-        // When the type changes, show or hide facebook_page accordingly
-        $(':input[name=type]').change(showOrHideFacebookPage);
-    }
-});
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
 var flight = require('flightjs');
 require('leaflet-usermarker');
 
@@ -1150,141 +1121,7 @@ L.lotPolygon = function (latlngs, options) {
     return new L.LotPolygon(latlngs, options);
 };
 
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lotdetailpage.js":[function(require,module,exports){
-//
-// lotdetailpage.js
-//
-// Scripts that only run on the lot detail page.
-//
-
-var Handlebars = require('handlebars');
-var L = require('leaflet');
-
-require('leaflet-dataoptions');
-
-require('./leaflet.lotlayer');
-require('./leaflet.lotmarker');
-var mapstyles = require('./map.styles');
-var StreetView = require('./streetview');
-
-
-var vectorLayerOptions = {
-    serverZooms: [16],
-    unique: function (feature) {
-        return feature.id;
-    }
-};
-
-function getLotLayerOptions(lotPk) {
-    return {
-        pointToLayer: function (feature, latlng) {
-            var options = {};
-            if (feature.properties.has_organizers) {
-                options.hasOrganizers = true;
-            }
-            return L.lotMarker(latlng, options);
-        },
-        style: function (feature) {
-            var style = {
-                fillOpacity: 0.2,
-                stroke: false
-            };
-            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
-
-            // Style this lot distinctly
-            if (feature.properties.id === lotPk) {
-                style.fillOpacity = 1;
-            }
-            return style;
-        }
-    };
-}
-
-function addBaseLayer(map) {
-    var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-}
-
-function addLotsLayer(map) {
-    var url = map.options.lotsurl,
-        lotLayerOptions = getLotLayerOptions(map.options.lotPk);
-    var lotsLayer = L.lotLayer(url, vectorLayerOptions, lotLayerOptions).addTo(map);
-}
-
-function initFacebookLink($link) {
-    var url = 'http://www.facebook.com/sharer/sharer.php?' + $.param({
-        u: window.location.href
-    });
-    $link.attr('href', url);
-}
-
-function initTwitterLink($link) {
-    var url = 'http://twitter.com/intent/tweet?' + $.param({
-        related: '596acres',
-        text: $link.data('tweet'),
-        url: window.location.href
-    });
-    $link.attr('href', url);
-}
-
-$(document).ready(function () {
-    if ($('.lot-detail-page').length > 0) {
-        var map = L.map('lot-detail-map', {
-            doubleClickZoom: false,
-            dragging: false,
-            scrollWheelZoom: false,
-            touchZoom: false
-        });
-
-        var bbox = map.options.bbox;
-        if (bbox) {
-            map.fitBounds([
-                [bbox[1], bbox[0]],   
-                [bbox[3], bbox[2]]   
-            ], { padding: [20, 20], maxZoom: 18 });
-        }
-
-        addBaseLayer(map);
-        addLotsLayer(map);
-        StreetView.load_streetview(
-            $('.lot-detail-header-image').data('lon'),
-            $('.lot-detail-header-image').data('lat'),
-            $('.lot-detail-header-image'),
-            $('.lot-detail-header-streetview-error')
-        );
-    }
-
-    $('.btn-add-to-group').click(function () {
-        if (!confirm("Group these two lots? This will move notes, organizers, and other content to the group and is very difficult to undo.")) {
-            return false;
-        }
-        var url = Django.url('lots:add_to_group', { pk: $(this).data('lot') });
-        $.post(url, { lot_to_add: $(this).data('lot-to-add') }, function (data) {
-            window.location = Django.url('lots:lot_detail', { pk: data.group });
-        });
-        return false;
-    });
-
-    $('.btn-remove-from-group').click(function () {
-        if (!confirm("Remove this lot from the group?")) {
-            return false;
-        }
-        var url = Django.url('lots:remove_from_group', { pk: $(this).data('lot') });
-        $.post(url, {}, function (data) {
-            window.location = Django.url('lots:lot_detail', { pk: data.former_group });
-        });
-        return false;
-    });
-
-    $('.btn-show-private-organizers').click(function () {
-        $('.organizer-list-private').slideToggle();
-        return false;
-    });
-
-    initFacebookLink($('.share-facebook'));
-    initTwitterLink($('.share-twitter'));
-});
-
-},{"./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
+},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/main.js":[function(require,module,exports){
 //
 // main.js
 //
@@ -1372,11 +1209,11 @@ $(document).ready(function () {
 /*
  * Page-specific modules
  */
-require('./addorganizer.js');
-require('./mappage.js');
-require('./lotdetailpage.js');
+require('./pages/addorganizer.js');
+require('./pages/map.js');
+require('./pages/lotdetail.js');
 
-},{"./addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/addorganizer.js","./lotdetailpage.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/lotdetailpage.js","./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./mappage.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/mappage.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js":[function(require,module,exports){
+},{"./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./pages/addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js","./pages/lotdetail.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js","./pages/map.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js":[function(require,module,exports){
 var L = require('leaflet');
 
 var geocode = require('./geocode').geocode;
@@ -1544,7 +1381,192 @@ module.exports = {
     init: init
 };
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/mappage.js":[function(require,module,exports){
+},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
+var _ = require('underscore');
+var proj4 = require('proj4');
+require('./proj4.defs');
+
+var baseUrl = 'http://www.oasisnyc.net/map.aspx',
+    vacantLotsParams = {
+        categories: 'TRANSREF,PARKS_OPENSPACE,PROPERTY_INFO,BOUNDARIES',
+        etabs: 1,
+        mainlayers: 'LU_VACANT,NYCT_bus,LOTS,Cache_Transit',
+        labellayers: 'PARKS',
+        zoom: 8
+    };
+
+module.exports = {
+    vacantLotsUrl: function (latitude, longitude) {
+        var xy = proj4('EPSG:4326', 'EPSG:2263').forward([longitude, latitude]);
+        var params = _.extend({}, vacantLotsParams, { x: xy[0], y: xy[1] });
+        return [baseUrl, $.param(params)].join('?');
+    }
+};
+
+},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js":[function(require,module,exports){
+//
+// addorganizer.js
+//
+// Scripts that only run when adding an organizer.
+//
+
+function showOrHideFacebookPage() {
+    // Only show facebook page input if organizer is a cbo
+    var type = $(':input[name=type] option:selected').text(),
+        $facebookPage = $(':input[name=facebook_page]').parents('.form-group');
+
+    if (type === 'community based organization') {
+        $facebookPage.show();
+    }
+    else {
+        $facebookPage.hide();
+    }
+}
+
+$(document).ready(function () {
+    if ($('.add-organizer-page').length > 0) {
+        showOrHideFacebookPage();
+
+        // When the type changes, show or hide facebook_page accordingly
+        $(':input[name=type]').change(showOrHideFacebookPage);
+    }
+});
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js":[function(require,module,exports){
+//
+// lotdetailpage.js
+//
+// Scripts that only run on the lot detail page.
+//
+
+var Handlebars = require('handlebars');
+var L = require('leaflet');
+
+require('leaflet-dataoptions');
+
+require('../leaflet.lotlayer');
+require('../leaflet.lotmarker');
+var mapstyles = require('../map.styles');
+var StreetView = require('../streetview');
+
+
+var vectorLayerOptions = {
+    serverZooms: [16],
+    unique: function (feature) {
+        return feature.id;
+    }
+};
+
+function getLotLayerOptions(lotPk) {
+    return {
+        pointToLayer: function (feature, latlng) {
+            var options = {};
+            if (feature.properties.has_organizers) {
+                options.hasOrganizers = true;
+            }
+            return L.lotMarker(latlng, options);
+        },
+        style: function (feature) {
+            var style = {
+                fillOpacity: 0.2,
+                stroke: false
+            };
+            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+
+            // Style this lot distinctly
+            if (feature.properties.id === lotPk) {
+                style.fillOpacity = 1;
+            }
+            return style;
+        }
+    };
+}
+
+function addBaseLayer(map) {
+    var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+}
+
+function addLotsLayer(map) {
+    var url = map.options.lotsurl,
+        lotLayerOptions = getLotLayerOptions(map.options.lotPk);
+    var lotsLayer = L.lotLayer(url, vectorLayerOptions, lotLayerOptions).addTo(map);
+}
+
+function initFacebookLink($link) {
+    var url = 'http://www.facebook.com/sharer/sharer.php?' + $.param({
+        u: window.location.href
+    });
+    $link.attr('href', url);
+}
+
+function initTwitterLink($link) {
+    var url = 'http://twitter.com/intent/tweet?' + $.param({
+        related: '596acres',
+        text: $link.data('tweet'),
+        url: window.location.href
+    });
+    $link.attr('href', url);
+}
+
+$(document).ready(function () {
+    if ($('.lot-detail-page').length > 0) {
+        var map = L.map('lot-detail-map', {
+            doubleClickZoom: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            touchZoom: false
+        });
+
+        var bbox = map.options.bbox;
+        if (bbox) {
+            map.fitBounds([
+                [bbox[1], bbox[0]],   
+                [bbox[3], bbox[2]]   
+            ], { padding: [20, 20], maxZoom: 18 });
+        }
+
+        addBaseLayer(map);
+        addLotsLayer(map);
+        StreetView.load_streetview(
+            $('.lot-detail-header-image').data('lon'),
+            $('.lot-detail-header-image').data('lat'),
+            $('.lot-detail-header-image'),
+            $('.lot-detail-header-streetview-error')
+        );
+    }
+
+    $('.btn-add-to-group').click(function () {
+        if (!confirm("Group these two lots? This will move notes, organizers, and other content to the group and is very difficult to undo.")) {
+            return false;
+        }
+        var url = Django.url('lots:add_to_group', { pk: $(this).data('lot') });
+        $.post(url, { lot_to_add: $(this).data('lot-to-add') }, function (data) {
+            window.location = Django.url('lots:lot_detail', { pk: data.group });
+        });
+        return false;
+    });
+
+    $('.btn-remove-from-group').click(function () {
+        if (!confirm("Remove this lot from the group?")) {
+            return false;
+        }
+        var url = Django.url('lots:remove_from_group', { pk: $(this).data('lot') });
+        $.post(url, {}, function (data) {
+            window.location = Django.url('lots:lot_detail', { pk: data.former_group });
+        });
+        return false;
+    });
+
+    $('.btn-show-private-organizers').click(function () {
+        $('.organizer-list-private').slideToggle();
+        return false;
+    });
+
+    initFacebookLink($('.share-facebook'));
+    initTwitterLink($('.share-twitter'));
+});
+
+},{"../leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","../leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","../streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -1555,21 +1577,21 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var singleminded = require('./singleminded');
-var oasis = require('./oasis');
-var filters = require('./filters');
-var styles = require('./map.styles');
+var singleminded = require('../singleminded');
+var oasis = require('../oasis');
+var filters = require('../filters');
+var styles = require('../map.styles');
 
-require('./leaflet.lotmap');
+require('../leaflet.lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
-require('./handlebars.helpers');
-require('./map.search.js');
-var locateButton = require('./components/locate').locateButton;
-var searchButton = require('./components/search').searchButton;
-require('./components/sidebar');
+require('../handlebars.helpers');
+require('../map.search.js');
+var locateButton = require('../components/locate').locateButton;
+var searchButton = require('../components/search').searchButton;
+require('../components/sidebar');
 
 
 // Watch out for IE 8
@@ -1882,29 +1904,7 @@ $(document).ready(function () {
     }
 });
 
-},{"./components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","./components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","./components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","./leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","./map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","./map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","./oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","./singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js":[function(require,module,exports){
-var _ = require('underscore');
-var proj4 = require('proj4');
-require('./proj4.defs');
-
-var baseUrl = 'http://www.oasisnyc.net/map.aspx',
-    vacantLotsParams = {
-        categories: 'TRANSREF,PARKS_OPENSPACE,PROPERTY_INFO,BOUNDARIES',
-        etabs: 1,
-        mainlayers: 'LU_VACANT,NYCT_bus,LOTS,Cache_Transit',
-        labellayers: 'PARKS',
-        zoom: 8
-    };
-
-module.exports = {
-    vacantLotsUrl: function (latitude, longitude) {
-        var xy = proj4('EPSG:4326', 'EPSG:2263').forward([longitude, latitude]);
-        var params = _.extend({}, vacantLotsParams, { x: xy[0], y: xy[1] });
-        return [baseUrl, $.param(params)].join('?');
-    }
-};
-
-},{"./proj4.defs":"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js","proj4":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/lib/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js":[function(require,module,exports){
+},{"../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","../oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/oasis.js","../singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/singleminded.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/proj4.defs.js":[function(require,module,exports){
 var proj4 = require('proj4');
 
 proj4.defs('EPSG:2263', '+proj=lcc +lat_1=41.03333333333333 +lat_2=40.66666666666666 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000.0000000001 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs');
