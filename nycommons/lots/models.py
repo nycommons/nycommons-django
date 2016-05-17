@@ -131,6 +131,13 @@ class LotMixin(models.Model):
         ('Queens', 'Queens'),
         ('Staten Island', 'Staten Island'),
     )
+    COMMONS_TYPES = (
+        ('library', 'library'),
+        ('post office', 'post office'),
+        ('public housing', 'public housing'),
+        ('vacant lot / garden', 'vacant lot / garden'),
+        ('waterfront', 'waterfront'),
+    )
 
     accessible = models.BooleanField(default=True)
     bbl = models.CharField(max_length=10, blank=True, null=True)
@@ -147,6 +154,7 @@ class LotMixin(models.Model):
     commons_content_type = models.ForeignKey(ContentType, null=True)
     commons_object_id = models.PositiveIntegerField(null=True)
     commons_content_object = GenericForeignKey('commons_content_type', 'commons_object_id')
+    commons_type = models.CharField(max_length=25, choices=COMMONS_TYPES)
 
     files = GenericRelation('files.File')
     groundtruth_records = GenericRelation('groundtruth.GroundtruthRecord')
