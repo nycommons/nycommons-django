@@ -155,6 +155,7 @@ class LotMixin(models.Model):
     commons_object_id = models.PositiveIntegerField(null=True)
     commons_content_object = GenericForeignKey('commons_content_type', 'commons_object_id')
     commons_type = models.CharField(max_length=25, choices=COMMONS_TYPES)
+    priority = models.BooleanField(default=False)
 
     files = GenericRelation('files.File')
     groundtruth_records = GenericRelation('groundtruth.GroundtruthRecord')
