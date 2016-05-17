@@ -1,6 +1,7 @@
 from pint import UnitRegistry
 
-from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
@@ -142,6 +143,10 @@ class LotMixin(models.Model):
         blank=True,
         null=True,
     )
+
+    commons_content_type = models.ForeignKey(ContentType, null=True)
+    commons_object_id = models.PositiveIntegerField(null=True)
+    commons_content_object = GenericForeignKey('commons_content_type', 'commons_object_id')
 
     files = GenericRelation('files.File')
     groundtruth_records = GenericRelation('groundtruth.GroundtruthRecord')
