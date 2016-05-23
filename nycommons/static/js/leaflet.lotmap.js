@@ -10,6 +10,7 @@ require('livinglots.emailparticipants');
 require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
+require('leaflet-geojsongridlayer');
 require('leaflet-hash');
 require('leaflet-usermarker');
 
@@ -99,6 +100,7 @@ L.LotMap = L.Map.extend({
         }
 
         // When new lots are added ensure they should be displayed
+        /*
         var map = this;
         this.on('layeradd', function (event) {
             // Dig through the layers of layers
@@ -146,6 +148,7 @@ L.LotMap = L.Map.extend({
             }
             this.previousZoom = currentZoom;
         });
+        */
 
         this.on('boundarieschange', function () {
             this.updateDisplayedLots();
@@ -175,6 +178,7 @@ L.LotMap = L.Map.extend({
 
     addLotsLayer: function () {
         this.addCentroidsLayer();
+        /*
         this.addPolygonsLayer();
         if (this.getZoom() <= this.lotLayerTransitionPoint) {
             this.addLayer(this.centroidsLayer);
@@ -184,22 +188,36 @@ L.LotMap = L.Map.extend({
             this.removeLayer(this.centroidsLayer);
             this.addLayer(this.polygonsLayer);
         }
+        */
     },
 
     addCentroidsLayer: function () {
+        /*
         if (this.centroidsLayer) {
             this.removeLayer(this.centroidsLayer);
         }
+        */
         var url = this.options.lotCentroidsUrl;
 
+        /*
         var options = {
             serverZooms: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             unique: function (feature) {
                 return feature.id;
             }
         };
+        */
 
-        this.centroidsLayer = L.lotLayer(url, options, this.lotLayerOptions);
+        this.centroidsLayer = L.geoJsonGridLayer(url, {
+            layers: {
+                'lots-centroids': {
+                    pointToLayer: function (geojson, latlng) {
+                        return L.circleMarker(latlng);
+                    }
+                }
+            }
+        }).addTo(this);
+        //this.centroidsLayer = L.lotLayer(url, options, this.lotLayerOptions);
     },
 
     addPolygonsLayer: function () {
