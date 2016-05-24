@@ -2,9 +2,25 @@
 
 <footer>
 
-    <div class="footer-main">
-        <div class="footer-main col-md-8 col-md-offset-2">
-            {% feincms_render_region feincms_page "footer_main" request %}
+    <div class="footer-row">
+        <div class="footer-left">
+            <div class="footer-main">
+                {% feincms_render_region feincms_page "footer_main" request %}
+            </div>
+            <div class="footer-columns">
+                <div class="footer-column">
+                    {% feincms_render_region feincms_page "footer_column_left" request %}
+                </div>
+                <div class="footer-column">
+                    {% feincms_render_region feincms_page "footer_column_middle" request %}
+                </div>
+                <div class="footer-column">
+                    {% feincms_render_region feincms_page "footer_column_right" request %}
+                </div>
+            </div>
+        </div>
+        <div class="footer-right">
+            {% feincms_render_region feincms_page "footer_right" request %}
         </div>
     </div>
 

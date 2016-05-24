@@ -34,14 +34,6 @@
                     <div class="content-wrapper clearfix">
                         <section id="main" class="{% block mainclasses %}col-sm-9{% endblock %}">
 
-                            {% block breadcrumbs_wrapper %}
-                                <ul class="breadcrumb">
-                                    {% block breadcrumbs %}
-                                        {% feincms_breadcrumbs feincms_page %}
-                                    {% endblock %}
-                                </ul>
-                            {% endblock %}
-
                             {% block messages %}
                                 {% include "_messages.html" %}
                             {% endblock %}
