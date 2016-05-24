@@ -297,10 +297,13 @@ LIVING_LOTS = {
     'MODELS': {
         'lot': 'lots.Lot',
         'lotgroup': 'lots.LotGroup',
+        'lotlayer': 'lots.LotLayer',
         'organizer': 'organize.Organizer',
         'owner': 'owners.Owner',
         'owner_contact': 'owners.OwnerContact',
+        'owner_group': 'owners.OwnerGroup',
         'pathway': 'pathways.Pathway',
+        'stewardproject': 'steward.StewardProject',
     },
 }
 

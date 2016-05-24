@@ -51,7 +51,7 @@ L.LotMap = L.Map.extend({
                         template = this._map.getPopupTemplate();
                     this.bindPopup('<div id="popup"></div>').openPopup();
                     var spinner = new Spinner().spin($('#popup')[0]);
-                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.properties.id }), function (data) {
+                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
                         spinner.stop();
                         $('#popup').append(template(data));
                     });
@@ -67,10 +67,10 @@ L.LotMap = L.Map.extend({
         },
         pointToLayer: function (feature, latlng) {
             var options = {};
-            var layers = feature.properties.layers.split(',');
-            if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
-                options.hasOrganizers = true;
-            }
+            //var layers = feature.properties.layers.split(',');
+            //if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
+                //options.hasOrganizers = true;
+            //}
             return L.lotMarker(latlng, options);
         },
         style: function (feature) {
@@ -79,7 +79,7 @@ L.LotMap = L.Map.extend({
                 fillOpacity: 1,
                 stroke: 0
             };
-            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+            //style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
             return style;
         },
         popupOptions: {
@@ -192,11 +192,6 @@ L.LotMap = L.Map.extend({
     },
 
     addCentroidsLayer: function () {
-        /*
-        if (this.centroidsLayer) {
-            this.removeLayer(this.centroidsLayer);
-        }
-        */
         var url = this.options.lotCentroidsUrl;
 
         /*
@@ -210,14 +205,9 @@ L.LotMap = L.Map.extend({
 
         this.centroidsLayer = L.geoJsonGridLayer(url, {
             layers: {
-                'lots-centroids': {
-                    pointToLayer: function (geojson, latlng) {
-                        return L.circleMarker(latlng);
-                    }
-                }
+                'lots-centroids': this.lotLayerOptions
             }
         }).addTo(this);
-        //this.centroidsLayer = L.lotLayer(url, options, this.lotLayerOptions);
     },
 
     addPolygonsLayer: function () {

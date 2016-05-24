@@ -8,16 +8,102 @@ from random import shuffle
 from django.db.models import Count, Sum
 
 from caching.base import cached
+from braces.views import JSONResponseMixin
 
-from inplace.views import GeoJSONListView
+from inplace.views import GeoJSONListView, PlacesDetailView
 from livinglots_genericviews.views import JSONResponseView
+from livinglots_lots.signals import lot_details_loaded
 from livinglots_lots.views import FilteredLotsMixin, LotsCountView
+from livinglots_lots.views import LotDetailView as BaseLotDetailView
 from livinglots_lots.views import LotsCSV as BaseLotsCSV
 from livinglots_lots.views import LotsKML as BaseLotsKML
 from livinglots_lots.views import LotsGeoJSON as BaseLotsGeoJSON
+from .models import Lot
 
 
 ureg = UnitRegistry()
+
+
+class LotDetailView(PlacesDetailView):
+    model = Lot
+    slug_field = 'bbl'
+    slug_url_kwarg = 'bbl'
+
+    def check_lot_sanity(self, request, lot):
+        """
+        Sanity check the lot. In particular, check for missing things every lot
+        should have. Warn superusers if there is something amiss.
+        """
+        if not lot.centroid:
+            messages.warning(request, ("This lot doesn't have a center point "
+                                       "(centroid). You should edit the lot "
+                                       "and add one."))
+        if not lot.polygon:
+            messages.warning(request, ("This lot doesn't have a shape "
+                                       "(polygon). You should edit the lot "
+                                       "and add one."))
+
+    def get_object(self):
+        lot = super(LotDetailView, self).get_object()
+        if not (lot.is_visible or self.request.user.has_perm('lots.view_all_lots')):
+            # Make an exception for lots with low known_use_certainty values,
+            # which are being used in stealth mode right now
+            if lot.known_use_certainty > 3:
+                raise Http404
+        return lot
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user.is_superuser:
+            self.check_lot_sanity(request, self.object)
+
+        # Redirect to the lot's group, if it has one
+        lot_details_loaded.send(sender=self, instance=self.object)
+        if self.object.group:
+            messages.info(request, _("The lot you requested is part of a "
+                                     "group. Here is the group's page."))
+            return HttpResponseRedirect(self.object.group.get_absolute_url())
+        return super(LotDetailView, self).get(request, *args, **kwargs)
+
+
+class LotDetailViewJSON(JSONResponseMixin, BaseLotDetailView):
+    slug_field = 'bbl'
+    slug_url_kwarg = 'bbl'
+
+    def round_acres(self, lot):
+        try:
+            # Attempt to round to smallest number of digits we can
+            decimal_places = 1
+            rounded = 0
+            area_acres = lot.area_acres
+            if not area_acres:
+                return None
+            while not rounded:
+                rounded = round(area_acres, decimal_places)
+                decimal_places += 1
+            return rounded
+        except TypeError:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        lot = self.object = self.get_object()
+
+        context = {
+            'area_acres': self.round_acres(lot),
+            'bbl': lot.bbl,
+            'centroid': {
+                'x': lot.centroid.x,
+                'y': lot.centroid.y,
+            },
+            'name': lot.display_name,
+            'number_of_lots': lot.number_of_lots,
+            'part_of_group': lot.group is not None,
+            'url': lot.get_absolute_url(),
+        }
+        if lot.owner:
+            context['owner'] = lot.owner.name
+
+        return self.render_json_response(context)
 
 
 class LotGeoJSONMixin(object):

@@ -672,7 +672,7 @@ L.LotMap = L.Map.extend({
                         template = this._map.getPopupTemplate();
                     this.bindPopup('<div id="popup"></div>').openPopup();
                     var spinner = new Spinner().spin($('#popup')[0]);
-                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.properties.id }), function (data) {
+                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
                         spinner.stop();
                         $('#popup').append(template(data));
                     });
@@ -688,10 +688,10 @@ L.LotMap = L.Map.extend({
         },
         pointToLayer: function (feature, latlng) {
             var options = {};
-            var layers = feature.properties.layers.split(',');
-            if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
-                options.hasOrganizers = true;
-            }
+            //var layers = feature.properties.layers.split(',');
+            //if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
+                //options.hasOrganizers = true;
+            //}
             return L.lotMarker(latlng, options);
         },
         style: function (feature) {
@@ -700,7 +700,7 @@ L.LotMap = L.Map.extend({
                 fillOpacity: 1,
                 stroke: 0
             };
-            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+            //style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
             return style;
         },
         popupOptions: {
@@ -813,11 +813,6 @@ L.LotMap = L.Map.extend({
     },
 
     addCentroidsLayer: function () {
-        /*
-        if (this.centroidsLayer) {
-            this.removeLayer(this.centroidsLayer);
-        }
-        */
         var url = this.options.lotCentroidsUrl;
 
         /*
@@ -831,14 +826,9 @@ L.LotMap = L.Map.extend({
 
         this.centroidsLayer = L.geoJsonGridLayer(url, {
             layers: {
-                'lots-centroids': {
-                    pointToLayer: function (geojson, latlng) {
-                        return L.circleMarker(latlng);
-                    }
-                }
+                'lots-centroids': this.lotLayerOptions
             }
         }).addTo(this);
-        //this.centroidsLayer = L.lotLayer(url, options, this.lotLayerOptions);
     },
 
     addPolygonsLayer: function () {
@@ -1549,8 +1539,8 @@ var L = require('leaflet');
 
 require('leaflet-dataoptions');
 
-require('../leaflet.lotlayer');
-require('../leaflet.lotmarker');
+//require('../leaflet.lotlayer');
+//require('../leaflet.lotmarker');
 var mapstyles = require('../map.styles');
 var StreetView = require('../lib/streetview');
 
@@ -1631,7 +1621,7 @@ $(document).ready(function () {
         }
 
         addBaseLayer(map);
-        addLotsLayer(map);
+        //addLotsLayer(map);
         StreetView.load_streetview(
             $('.lot-detail-header-image').data('lon'),
             $('.lot-detail-header-image').data('lat'),
@@ -1671,7 +1661,7 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 });
 
-},{"../leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","../leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -11576,6 +11566,7 @@ if (typeof require !== 'undefined' && require.extensions) {
 
                 this._url = url;
                 this._geojsons = {};
+                this._features = {};
             },
 
             onAdd: function (map) {
@@ -11620,14 +11611,8 @@ if (typeof require !== 'undefined' && require.extensions) {
             },
 
             hasLayerWithId: function (sublayer, id) {
-                if (!this._geojsons[sublayer]) return false;
-                var layers = this._geojsons[sublayer].getLayers();
-                for (var i = 0; i < layers.length; i++) {
-                    if (layers[i].feature.id === id || layers[i].feature.properties.id === id) {
-                        return true;
-                    }
-                }
-                return false;
+                if (!this._geojsons[sublayer] || !this._features[sublayer]) return false;
+                return this._features[sublayer].hasOwnProperty(id);
             },
 
             addData: function (data) {
@@ -11649,6 +11634,15 @@ if (typeof require !== 'undefined' && require.extensions) {
                 var toAdd = data.features.filter(function (feature) {
                     return !this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id);
                 }, this);
+
+                if (!this._features[sublayer]) {
+                    this._features[sublayer] = {};
+                }
+                toAdd.forEach(function (feature) {
+                    var id = feature.id ? feature.id : feature.properties.id;
+                    this._features[sublayer][id] = feature;
+                }, this);
+
                 this._geojsons[sublayer].addData({
                     type: 'FeatureCollection',
                     features: toAdd
@@ -33653,7 +33647,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

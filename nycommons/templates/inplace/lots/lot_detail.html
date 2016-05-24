@@ -1,9 +1,16 @@
 {% extends "base.html" %}
-{% load files_tags flatblock_tags i18n inplace_tags notes_tags organize_tags pathways_tags photos_tags %}
+{% load flatblocks i18n inplace_tags organize_tags steward_tags pathways_tags usercontent_tags %}
 
 {% block title %}
     {{ lot.display_name|title|default:"unknown" }} |
-    {% trans "SITE NAME" %}
+    {% trans "NYCommons" %}
+{% endblock %}
+
+{% block meta_tags %}{{ block.super }}
+    <meta property="og:title" content="{{ lot.display_name|title|default:"unknown" }}" />
+    <meta property="og:description" content="{{ lot.display_name|title|default:"unknown" }} on Living Lots NYC, a public vacant lot viewer for New York City." />
+    <meta name="twitter:title" content="{{ lot.display_name|title|default:"unknown" }}" />
+    <meta name="twitter:description" content="{{ lot.display_name|title|default:"unknown" }} on Living Lots NYC, a public vacant lot viewer for New York City." />
 {% endblock %}
 
 {% block body_class %}lot-detail-page{% endblock %}
@@ -32,6 +39,7 @@
                 <div id="lot-detail-map"
                     data-l-zoom="16" 
                     data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
+                    data-l-bbox="{{ lot.bbox }}"
                     data-l-zoom-control="false"
                     data-l-lotsurl="{% inplace_setting LOT_POLYGONS_URL %}"
                     data-l-lot-pk="{{ lot.pk }}"
@@ -41,10 +49,7 @@
 
         <div class="col-md-9">
             <h1>
-                {{ lot.display_name|title|default:"unknown" }}
-                {% if lot.postal_code %}
-                    <span class="postal-code">{{ lot.postal_code }}</span>
-                {% endif %}
+                {{ lot.display_name|default:"unknown" }}
             </h1>
         </div>
     </div>
@@ -53,22 +58,21 @@
     <div class="lot-detail-actions">
         {% if "lots.change_lot" in perms %}
             <a class="btn btn-small btn-warning" href="{% url "admin:lots_lot_change" lot.pk %}">
-                <i class="icon-edit icon-white"></i>
                 {% trans "Edit this lot" %}
             </a>
         {% endif %}
 
         <a class="btn btn-default build-community-button lot-page-tooltip" href="{% url "organize:add_organizer" pk=lot.pk %}" data-toggle="tooltip" title="{% trans "Get involved with this lot or let people know you are already working towards growing community here." %}">
-            {% trans "organize" %}
+            {% trans "Organize" %}
         </a>
 
         {% if lot.nearby %}
-            <a class="btn btn-default disabled">
-                {% trans "find lots nearby" %}
+            <a class="btn btn-default overlay-nearby-button">
+                {% trans "Find lots nearby" %}
             </a>
         {% endif %}
 
-        {% if not lot.known_use %}
+        {% if "lots.change_lot" in perms or not lot.known_use %}
             <a class="btn btn-default lot-page-tooltip" href="{% url "steward:add_stewardnotification" pk=lot.pk %}" data-toggle="tooltip" title="{% trans "Tell us more about your project." %}">
                 {% trans "Is this an active project?" %}
             </a>
@@ -77,6 +81,17 @@
                 {% trans "Have we made a mistake?" %}
             </a>
         {% endif %}
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle lot-page-share" href="#" title="{% trans "Share" %}" data-toggle="dropdown" aria-expanded="false">
+                {% trans "Share" %}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a class="share-facebook" href="#" target="_blank">{% trans "Facebook" %}</a></li>
+                <li><a class="share-twitter" href="#" target="_blank" data-tweet="{% trans "Here is an opportunity to start organizing a space for community with the help of @596acres" %}: ">{% trans "Twitter" %}</a></li>
+            </ul>
+        </div>
     </div>
 
     <div class="lot-detail-main">
@@ -84,221 +99,111 @@
         {% include "_messages.html" %}
 
         <div class="lot-detail-info-box">
+            {% include "inplace/lots/_lot_detail_info.html" with lot=lot %}
 
-            <section>
-                <h2 style="margin-top: 0;">Information about this lot</h2>
-                <div class="lot-detail-details">
-
-                    <div>
-                        {% trans "Owner" %}: {{ lot.owner|default:"unknown" }}
-
-                        {% if lot.owner and "owners.change_owner" in perms %}
-                            <span class="lot-detail-admin admin-only">
-                                <a class="btn btn-small btn-warning" href="{% url "admin:lots_lot_changelist" %}?owner={{ lot.owner.pk }}">
-                                    {% trans "View all lots this owner owns" %}
-                                </a>
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    {% if lot.number_of_lots > 1 %}
-                        <div>
-                            {% trans "Number of Lots" %}: {{ lot.number_of_lots }}
-                        </div>
-                    {% endif %}
-
-                    {% if lot.known_use %}
-                        <div>
-                            {% trans "Known Use" %}: {{ lot.known_use }}
-                        </div>
-                    {% endif %}
-
-                    <div>
-                        {% trans "Area" %}:
-                        {{ lot.area_acres|floatformat:"2"|default:"unknown" }} acres
-                    </div>
-
-                </div>
-            </section>
-
-            {% comment %}
-            <section>
-                <h2>Project Description</h2>
-            </section>
-
-            <section>
-                <h2>Project Contact</h2>
-            </section>
-            {% endcomment %}
-
-            <section>
-                <h2>{% trans "Why is this lot here?" %}</h2>
-                {% if not lot.is_visible %}
-                    <p>
-                        {% blocktrans %}
-                            Actually, it should not be here. Let us know so we can take 
-                            care of it.
-                        {% endblocktrans %}
-                    </p>
-                {% elif not lot.known_use %}
-                    <p>{% trans "We think this lot is vacant because:" %}</p>
-                    <ul class="lot-detail-reasons">
-                    </ul>
-                {% else %}
-                    {% blocktrans with use=lot.known_use %}
-                        The lot is being used as a {{ use }}.
-                    {% endblocktrans %}
-                {% endif %}
-            </section>
-
+            {% ifequal lot.owners|length 1 %}
+                {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}
+            {% endifequal %}
         </div>
 
-
-        {% if lot.steward_projects.all.count > 0 %}
-            {% with steward=lot.steward_projects.all.0 %}
-                {% if steward.organizer %}
-                    <div class="lot-detail-details lot-detail-main-section">
-                        <h2>{% trans "Steward" %}</h2>
-                        <p>{% trans "This land is being stewarded by the following group:" %}
-
-                        {% if "steward.change_stewardproject" in perms %}
-
-                            <div class="lot-detail-admin admin-only grid">
-                                <a class="btn btn-small btn-warning" href="{% url "admin:phillyorganize_organizer_change" steward.organizer.pk %}">
-                                    <i class="icon-edit icon-white"></i>
-                                    {% trans "Edit this steward's contact information" %}
-                                </a>
-                            </div>
-
-                            <div class="lot-detail-admin admin-only grid">
-                                <a class="btn btn-small btn-warning" href="{% url "admin:steward_stewardproject_change" steward.pk %}">
-                                    <i class="icon-edit icon-white"></i>
-                                    {% trans "Edit this steward's other information" %}
-                                </a>
-                            </div>
-                        {% endif %}
-
-                        <table>
-                            <tr>
-                                <th>{% trans "group name" %}:</th>
-                                <td>
-                                    {% if steward.organizer.url %}
-                                        <a href="{{ steward.organizer.url }}" target="_blank">
-                                            {{ steward.organizer.name }}
-                                        </a>
-                                    {% else %}
-                                        {{ steward.organizer.name }}
-                                    {% endif %}
-                                </td>
-                            </tr>
-
-                            {% if steward.organizer.post_publicly or "steward.change_stewardproject" in perms %}
-                                <tr>
-                                    <th>{% trans "phone" %}:</th>
-                                    <td>{{ steward.organizer.phone }}</td>
-                                </tr>
-                                <tr>
-                                    <th>{% trans "email" %}:</th>
-                                    <td>
-                                        {% if steward.organizer.email %}
-                                        {% with email=steward.organizer.email %}
-                                        <a href="mailto:{{ email }}">{{ email }}</a>
-                                        {% endwith %}
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endif %}
-
-                            {% if steward.support_organization %}
-                            <tr>
-                                <th>{% trans "supported by" %}:</th>
-                                <td>{{ steward.support_organization }}</td>
-                            </tr>
-                            {% endif %}
-
-                        </table>
-
-                    </div>
-                {% endif %}
-            {% endwith %}
+        {% get_steward_project_list for lot as stewards %}
+        {% if stewards %}
+            {% include "inplace/lots/_lot_detail_stewardproject.html" with steward=stewards.0 %}
+        {% elif lot.lotgroup %}
+            {% get_steward_project_list for lot.lotgroup as stewards %}
+            {% if stewards %}
+                {% include "inplace/lots/_lot_detail_stewardproject.html" with steward=stewards.0 %}
+            {% endif %}
         {% endif %}
 
         {% if "lots.view_all_details" in perms %}
-        <div class="lot-detail-details lot-detail-main-section">
-            <h2>{% trans "Admin Details" %}</h2>
-            <div class="help-text">(This section is only visible to admins.)</div>
-            <table>
+            <div class="lot-detail-details lot-detail-section lot-detail-main-section">
+                <h2>{% trans "Admin Details" %}</h2>
+                <div class="help-text">{% trans "(This section is only visible to admins.)" %}</div>
 
-                {% if lot.steward_projects.count > 0 %}
-                <tr>
-                    <th>{% trans "steward's land tenure" %}:</th>
-                    <td>{{ lot.steward_projects.all.0.land_tenure_status }}</td>
-                </tr>
+                {% if lot.archive_path %}
+                    <div>
+                        <a class="btn btn-warning" href="http://archive.livinglotsnyc.org/{{ lot.archive_path }}" target="_blank">View lot as it appeared on 596acres.org</a>
+                    </div>
                 {% endif %}
 
-            </table>
-        </div>
+                {% if stewards %}
+                    {% trans "steward's land tenure" %}:
+                    {{ stewards.0.land_tenure_status }}
+                {% endif %}
+            </div>
         {% endif %}
 
-        <div id="pathways" class="pathways lot-detail-main-section">
+        <div id="usercontent" class="usercontent lot-detail-main-section">
             <h2>
-                {% trans "Pathways" %}
+                {% trans "News feed" %}
             </h2>
-            <div>
-                {% blocktrans %}
-                    Here are some pathways you might follow to use this piece of land legally:
-                {% endblocktrans %}
-                {% render_pathway_summary_list for lot %}
+            <div class="usercontent-actions">
+                <span>{% trans "Add a" %}</span>
+                <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
+                    {% trans "note" %}
+                </a>
+                <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
+                    {% trans "file" %}
+                </a>
+                <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
+                    {% trans "photo" %}
+                </a>
+            </div>
+            <div class="usercontent-list">
+                {% render_user_content_list for lot %}
             </div>
         </div>
-
-        <div id="notes" class="notes lot-detail-main-section">
-            <h2>
-                {% trans "Notes" %}
-            </h2>
-            <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
-                {% trans "Add your note" %}
-            </a>
-            {% render_note_list for lot %}
-        </div>
-
-        <div id="files" class="files lot-detail-main-section">
-            <h2>
-                {% trans "Files" %}
-            </h2>
-            <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
-                {% trans "Add a file" %}
-            </a>
-            {% render_file_list for lot %}
-        </div>
-
     </div>
 {% endblock %}
 
 {% block sidebar %}
     <aside id="aside-right" class="col-sm-3">
-
-        <section id="photos" class="lot-detail-side-section photos">
-            <h2>{% trans "Photos" %}</h2>
-            <div>
-                <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
-                    {% trans "Submit a photo" %}
-                </a>
-            </div>
-            {% render_photo_list for lot %}
-        </section>
-
         <section class="lot-detail-organizers">
             {% get_organizer_count for lot as organizer_count %}
-            <h2>Number of organizers: {{ organizer_count }}</h2>
+            <h2>{% trans "Number of organizers" %}: {{ organizer_count }}</h2>
             <div>
                 <section class="lot-detail-organizer-intro">
-                    <h3>Hey organizers!</h3>
-                    {% flatblock "lot-detail-organizer-intro" %}
-                    {% flatblock "lot-detail-organizer-contact" %}
+                    <h3>{% trans "Hey organizers!" %}</h3>
+                    {% flatblock "lotdetail.organizer.intro" %}
+
+                    {% get_steward_project_count for lot as stewards_count %}
+                    {% if stewards_count > 0 %}
+                        {% flatblock "lotdetail.organizer.has_stewards" %}
+                    {% endif %}
                 </section>
                 {% render_organizer_list for lot %}
+                {% if "lots.change_lot" in perms %}
+                    <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
+                        {% trans "View all in admin" %}
+                    </a>
+                {% endif %}
             </div>
         </section>
     </aside>
+
+    {% if lot.nearby %}
+        <div class="overlaymenu overlaymenu-nearby">
+            <div class="overlaymenu-tip-container">
+                <div class="overlaymenu-tip"></div>
+            </div>
+
+            <div class="overlaymenu-menu-content">
+                <ul class="nearby-lots-list">
+                    {% for nearby in lot.nearby %}
+                        <li class="nearby-lots-list-item">
+                            <a href="{{ nearby.get_absolute_url }}">
+                                {{ nearby.display_name }}
+                            </a>
+                            {% if "lots.change_lot" in perms %}
+                            <a class="btn btn-sm btn-warning btn-add-to-group" data-lot="{{ lot.pk }}" data-lot-to-add="{{ nearby.pk }}" href="#">
+                                    {% trans "Group with this lot" %}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

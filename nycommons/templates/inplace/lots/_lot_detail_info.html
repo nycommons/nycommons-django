@@ -1,0 +1,139 @@
+{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags i18n lots_tags %}
+
+<section>
+    <h2 style="margin-top: 0;">{% trans "Information about this lot" %}</h2>
+    <div class="lot-detail-details">
+
+        {% if lot.number_of_lots > 1 %}
+            <div>
+                {% trans "There are" %} {{ lot.number_of_lots }} {% trans "lots grouped here" %}:
+            </div>
+            <ul>
+                {% for child in lot.lots %}
+                    <li>
+                        <div>
+                            {{ child.display_name }}
+                            ({{ child.address_line1 }}).
+                            {% get_oasis_url for child as oasis_url %}
+                            {% if oasis_url %}
+                                {% trans "More details at" %}
+                                <a href="{{ oasis_url }}" target="_blank">OASIS</a>.
+                            {% endif %}
+                            {% if "lots.change_lot" in perms %}
+                                <a class="btn btn-xs btn-warning" href="{% url "admin:lots_lot_change" child.pk %}">
+                                    {% trans "Edit this lot" %}
+                                </a>
+                            {% endif %}
+                            {% if "lots.add_lot" in perms %}
+                            <a class="btn btn-xs btn-warning btn-remove-from-group" data-lot="{{ child.pk }}" href="#">
+                                    {% trans "Remove from group" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% ifnotequal lot.owners|length 1 %}
+                            {% if child.owner %}
+                                <div>
+                                    {{ child.owner }}
+                                </div>
+                            {% endif %}
+                        {% endifnotequal %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if lot.known_use %}
+            <div>
+                {% trans "Known Use" %}: {{ lot.known_use }}
+            </div>
+        {% endif %}
+
+        <div>
+            {% trans "Address" %}:
+            {{ lot.address_line1|default:"(street address unknown)" }},
+            {{ lot.borough }}{% if lot.postal_code %}, {{ lot.postal_code }}{% endif %}
+        </div>
+
+        <div>
+            {% trans "Area" %}:
+            {{ lot.area_acres|floatformat:"2"|default:"unknown" }} {% trans "acres" %}
+            ({{ lot.area|floatformat:"0"|default:"unknown" }} {% trans "square feet" %})
+        </div>
+
+        {% if lot.bbl and not lot.bbl_is_fake %}
+            <div>
+                {% trans "Block and Lot" %}:
+                {{ lot.borough }}, block {{ lot.block }}, lot {{ lot.lot_number }}
+            </div>
+        {% endif %}
+
+        {% get_oasis_url for lot as oasis_url %}
+        {% if oasis_url %}
+            <div>
+                {% trans "More information about this lot at" %}
+                <a href="{{ oasis_url }}" target="_blank">OASIS</a>
+            </div>
+        {% endif %}
+
+        <section>
+            <h3>Political Boundaries</h3>
+
+            {% get_boundary "city council districts" lot.centroid.y lot.centroid.x as district %}
+            {% if district %}
+                <div>
+                    {% trans "City Council District" %}
+                    {{ district.label }}
+                    {% city_council_member district as member %}
+                    {% if member %}
+                        {% trans "represented by" %}
+                        {% if member.url %}
+                            <a href="{{ member.url }}" target="_blank">{{ member }}</a>
+                        {% else %}
+                            {{ member }}
+                        {% endif %}
+                        {% if member.email %}
+                            (<a href="mailto:{{ member.email }}">{{ member.email }}</a>)
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% get_boundary "community districts" lot.centroid.y lot.centroid.x as district %}
+            {% if district %}
+                {% get_community_district_details district as district_details %}
+                <div>
+                    {% trans "Community District" %}
+                    {% if district_details.url %}
+                        <a href="{{ district_details.url }}" target="_blank">
+                            {{ district.label|community_district_label }}
+                        </a>
+                    {% else %}
+                        {{ district.label|community_district_label }}
+                    {% endif %}
+
+                    {% if district_details.email or district_details.phone %}(
+                        {% if district_details.email %}
+                            <a href="mailto:{{ district_details.email }}">{{ district_details.email }}</a>
+                        {% endif %}
+                        {% if district_details.email and district_details.phone %} / {% endif %}
+                        {% if district_details.phone %}
+                            {{ district_details.phone }}
+                        {% endif %}
+                    ),{% endif %}
+
+                    {% if district_details.district_manager %}
+                        {% trans "district manager" %}: {{ district_details.district_manager }}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div>
+                {% trans "Find all elected officials for this lot at" %}
+                <a href="http://www.mygovnyc.org/?levelofgovt=city&latlng={{ lot.centroid.y }}%2C{{ lot.centroid.x }}" target="_blank">
+                    {% trans "Who Represents Me? NYC" %}
+                </a>
+            </div>
+        </section>
+
+    </div>
+</section>

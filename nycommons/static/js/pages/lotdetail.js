@@ -9,8 +9,8 @@ var L = require('leaflet');
 
 require('leaflet-dataoptions');
 
-require('../leaflet.lotlayer');
-require('../leaflet.lotmarker');
+//require('../leaflet.lotlayer');
+//require('../leaflet.lotmarker');
 var mapstyles = require('../map.styles');
 var StreetView = require('../lib/streetview');
 
@@ -91,7 +91,7 @@ $(document).ready(function () {
         }
 
         addBaseLayer(map);
-        addLotsLayer(map);
+        //addLotsLayer(map);
         StreetView.load_streetview(
             $('.lot-detail-header-image').data('lon'),
             $('.lot-detail-header-image').data('lat'),
