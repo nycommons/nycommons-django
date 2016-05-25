@@ -60,20 +60,5 @@
             {% include "_footer.html" %}
         {% endblock %}
 
-        <div class="menu-expanded">
-            <ul class="nav navbar-nav">
-                {% feincms_nav feincms_page level=2 depth=1 as mainmenu %}
-                {% for page in mainmenu %}
-                <li {% ifequal page feincms_page %}class="active"{% endifequal %}>
-                        <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
-                    </li>
-                {% endfor %}
-                {% if user.is_superuser %}
-                    <li>
-                        <a href="/extra-admin/">Admin</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
     </body>
 </html>
