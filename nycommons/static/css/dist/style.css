@@ -5503,28 +5503,8 @@ a.thumbnail.active {
 /*
  * Global properties
  */
-@font-face {
-  font-family: "Cooper Hewitt";
-  src: url("../../fonts/CooperHewitt/CooperHewitt-Book.woff") format('woff');
-}
-@font-face {
-  font-family: "Cooper Hewitt";
-  font-style: italic;
-  src: url("../../fonts/CooperHewitt/CooperHewitt-BookItalic.woff") format('woff');
-}
-@font-face {
-  font-family: "Cooper Hewitt";
-  font-weight: bold;
-  src: url("../../fonts/CooperHewitt/CooperHewitt-Bold.woff") format('woff');
-}
-@font-face {
-  font-family: "Cooper Hewitt";
-  font-style: italic;
-  font-weight: bold;
-  src: url("../../fonts/CooperHewitt/CooperHewitt-BoldItalic.woff") format('woff');
-}
 .header-font {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
 }
 .user-content-list {
@@ -5547,7 +5527,7 @@ a.thumbnail.active {
   font-size: 12px;
 }
 .user-content-added-by-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -5561,7 +5541,7 @@ html {
   width: 100%;
 }
 body {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   overflow-x: hidden;
 }
 @media (max-width: 767px) {
@@ -5759,7 +5739,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   font-size: 12px;
 }
 .usercontent-list .file-added-by-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -6091,7 +6071,7 @@ footer .footer-right {
   z-index: 500;
 }
 .lot-detail-page h1 {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   font-size: 28px;
   margin-top: 15px;
@@ -6101,7 +6081,7 @@ footer .footer-right {
   margin-left: 10px;
 }
 .lot-detail-page h2 {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   font-size: 22px;
   margin-top: 15px;
@@ -6147,14 +6127,14 @@ footer .footer-right {
   padding: 10px;
 }
 .lot-detail .lot-add-page h1 {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   font-size: 56px;
   margin: 0;
   text-transform: uppercase;
 }
 .lot-detail-organizer-intro h3 {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #1f9e48;
   margin: 0;
@@ -6167,7 +6147,7 @@ footer .footer-right {
   display: none;
 }
 .lot-detail-stewardproject-organizer-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -6375,7 +6355,7 @@ fieldset[disabled] .btn-show-details.active {
   font-size: 12px;
 }
 .usercontent-list .note-added-by-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -6404,7 +6384,7 @@ fieldset[disabled] .btn-show-details.active {
   display: block;
 }
 .organizer-list-item .organizer-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -6430,7 +6410,7 @@ fieldset[disabled] .btn-show-details.active {
   font-size: 12px;
 }
 .usercontent-list .photo-added-by-name {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: bold;
   color: #58595b;
   font-size: 22px;
@@ -6719,7 +6699,7 @@ fieldset[disabled] .btn-show-details.active {
   margin: 0;
 }
 .leaflet-container {
-  font-family: "Cooper Hewitt", sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 .leaflet-container a {
   color: #00adef;
