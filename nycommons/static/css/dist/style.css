@@ -5556,6 +5556,9 @@ body {
     padding-right: 0;
   }
 }
+#aside-left .submenu {
+  display: block;
+}
 #mc_embed_signup label {
   display: block;
   font-size: 28px;
@@ -6299,7 +6302,8 @@ fieldset[disabled] .btn-show-details.active {
   padding: 3px;
 }
 .submenu a {
-  color: black;
+  color: #00adef;
+  font-weight: bold;
   white-space: nowrap;
 }
 .submenu a:hover {
