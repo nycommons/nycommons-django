@@ -1927,8 +1927,6 @@ html[dir="rtl"] .select2-container-multi .select2-search-choice-close {
 .navbar-collapse:after,
 .nav:before,
 .nav:after,
-.page-wrapper-row:before,
-.page-wrapper-row:after,
 #mc_embed_signup .form-row:before,
 #mc_embed_signup .form-row:after,
 footer .footer-row:before,
@@ -1955,7 +1953,6 @@ footer .footer-row:after,
 .navbar-header:after,
 .navbar-collapse:after,
 .nav:after,
-.page-wrapper-row:after,
 #mc_embed_signup .form-row:after,
 footer .footer-row:after,
 footer .footer-row:after,
@@ -5550,27 +5547,8 @@ body {
   }
 }
 .page-wrapper {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .page-wrapper {
-    float: left;
-    width: 83.33333333%;
-  }
-}
-@media (min-width: 768px) {
-  .page-wrapper {
-    margin-left: 8.33333333%;
-  }
-}
-.page-wrapper-row {
-  margin-left: 0;
-  margin-right: 0;
+  margin-bottom: 50px;
   min-height: 80vh;
-  padding-bottom: 50px;
 }
 @media (max-width: 767px) {
   .page-wrapper {
@@ -6235,10 +6213,6 @@ fieldset[disabled] .btn-show-details.active {
   top: 15px;
   width: 35px;
   z-index: 5001;
-}
-.menu-button .icon-bar {
-  background-color: #00adef;
-  height: 4px;
 }
 @media (min-width: 768px) {
   .menu-button {

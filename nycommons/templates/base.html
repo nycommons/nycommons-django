@@ -68,33 +68,35 @@
 
             {% include "_header.html" %}
 
-            <div class="page-wrapper-row">
-                <div class="page-wrapper">
+            <div class="page-wrapper">
+                {% block pre_content %}{% endblock %}
 
-                    {% block pre_content %}{% endblock %}
+                <div class="content-wrapper clearfix">
+                    {% block sidebar_left %}
+                        <aside id="aside-left" class="col-sm-2">
+                            {% feincms_render_region feincms_page "sidebar_left" request %}
+                        </aside>
+                    {% endblock %}
 
-                    <div class="content-wrapper clearfix">
-                        <section id="main" class="{% block mainclasses %}col-sm-9{% endblock %}">
+                    <section id="main" class="{% block mainclasses %}col-sm-7{% endblock %}">
 
-                            {% block messages %}
-                                {% include "_messages.html" %}
-                            {% endblock %}
-
-                            <article>
-                                {% block content %}
-                                    <h1>{{ feincms_page.title }}</h1>
-                                    {% feincms_render_region feincms_page "main" request %}
-                                {% endblock %}
-                            </article>
-                        </section>
-
-                        {% block sidebar %}
-                            <aside id="aside-right" class="col-sm-3">
-                                {% feincms_render_region feincms_page "sidebar" request %}
-                            </aside>
+                        {% block messages %}
+                            {% include "_messages.html" %}
                         {% endblock %}
 
-                    </div>
+                        <article>
+                            {% block content %}
+                                <h1>{{ feincms_page.title }}</h1>
+                                {% feincms_render_region feincms_page "main" request %}
+                            {% endblock %}
+                        </article>
+                    </section>
+
+                    {% block sidebar %}
+                        <aside id="aside-right" class="col-sm-3">
+                            {% feincms_render_region feincms_page "sidebar" request %}
+                        </aside>
+                    {% endblock %}
 
                 </div>
             </div>
