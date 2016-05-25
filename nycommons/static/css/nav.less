@@ -1,0 +1,103 @@
+.navbar-toggle,
+.navbar-default .navbar-toggle {
+    .icon-bar {
+        background-color: @foreground-color;
+        height: 4px;
+    }
+}
+
+.navbar-default .navbar-toggle {
+    border: 0;
+}
+
+.navbar-default .navbar-nav > li > a {
+    &:active,
+    &:focus,
+    &:hover {
+        color: @blue;
+        text-decoration: underline;
+    }
+}
+
+.navbar-nav {
+    font-size: 20px;
+    font-weight: bold;
+    float: right;
+    margin-left: 20px;
+
+    @media (max-width: @screen-xs-max) {
+        margin-left: 0;
+    }
+
+    > li > a {
+        line-height: 75px;
+        padding-bottom: 0;
+        padding-top: 0;
+        text-transform: uppercase;
+
+        @media (max-width: @screen-xs-max) {
+            line-height: 50px;
+        }
+    }
+}
+
+// Smallest screens, use grid to keep logo and collapse button side-by-side
+@media (max-width: @screen-xs-max) {
+    .navbar {
+        background-color: white;
+        margin-bottom: 0;
+        padding-top: 10px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: @ui-z-index + 1;
+    }
+
+    .navbar-header {
+        .make-row(0);
+        float: right;
+
+        .page-header-home-link {
+            .make-xs-column(9);
+        }
+    }
+}
+
+.mainmenu-item {
+    &:hover .submenu {
+        display: block;
+    }
+
+    &-parent {
+        cursor: default;
+    }
+}
+
+.submenu {
+    background-color: white;
+    display: none;
+    font-size: 18px;
+    list-style: none;
+    margin-top: -15px;
+    padding: 10px;
+    position: absolute;
+    z-index: @ui-z-index + 10;
+
+    li {
+        padding: 3px;
+    }
+
+    a {
+        color: black;
+        white-space: nowrap;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    @media (max-width: @screen-xs-max) {
+        margin-left: @xs-padding;
+        position: static;
+    }
+}
