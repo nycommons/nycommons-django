@@ -6351,6 +6351,25 @@ fieldset[disabled] .btn-show-details.active {
 .social-media-twitter {
   background-image: url("/static/img/twitter.png");
 }
+footer .social-media {
+  float: none;
+  margin-left: 0;
+}
+footer .social-media a {
+  height: 20px;
+  margin-right: 15px;
+  margin-top: 5px;
+  width: 20px;
+}
+footer .social-media-facebook {
+  background-image: url("/static/img/facebook-footer.png");
+}
+footer .social-media-instagram {
+  background-image: url("/static/img/instagram-footer.png");
+}
+footer .social-media-twitter {
+  background-image: url("/static/img/twitter-footer.png");
+}
 .recent-activity {
   padding-right: 0;
 }
