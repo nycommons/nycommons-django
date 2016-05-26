@@ -34,7 +34,6 @@
     }
 
     > li > a {
-        line-height: 75px;
         padding-bottom: 0;
         padding-top: 0;
         text-transform: uppercase;
@@ -104,5 +103,31 @@
     @media (max-width: @screen-xs-max) {
         margin-left: @xs-padding;
         position: static;
+    }
+}
+
+.social-media {
+    float: right;
+    margin-left: 15px;
+
+    a {
+        background-repeat: no-repeat;
+        background-size: contain;
+        display: inline-block;
+        height: 35px;
+        margin-top: -7px;
+        width: 35px;
+    }
+
+    &-facebook {
+        background-image: data-uri("/static/img/facebook.png");
+    }
+
+    &-instagram {
+        background-image: data-uri("/static/img/instagram.png");
+    }
+
+    &-twitter {
+        background-image: data-uri("/static/img/twitter.png");
     }
 }

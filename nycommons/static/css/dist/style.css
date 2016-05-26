@@ -6264,7 +6264,6 @@ fieldset[disabled] .btn-show-details.active {
   }
 }
 .navbar-nav > li > a {
-  line-height: 75px;
   padding-bottom: 0;
   padding-top: 0;
   text-transform: uppercase;
@@ -6330,6 +6329,27 @@ fieldset[disabled] .btn-show-details.active {
     margin-left: 15px;
     position: static;
   }
+}
+.social-media {
+  float: right;
+  margin-left: 15px;
+}
+.social-media a {
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: inline-block;
+  height: 35px;
+  margin-top: -7px;
+  width: 35px;
+}
+.social-media-facebook {
+  background-image: url("/static/img/facebook.png");
+}
+.social-media-instagram {
+  background-image: url("/static/img/instagram.png");
+}
+.social-media-twitter {
+  background-image: url("/static/img/twitter.png");
 }
 .recent-activity {
   padding-right: 0;
