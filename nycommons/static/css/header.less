@@ -1,15 +1,27 @@
-.page-header {
-    margin-top: 25px;
+#page-header {
+    margin-top: 20px;
 
-    &-home-link img {
-        // Account for whitespace in logo
-        margin-left: @header-left-padding - 5;
+    .header-home-link {
+        margin-left: 25px;
+    }
 
-        max-width: 500px;
+    .header-bar {
+        height: 25px;
+        margin-top: -25px;
+        width: 100%;
 
-        @media (max-width: @screen-xs-max) {
-            max-width: 95%;
-            margin-left: 0;
+        &-left {
+            background-color: @blue;
+            float: left;
+            height: 100%;
+            width: 5%;
+        }
+
+        &-right {
+            background-color: @red;
+            float: left;
+            height: 100%;
+            width: 95%;
         }
     }
 }

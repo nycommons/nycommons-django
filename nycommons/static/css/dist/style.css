@@ -5558,6 +5558,8 @@ body {
 }
 #aside-left .submenu {
   display: block;
+  margin-top: 0;
+  position: relative;
 }
 #mc_embed_signup label {
   display: block;
@@ -5909,18 +5911,28 @@ footer .footer-right {
     width: 50%;
   }
 }
-.page-header {
-  margin-top: 25px;
+#page-header {
+  margin-top: 20px;
 }
-.page-header-home-link img {
+#page-header .header-home-link {
   margin-left: 25px;
-  max-width: 500px;
 }
-@media (max-width: 767px) {
-  .page-header-home-link img {
-    max-width: 95%;
-    margin-left: 0;
-  }
+#page-header .header-bar {
+  height: 25px;
+  margin-top: -25px;
+  width: 100%;
+}
+#page-header .header-bar-left {
+  background-color: #00adef;
+  float: left;
+  height: 100%;
+  width: 5%;
+}
+#page-header .header-bar-right {
+  background-color: #bf1e2d;
+  float: left;
+  height: 100%;
+  width: 95%;
 }
 .legend {
   position: absolute;
@@ -6226,6 +6238,9 @@ fieldset[disabled] .btn-show-details.active {
 .navbar-default .navbar-toggle .icon-bar {
   background-color: #00adef;
   height: 4px;
+}
+.navbar-default {
+  float: right;
 }
 .navbar-default .navbar-toggle {
   border: 0;
