@@ -5955,7 +5955,7 @@ footer .footer-right {
   }
   #page-header .header-bar {
     height: 15px;
-    margin-top: -15px;
+    margin-top: 61px;
   }
   #page-header .header-bar-left {
     width: 10%;
@@ -5964,7 +5964,13 @@ footer .footer-right {
     width: 90%;
   }
   .header-home-link {
+    position: fixed;
     width: 110px;
+    z-index: 2;
+  }
+  .header-bar {
+    position: fixed;
+    z-index: 1;
   }
 }
 .legend {
@@ -6278,6 +6284,10 @@ fieldset[disabled] .btn-show-details.active {
 .navbar-default .navbar-toggle {
   border: 0;
 }
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background: transparent;
+}
 .navbar-default .navbar-nav > li > a:active,
 .navbar-default .navbar-nav > li > a:focus,
 .navbar-default .navbar-nav > li > a:hover {
@@ -6292,7 +6302,9 @@ fieldset[disabled] .btn-show-details.active {
 }
 @media (max-width: 767px) {
   .navbar-nav {
+    float: left;
     margin-left: 0;
+    margin-top: 0;
   }
 }
 .navbar-nav > li > a {
@@ -6313,7 +6325,9 @@ fieldset[disabled] .btn-show-details.active {
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 5001;
+  }
+  .navbar-collapse {
+    margin-top: 80px;
   }
   .navbar-header {
     margin-left: 0;
@@ -6340,7 +6354,6 @@ fieldset[disabled] .btn-show-details.active {
   display: none;
   font-size: 18px;
   list-style: none;
-  margin-top: -15px;
   padding: 10px;
   position: absolute;
   z-index: 5010;

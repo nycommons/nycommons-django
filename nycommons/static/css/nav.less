@@ -12,6 +12,11 @@
 
 .navbar-default .navbar-toggle {
     border: 0;
+
+    &:hover,
+    &:focus {
+        background: transparent;
+    }
 }
 
 .navbar-default .navbar-nav > li > a {
@@ -30,7 +35,9 @@
     margin-left: 20px;
 
     @media (max-width: @screen-xs-max) {
+        float: left;
         margin-left: 0;
+        margin-top: 0;
     }
 
     > li > a {
@@ -53,7 +60,10 @@
         position: fixed;
         top: 0;
         width: 100%;
-        z-index: @ui-z-index + 1;
+    }
+
+    .navbar-collapse {
+        margin-top: 80px;
     }
 
     .navbar-header {
@@ -81,7 +91,6 @@
     display: none;
     font-size: 18px;
     list-style: none;
-    margin-top: -15px;
     padding: 10px;
     position: absolute;
     z-index: @ui-z-index + 10;
