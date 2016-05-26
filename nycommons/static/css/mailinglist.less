@@ -1,7 +1,8 @@
 #mc_embed_signup {
     label {
         display: block;
-        font-size: 28px;
+        font-size: 20px;
+        font-weight: normal;
     }
 
     .form-row {
@@ -9,15 +10,21 @@
     }
 
     .email {
-        font-size: 22px;
+        background: transparent;
+        border: 1px solid @gray;
+        color: @gray;
+        font-size: 18px;
         padding: 5px;
-        max-width: 100%;
-        .make-md-column(7);
+        width: 100%;
     }
 
     .btn {
-        border: 1px solid white;
+        background: none;
+        border: 1px solid @blue;
+        border-radius: 0;
+        color: @blue;
+        float: right;
         font-size: 22px;
-        .make-md-column(5);
+        margin-top: 5px;
     }
 }

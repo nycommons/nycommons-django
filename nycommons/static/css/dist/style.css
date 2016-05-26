@@ -5564,40 +5564,29 @@ body {
 }
 #mc_embed_signup label {
   display: block;
-  font-size: 28px;
+  font-size: 20px;
+  font-weight: normal;
 }
 #mc_embed_signup .form-row {
   margin-left: 0;
   margin-right: 0;
 }
 #mc_embed_signup .email {
-  font-size: 22px;
+  background: transparent;
+  border: 1px solid #8e8e8e;
+  color: #8e8e8e;
+  font-size: 18px;
   padding: 5px;
-  max-width: 100%;
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 992px) {
-  #mc_embed_signup .email {
-    float: left;
-    width: 58.33333333%;
-  }
+  width: 100%;
 }
 #mc_embed_signup .btn {
-  border: 1px solid white;
+  background: none;
+  border: 1px solid #00adef;
+  border-radius: 0;
+  color: #00adef;
+  float: right;
   font-size: 22px;
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 992px) {
-  #mc_embed_signup .btn {
-    float: left;
-    width: 41.66666667%;
-  }
+  margin-top: 5px;
 }
 .usercontent-list {
   list-style: none;
