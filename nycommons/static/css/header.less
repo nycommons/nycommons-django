@@ -1,6 +1,10 @@
 #page-header {
     margin-top: 20px;
 
+    img {
+        max-width: 100%;
+    }
+
     .header-home-link {
         margin-left: 25px;
     }
@@ -23,5 +27,32 @@
             height: 100%;
             width: 95%;
         }
+    }
+}
+
+@media (max-width: @screen-xs-max) {
+    #page-header {
+        margin-top: 0;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 10000;
+
+        .header-bar {
+            height: 15px;
+            margin-top: -15px;
+
+            &-left {
+                width: 10%;
+            }
+
+            &-right {
+                width: 90%;
+            }
+        }
+    }
+
+    .header-home-link {
+        width: 110px;
     }
 }

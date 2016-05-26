@@ -5553,6 +5553,7 @@ body {
 }
 @media (max-width: 767px) {
   .page-wrapper {
+    margin-top: 85px;
     padding-left: 0;
     padding-right: 0;
   }
@@ -5561,6 +5562,16 @@ body {
   display: block;
   margin-top: 0;
   position: relative;
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  #main {
+    padding: 0 30px;
+  }
+  #aside-left .submenu {
+    margin-left: 0;
+    padding: 15px;
+  }
 }
 #mc_embed_signup label {
   display: block;
@@ -5865,6 +5876,13 @@ footer .footer-right {
     width: 25%;
   }
 }
+@media (max-width: 767px) {
+  footer .footer-row .footer-column:nth-of-type(1),
+  footer .footer-row .footer-column:nth-of-type(2),
+  footer .footer-row .footer-column:nth-of-type(3) {
+    padding: 0;
+  }
+}
 .form-group .control-label {
   position: relative;
   min-height: 1px;
@@ -5904,6 +5922,9 @@ footer .footer-right {
 #page-header {
   margin-top: 20px;
 }
+#page-header img {
+  max-width: 100%;
+}
 #page-header .header-home-link {
   margin-left: 25px;
 }
@@ -5923,6 +5944,28 @@ footer .footer-right {
   float: left;
   height: 100%;
   width: 95%;
+}
+@media (max-width: 767px) {
+  #page-header {
+    margin-top: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10000;
+  }
+  #page-header .header-bar {
+    height: 15px;
+    margin-top: -15px;
+  }
+  #page-header .header-bar-left {
+    width: 10%;
+  }
+  #page-header .header-bar-right {
+    width: 90%;
+  }
+  .header-home-link {
+    width: 110px;
+  }
 }
 .legend {
   position: absolute;

@@ -19,6 +19,7 @@ body {
     min-height: 80vh;
 
     @media (max-width: @screen-xs-max) {
+        margin-top: 85px;
         padding-left: 0;
         padding-right: 0;
     }
@@ -29,5 +30,19 @@ body {
         display: block;
         margin-top: 0;
         position: relative;
+        z-index: 1;
+    }
+}
+
+@media (max-width: @screen-xs-max) {
+    #main {
+        padding: 0 30px;
+    }
+
+    #aside-left {
+        .submenu {
+            margin-left: 0;
+            padding: 15px;
+        }
     }
 }
