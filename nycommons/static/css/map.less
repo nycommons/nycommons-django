@@ -2,12 +2,41 @@
     height: 100%;
     width: 100%;
 
+    @media (max-width: @screen-xs-max) {
+        margin: 0;
+
+        .navbar {
+            background-color: transparent;
+            padding-top: 0;
+        }
+
+        .navbar-default {
+            border: 0;
+        }
+
+        .navbar-collapse {
+            margin-top: 75px;
+
+            &.collapsing,
+            &.in {
+                background-color: white;
+            }
+        }
+    }
+
     #map {
         height: 100%;
         width: 100%;
 
         @media print {
             height: 10cm;
+        }
+    }
+
+    header {
+        display: none;
+        @media (max-width: @screen-xs-max) {
+            display: block;
         }
     }
 }
@@ -63,6 +92,11 @@
     img {
         margin-left: 15px;
     }
+
+    @media (max-width: @screen-xs-max) {
+        left: 0;
+        width: 100%;
+    }
 }
 
 .map-logo-bar {
@@ -93,10 +127,20 @@
     height: @header-bar-height;
     margin-top: -(2 * @header-bar-height);
     width: @header-bar-height;
+
+    @media (max-width: @screen-xs-max) {
+        margin-top: 0;
+        position: absolute;
+        top: 17px;
+    }
 }
 
 .map-header-locate-btn {
     background-image: data-uri("../../img/locate.png");
+
+    @media (max-width: @screen-xs-max) {
+        right: 75px;
+    }
 }
 
 .map-header-search-btn {
@@ -104,4 +148,9 @@
     margin-right: @header-bar-height;
     margin-top: 1 - (2 * @header-bar-height);
     width: 22px;
+
+    @media (max-width: @screen-xs-max) {
+        right: 25px;
+        margin-top: 0;
+    }
 }

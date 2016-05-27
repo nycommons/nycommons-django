@@ -6165,6 +6165,25 @@ footer .footer-right {
   height: 100%;
   width: 100%;
 }
+@media (max-width: 767px) {
+  .map-page {
+    margin: 0;
+  }
+  .map-page .navbar {
+    background-color: transparent;
+    padding-top: 0;
+  }
+  .map-page .navbar-default {
+    border: 0;
+  }
+  .map-page .navbar-collapse {
+    margin-top: 75px;
+  }
+  .map-page .navbar-collapse.collapsing,
+  .map-page .navbar-collapse.in {
+    background-color: white;
+  }
+}
 .map-page #map {
   height: 100%;
   width: 100%;
@@ -6172,6 +6191,14 @@ footer .footer-right {
 @media print {
   .map-page #map {
     height: 10cm;
+  }
+}
+.map-page header {
+  display: none;
+}
+@media (max-width: 767px) {
+  .map-page header {
+    display: block;
   }
 }
 .btn-show-details {
@@ -6261,6 +6288,12 @@ fieldset[disabled] .btn-show-details.active {
 .map-logo-wrapper img {
   margin-left: 15px;
 }
+@media (max-width: 767px) {
+  .map-logo-wrapper {
+    left: 0;
+    width: 100%;
+  }
+}
 .map-logo-bar {
   height: 25px;
   margin-top: -25px;
@@ -6287,14 +6320,32 @@ fieldset[disabled] .btn-show-details.active {
   margin-top: -50px;
   width: 25px;
 }
+@media (max-width: 767px) {
+  .map-header-btn {
+    margin-top: 0;
+    position: absolute;
+    top: 17px;
+  }
+}
 .map-header-locate-btn {
   background-image: url("../../img/locate.png");
+}
+@media (max-width: 767px) {
+  .map-header-locate-btn {
+    right: 75px;
+  }
 }
 .map-header-search-btn {
   background-image: url("../../img/search.png");
   margin-right: 25px;
   margin-top: -49px;
   width: 22px;
+}
+@media (max-width: 767px) {
+  .map-header-search-btn {
+    right: 25px;
+    margin-top: 0;
+  }
 }
 .menu-expanded {
   display: none;
@@ -6374,7 +6425,6 @@ fieldset[disabled] .btn-show-details.active {
   .navbar {
     background-color: white;
     margin-bottom: 0;
-    padding-top: 10px;
     position: fixed;
     top: 0;
     width: 100%;
@@ -6651,6 +6701,14 @@ footer .social-media-twitter {
   top: 152px;
   width: 25%;
   z-index: 5000;
+}
+@media (max-width: 767px) {
+  .map-sidebar {
+    bottom: 0;
+    left: 0;
+    top: inherit;
+    width: 100%;
+  }
 }
 .map-sidebar h2 {
   font-weight: normal;

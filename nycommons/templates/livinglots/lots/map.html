@@ -1,5 +1,7 @@
 {% load blog_widgets feincms_tags feincms_page_tags i18n inplace_tags static %}
 
+{% include "_header.html" %}
+
 <script id="popup-template" type="text/x-handlebars-template">
     {% verbatim %}
         <section class="lotpopup">
@@ -38,14 +40,14 @@
 >
 </div>
 
-<button type="button" class="navbar-toggle menu-button">
+<button type="button" class="hidden-xs navbar-toggle menu-button">
     <span class="sr-only">Toggle navigation</span>
     <span class="icon-bar"></span>
     <span class="icon-bar"></span>
     <span class="icon-bar"></span>
 </button>
 
-<div class="map-logo-wrapper">
+<div class="map-logo-wrapper hidden-xs">
     <img src="{% static "img/logo.png" %}" />
     <div class="map-logo-bar">
         <div class="map-logo-bar-left"></div>
@@ -112,7 +114,7 @@
         </div>
     </div>
 
-    <div class="sidebar-section recent-activity">
+    <div class="sidebar-section recent-activity hidden-xs">
         <h2>{% trans "Recent Activity" %}</h2>
         <div class="activity-stream"></div>
     </div>

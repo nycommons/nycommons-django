@@ -5,6 +5,13 @@
     width: 25%;
     z-index: 5000;
 
+    @media (max-width: @screen-xs-max) {
+        bottom: 0;
+        left: 0;
+        top: inherit;
+        width: 100%;
+    }
+
     h2 {
         font-weight: normal;
         margin: 0;
