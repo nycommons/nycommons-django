@@ -1,13 +1,18 @@
 .map-sidebar {
     position: absolute;
     left: 15px;
-    top: 50px;
+    top: 152px;
+    width: 25%;
     z-index: 5000;
 
     .sidebar-section {
         background-color: @fill-color;
         margin-top: 10px;
         padding: 5px;
+
+        &:first-of-type {
+            margin-top: 0;
+        }
 
         .close {
             float: right;
@@ -67,8 +72,6 @@
     }
 
     .map-header-content {
-        border-top: 15px solid @red;
-
         &-details,
         &-filters {
             display: none;

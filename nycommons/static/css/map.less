@@ -51,3 +51,36 @@
 .download-menu {
     display: none;
 }
+
+.map-logo-wrapper {
+    height: 140px;
+    left: 15px;
+    position: absolute;
+    top: 15px;
+    width: 25%;
+    z-index: 5001;
+
+    img {
+        margin-left: 15px;
+    }
+}
+
+.map-logo-bar {
+    height: @header-bar-height;
+    margin-top: -@header-bar-height;
+    width: 100%;
+
+    &-left {
+        background-color: @blue;
+        float: left;
+        height: 100%;
+        width: 10%;
+    }
+
+    &-right {
+        background-color: @red;
+        float: left;
+        height: 100%;
+        width: 90%;
+    }
+}

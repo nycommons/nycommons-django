@@ -6243,6 +6243,34 @@ fieldset[disabled] .btn-show-details.active {
 .download-menu {
   display: none;
 }
+.map-logo-wrapper {
+  height: 140px;
+  left: 15px;
+  position: absolute;
+  top: 15px;
+  width: 25%;
+  z-index: 5001;
+}
+.map-logo-wrapper img {
+  margin-left: 15px;
+}
+.map-logo-bar {
+  height: 25px;
+  margin-top: -25px;
+  width: 100%;
+}
+.map-logo-bar-left {
+  background-color: #00adef;
+  float: left;
+  height: 100%;
+  width: 10%;
+}
+.map-logo-bar-right {
+  background-color: #bf1e2d;
+  float: left;
+  height: 100%;
+  width: 90%;
+}
 .menu-expanded {
   display: none;
   background: white;
@@ -6595,13 +6623,17 @@ footer .social-media-twitter {
 .map-sidebar {
   position: absolute;
   left: 15px;
-  top: 50px;
+  top: 152px;
+  width: 25%;
   z-index: 5000;
 }
 .map-sidebar .sidebar-section {
   background-color: #ffffff;
   margin-top: 10px;
   padding: 5px;
+}
+.map-sidebar .sidebar-section:first-of-type {
+  margin-top: 0;
 }
 .map-sidebar .sidebar-section .close {
   float: right;
@@ -6703,9 +6735,6 @@ footer .social-media-twitter {
     float: left;
     width: 8.33333333%;
   }
-}
-.map-sidebar .map-header-content {
-  border-top: 15px solid #bf1e2d;
 }
 .map-sidebar .map-header-content-details,
 .map-sidebar .map-header-content-filters {
