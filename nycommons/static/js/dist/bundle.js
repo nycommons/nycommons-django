@@ -1,4 +1,37 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js":[function(require,module,exports){
+var _ = require('underscore');
+var flight = require('flightjs');
+var singleminded = require('../lib/singleminded');
+
+var legend = flight.component(function () {
+    this.attributes({
+        lotsCount: '.lots-count',
+        map: null
+    });
+
+    this.onCount = function (data) {
+        this.select('lotsCount').text(data['lots-count']);
+    };
+
+    this.updateLotCount = function (event) {
+        var url = Django.url('lots:lot_count') + '?' + this.attr.map.getParamsQueryString({ bbox: true });
+        singleminded.remember({
+            name: 'updateLotCount',
+            jqxhr: $.getJSON(url, this.onCount.bind(this))
+        });
+    };
+
+    this.after('initialize', function () {
+        var map = this.attr.map;
+        this.on(document, 'updateLotCount', this.updateLotCount);
+    });
+});
+
+module.exports = {
+    legend: legend
+};
+
+},{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
 var flight = require('flightjs');
 require('leaflet-usermarker');
 
@@ -1682,30 +1715,17 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
 var oasis = require('../lib/oasis');
-var singleminded = require('../lib/singleminded');
 
 
 // Watch out for IE 8
 var console = window.console || {
     warn: function () {}
 };
-
-
-function updateLotCount(map) {
-    var url = Django.url('lots:lot_count') + '?' + map.getParamsQueryString({ bbox: true });
-    singleminded.remember({
-        name: 'updateLotCount',
-        jqxhr: $.getJSON(url, function (data) {
-            _.each(data, function (value, key) {
-                $('#' + key).text(value);
-            });
-        })
-    });
-}
 
 function updateOwnershipOverview(map) {
     var url = Django.url('lots:lot_ownership_overview');
@@ -1937,6 +1957,7 @@ $(document).ready(function () {
 
         map.addLotsLayer();
 
+        legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
 
@@ -1959,7 +1980,7 @@ $(document).ready(function () {
         $('.filter').change(function () {
             var params = map.buildLotFilterParams();
             map.updateFilters(params);
-            updateLotCount(map);
+            $(document).trigger('updateLotCount');
         });
 
         // When the select for an owner is changed, check that owner type
@@ -1969,13 +1990,13 @@ $(document).ready(function () {
                 .trigger('change');
         });
 
-        updateLotCount(map);
+        $(document).trigger('updateLotCount');
         map.on({
             'moveend': function () {
-                updateLotCount(map);
+                $(document).trigger('updateLotCount');
             },
             'zoomend': function () {
-                updateLotCount(map);
+                $(document).trigger('updateLotCount');
             },
             'lotlayertransition': function (e) {
                 map.addLotsLayer(map.buildLotFilterParams());
@@ -1999,7 +2020,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
+},{"../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map.styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.styles.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.2
  * http://getbootstrap.com/javascript/#buttons
@@ -33647,7 +33668,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

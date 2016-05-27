@@ -18,30 +18,17 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
 var oasis = require('../lib/oasis');
-var singleminded = require('../lib/singleminded');
 
 
 // Watch out for IE 8
 var console = window.console || {
     warn: function () {}
 };
-
-
-function updateLotCount(map) {
-    var url = Django.url('lots:lot_count') + '?' + map.getParamsQueryString({ bbox: true });
-    singleminded.remember({
-        name: 'updateLotCount',
-        jqxhr: $.getJSON(url, function (data) {
-            _.each(data, function (value, key) {
-                $('#' + key).text(value);
-            });
-        })
-    });
-}
 
 function updateOwnershipOverview(map) {
     var url = Django.url('lots:lot_ownership_overview');
@@ -273,6 +260,7 @@ $(document).ready(function () {
 
         map.addLotsLayer();
 
+        legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
 
@@ -295,7 +283,7 @@ $(document).ready(function () {
         $('.filter').change(function () {
             var params = map.buildLotFilterParams();
             map.updateFilters(params);
-            updateLotCount(map);
+            $(document).trigger('updateLotCount');
         });
 
         // When the select for an owner is changed, check that owner type
@@ -305,13 +293,13 @@ $(document).ready(function () {
                 .trigger('change');
         });
 
-        updateLotCount(map);
+        $(document).trigger('updateLotCount');
         map.on({
             'moveend': function () {
-                updateLotCount(map);
+                $(document).trigger('updateLotCount');
             },
             'zoomend': function () {
-                updateLotCount(map);
+                $(document).trigger('updateLotCount');
             },
             'lotlayertransition': function (e) {
                 map.addLotsLayer(map.buildLotFilterParams());
