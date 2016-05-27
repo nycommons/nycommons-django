@@ -5982,6 +5982,13 @@ footer .footer-right {
     left: 0;
   }
 }
+.legend-button {
+  float: right;
+  margin-right: 15px;
+}
+.legend-button:first-of-type {
+  margin-right: 0;
+}
 .legend-marker {
   background: black;
   border-radius: 10px;
@@ -6644,6 +6651,10 @@ footer .social-media-twitter {
   top: 152px;
   width: 25%;
   z-index: 5000;
+}
+.map-sidebar h2 {
+  font-weight: normal;
+  margin: 0;
 }
 .map-sidebar .sidebar-section {
   background-color: #ffffff;
