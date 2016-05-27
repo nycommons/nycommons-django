@@ -84,3 +84,24 @@
         width: 90%;
     }
 }
+
+.map-header-btn {
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+    float: right;
+    height: @header-bar-height;
+    margin-top: -(2 * @header-bar-height);
+    width: @header-bar-height;
+}
+
+.map-header-locate-btn {
+    background-image: data-uri("../../img/locate.png");
+}
+
+.map-header-search-btn {
+    background-image: data-uri("../../img/search.png");
+    margin-right: @header-bar-height;
+    margin-top: 1 - (2 * @header-bar-height);
+    width: 22px;
+}

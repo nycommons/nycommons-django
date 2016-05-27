@@ -6271,6 +6271,24 @@ fieldset[disabled] .btn-show-details.active {
   height: 100%;
   width: 90%;
 }
+.map-header-btn {
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: block;
+  float: right;
+  height: 25px;
+  margin-top: -50px;
+  width: 25px;
+}
+.map-header-locate-btn {
+  background-image: url("../../img/locate.png");
+}
+.map-header-search-btn {
+  background-image: url("../../img/search.png");
+  margin-right: 25px;
+  margin-top: -49px;
+  width: 22px;
+}
 .menu-expanded {
   display: none;
   background: white;
