@@ -6629,8 +6629,11 @@ footer .social-media-twitter {
 }
 .map-sidebar .sidebar-section {
   background-color: #ffffff;
+  border-left: 1px #f6f6f6 solid;
+  border-right: 1px #f6f6f6 solid;
+  border-bottom: 1px #8e8e8e solid;
   margin-top: 10px;
-  padding: 5px;
+  padding: 15px;
 }
 .map-sidebar .sidebar-section:first-of-type {
   margin-top: 0;
