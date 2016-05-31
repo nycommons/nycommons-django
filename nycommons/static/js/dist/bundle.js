@@ -703,11 +703,12 @@ L.LotMap = L.Map.extend({
                         y = this._map.latLngToContainerPoint(latlng).y - 100,
                         point = this._map.containerPointToLatLng([x, y]),
                         template = this._map.getPopupTemplate();
+                    var layer = this;
                     this.bindPopup('<div id="popup"></div>').openPopup();
                     var spinner = new Spinner().spin($('#popup')[0]);
                     $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
                         spinner.stop();
-                        $('#popup').append(template(data));
+                        layer.setPopupContent(template(data));
                     });
                     return this._map.setView(point, this._map._zoom);
                 },
@@ -33668,7 +33669,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
