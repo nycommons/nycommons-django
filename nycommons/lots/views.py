@@ -67,8 +67,8 @@ class LotDetailView(PlacesDetailView):
 
 
 class LotDetailViewJSON(JSONResponseMixin, BaseLotDetailView):
-    slug_field = 'bbl'
-    slug_url_kwarg = 'bbl'
+    slug_field = 'pk'
+    slug_url_kwarg = 'pk'
 
     def round_acres(self, lot):
         try:
