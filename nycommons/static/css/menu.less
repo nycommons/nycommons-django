@@ -1,5 +1,21 @@
 @menu-button-size: 35px;
 
+.map-menu {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    z-index: 5001;
+
+    .social-media {
+        float: left;
+
+        a {
+            margin-right: 5px;
+            margin-top: 0;
+        }
+    }
+}
+
 .menu-expanded {
     display: none;
     background: white;
@@ -19,13 +35,10 @@
     border-radius: 50%;
     height: @menu-button-size;
     margin: 0;
+    margin-left: 3px;
     padding: 0;
     padding-left: 5px;
-    position: absolute;
-    right: 15px;
-    top: 15px;
     width: @menu-button-size;
-    z-index: 5001;
 
     @media (min-width: @grid-float-breakpoint) {
         display: block;

@@ -6347,6 +6347,19 @@ fieldset[disabled] .btn-show-details.active {
     margin-top: 0;
   }
 }
+.map-menu {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  z-index: 5001;
+}
+.map-menu .social-media {
+  float: left;
+}
+.map-menu .social-media a {
+  margin-right: 5px;
+  margin-top: 0;
+}
 .menu-expanded {
   display: none;
   background: white;
@@ -6364,13 +6377,10 @@ fieldset[disabled] .btn-show-details.active {
   border-radius: 50%;
   height: 35px;
   margin: 0;
+  margin-left: 3px;
   padding: 0;
   padding-left: 5px;
-  position: absolute;
-  right: 15px;
-  top: 15px;
   width: 35px;
-  z-index: 5001;
 }
 @media (min-width: 768px) {
   .menu-button {
