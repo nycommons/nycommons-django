@@ -48,7 +48,7 @@ L.LotMap = L.Map.extend({
                         x = this._map.latLngToContainerPoint(latlng).x,
                         y = this._map.latLngToContainerPoint(latlng).y - 100,
                         point = this._map.containerPointToLatLng([x, y]),
-                        template = this._map.getPopupTemplate(),
+                        template = this._map.getPopupTemplate();
                     this.bindPopup('<div id="popup"></div>').openPopup();
                     var spinner = new Spinner().spin($('#popup')[0]);
                     $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
@@ -84,8 +84,8 @@ L.LotMap = L.Map.extend({
         },
         popupOptions: {
             autoPan: false,
-            maxWidth: 250,
-            minWidth: 250,
+            maxWidth: 300,
+            minWidth: 300,
             offset: [0, 0]
         }
     },

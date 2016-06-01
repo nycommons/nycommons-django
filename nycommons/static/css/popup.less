@@ -1,20 +1,32 @@
 #popup {
-    height: 200px;
-    width: 225px;
+    color: @gray;
+    height: 120px;
+    width: 300px;
 
     header {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
-        margin-bottom: 10px;
+
+        a {
+            color: @gray;
+        }
+    }
+
+    .btn {
+        margin-top: 10px;
     }
 
     .popup {
         &-streetview {
-            .make-xs-column(6);
+            .make-xs-column(5);
+
+            img {
+                max-width: 100%;
+            }
         }
 
         &-lot-details {
-            .make-xs-column(6);
+            .make-xs-column(7);
 
             .owner {
                 margin-bottom: 3px;
@@ -29,4 +41,16 @@
             }
         }
     }
+}
+
+.leaflet-popup-content-wrapper {
+    border-left: 1px @light-gray solid;
+    border-right: 1px @light-gray solid;
+    border-bottom: 1px @gray solid;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.leaflet-popup-tip-container {
+    margin-top: -1px;
 }
