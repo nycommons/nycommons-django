@@ -19,14 +19,31 @@
 .menu-expanded {
     display: none;
     background: white;
+    min-width: 200px;
     padding-top: 50px;
     position: absolute;
     right: 0;
     top: 0;
     z-index: 5000;
 
-    li {
+    .navbar-nav {
         float: none;
+        margin-left: 0;
+        padding: 15px;
+
+        & > li {
+            float: none;
+
+            & > a {
+                padding: 5px 0;
+            }
+        }
+    }
+
+    .submenu {
+        display: block;
+        position: inherit;
+        z-index: inherit;
     }
 }
 

@@ -6363,14 +6363,28 @@ fieldset[disabled] .btn-show-details.active {
 .menu-expanded {
   display: none;
   background: white;
+  min-width: 200px;
   padding-top: 50px;
   position: absolute;
   right: 0;
   top: 0;
   z-index: 5000;
 }
-.menu-expanded li {
+.menu-expanded .navbar-nav {
   float: none;
+  margin-left: 0;
+  padding: 15px;
+}
+.menu-expanded .navbar-nav > li {
+  float: none;
+}
+.menu-expanded .navbar-nav > li > a {
+  padding: 5px 0;
+}
+.menu-expanded .submenu {
+  display: block;
+  position: inherit;
+  z-index: inherit;
 }
 .menu-button {
   background: white;
