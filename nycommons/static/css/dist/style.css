@@ -6363,6 +6363,8 @@ fieldset[disabled] .btn-show-details.active {
 .menu-expanded {
   display: none;
   background: white;
+  border-left: 1px #f6f6f6 solid;
+  border-bottom: 1px #8e8e8e solid;
   min-width: 200px;
   padding-top: 50px;
   position: absolute;
