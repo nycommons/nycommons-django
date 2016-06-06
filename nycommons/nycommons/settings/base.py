@@ -192,6 +192,7 @@ INSTALLED_APPS = (
     'nycdata',
     'nycdata.citycouncildistricts',
     'nycdata.communitydistricts',
+    'nycdata.libraries',
     'nycdata.parcels',
     'nycdata.postoffices',
 
