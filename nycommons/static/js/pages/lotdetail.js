@@ -11,7 +11,7 @@ require('leaflet-dataoptions');
 
 //require('../leaflet.lotlayer');
 //require('../leaflet.lotmarker');
-var mapstyles = require('../map.styles');
+var mapstyles = require('../lib/map-styles');
 var StreetView = require('../lib/streetview');
 
 

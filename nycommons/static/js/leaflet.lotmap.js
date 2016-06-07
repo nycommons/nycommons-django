@@ -2,7 +2,7 @@ var _ = require('underscore');
 var filters = require('./filters');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
-var mapstyles = require('./map.styles');
+var mapstyles = require('./lib/map-styles');
 var Spinner = require('spin.js');
 
 require('livinglots.addlot');

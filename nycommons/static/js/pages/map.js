@@ -9,7 +9,7 @@ var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
 var filters = require('../filters');
-var styles = require('../map.styles');
+var styles = require('../lib/map-styles');
 
 require('../leaflet.lotmap');
 require('bootstrap_button');
