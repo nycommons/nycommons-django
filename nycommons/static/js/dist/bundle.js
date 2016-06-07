@@ -720,12 +720,7 @@ L.LotMap = L.Map.extend({
             });
         },
         pointToLayer: function (feature, latlng) {
-            var options = {};
-            //var layers = feature.properties.layers.split(',');
-            //if (_.contains(layers, 'organizing') || _.contains(layers, 'in_use_started_here')) {
-                //options.hasOrganizers = true;
-            //}
-            return L.lotMarker(latlng, options);
+            return L.lotMarker(latlng, {});
         },
         style: function (feature) {
             var style = {
@@ -831,55 +826,13 @@ L.LotMap = L.Map.extend({
     },
 
     addLotsLayer: function () {
-        this.addCentroidsLayer();
-        /*
-        this.addPolygonsLayer();
-        if (this.getZoom() <= this.lotLayerTransitionPoint) {
-            this.addLayer(this.centroidsLayer);
-            this.removeLayer(this.polygonsLayer);
-        }
-        else {
-            this.removeLayer(this.centroidsLayer);
-            this.addLayer(this.polygonsLayer);
-        }
-        */
-    },
-
-    addCentroidsLayer: function () {
         var url = this.options.lotCentroidsUrl;
-
-        /*
-        var options = {
-            serverZooms: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            unique: function (feature) {
-                return feature.id;
-            }
-        };
-        */
-
         this.centroidsLayer = L.geoJsonGridLayer(url, {
             layers: {
-                'lots-centroids': this.lotLayerOptions
+                'lots-centroids': this.lotLayerOptions,
+                'lots-polygons': this.lotLayerOptions
             }
         }).addTo(this);
-    },
-
-    addPolygonsLayer: function () {
-        if (this.polygonsLayer) {
-            this.removeLayer(this.polygonsLayer);
-        }
-        var url = this.options.lotPolygonsUrl;
-
-        var options = {
-            maxZoom: 19,
-            serverZooms: [16],
-            unique: function (feature) {
-                return feature.id;
-            }
-        };
-
-        var layerOptions = L.extend({}, this.lotLayerOptions);
-        this.polygonsLayer = L.lotLayer(url, options, layerOptions);
     },
 
     updateFilters: function (params) {
@@ -33680,7 +33633,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
