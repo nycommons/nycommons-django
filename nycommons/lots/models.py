@@ -81,13 +81,15 @@ class LotManager(BaseLotManager):
             pass
         return build_bbl(6, block, lot_number), block, lot_number
 
-    def get_lot_kwargs_by_geom(self, geom, **defaults):
+    def get_lot_kwargs_by_geom(self, geom, borough=None, **defaults):
         kwargs = super(LotManager, self).get_lot_kwargs_by_geom(geom, **defaults)
-        borough = find_borough(kwargs['centroid']).label
         if not borough:
-            raise ValueError('Could not find a borough for this lot. Either '
-                             'the lot is outside of NYC or the boroughs have '
-                             'not been uploaded as boundaries.')
+            try:
+                borough = find_borough(kwargs['centroid']).label
+            except AttributeError:
+                raise ValueError('Could not find a borough for this lot. '
+                                 'Either the lot is outside of NYC or the '
+                                 'boroughs have not been uploaded as boundaries.')
         bbl, block, lot = self.fake_bbl(borough)
 
         kwargs.update({
