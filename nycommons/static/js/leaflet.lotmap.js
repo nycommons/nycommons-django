@@ -79,7 +79,7 @@ L.LotMap = L.Map.extend({
                 fillOpacity: 1,
                 stroke: 0
             };
-            //style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
             return style;
         },
         popupOptions: {
