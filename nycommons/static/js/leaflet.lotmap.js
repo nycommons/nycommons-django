@@ -173,10 +173,12 @@ L.LotMap = L.Map.extend({
 
     addLotsLayer: function () {
         var url = this.options.lotCentroidsUrl;
+        var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
+        var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
         this.centroidsLayer = L.geoJsonGridLayer(url, {
             layers: {
-                'lots-centroids': this.lotLayerOptions,
-                'lots-polygons': this.lotLayerOptions
+                'lots-centroids': centroidsOptions,
+                'lots-polygons': polygonsOptions
             }
         }).addTo(this);
     },

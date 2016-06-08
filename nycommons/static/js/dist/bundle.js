@@ -827,10 +827,12 @@ L.LotMap = L.Map.extend({
 
     addLotsLayer: function () {
         var url = this.options.lotCentroidsUrl;
+        var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
+        var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
         this.centroidsLayer = L.geoJsonGridLayer(url, {
             layers: {
-                'lots-centroids': this.lotLayerOptions,
-                'lots-polygons': this.lotLayerOptions
+                'lots-centroids': centroidsOptions,
+                'lots-polygons': polygonsOptions
             }
         }).addTo(this);
     },
@@ -11557,6 +11559,16 @@ if (typeof require !== 'undefined' && require.extensions) {
 
             onAdd: function (map) {
                 L.GridLayer.prototype.onAdd.call(this, map);
+                map.on('zoomanim', this._handleZoom.bind(this));
+            },
+
+            onRemove: function (map) {
+                L.GridLayer.prototype.onRemove.call(this, map);
+                map.off('zoomanim', this._handleZoom.bind(this));
+            },
+
+            _handleZoom: function (e) {
+                this.checkZoomConditions(e.zoom);
             },
 
             createTile: function (coords, done) {
@@ -11616,6 +11628,7 @@ if (typeof require !== 'undefined' && require.extensions) {
             addSubLayerData: function (sublayer, data) {
                 if (!this._geojsons[sublayer]) {
                     this._geojsons[sublayer] = new L.geoJson(null, this.options.layers[sublayer]).addTo(this._map);
+                    this.checkZoomConditions(this._map.getZoom());
                 }
                 var toAdd = data.features.filter(function (feature) {
                     return !this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id);
@@ -11632,6 +11645,22 @@ if (typeof require !== 'undefined' && require.extensions) {
                 this._geojsons[sublayer].addData({
                     type: 'FeatureCollection',
                     features: toAdd
+                });
+            },
+
+            checkZoomConditions: function (zoom) {
+                var layers = this._geojsons,
+                    map = this._map;
+                Object.keys(layers).forEach(function (key) {
+                    var layer = layers[key],
+                        options = layer.options;
+                    if ((options.maxZoom && zoom > options.maxZoom) ||
+                        (options.minZoom && zoom < options.minZoom)) {
+                        map.removeLayer(layer);
+                    }
+                    else {
+                        map.addLayer(layer);
+                    }
                 });
             }
         });
@@ -33633,7 +33662,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
