@@ -5751,22 +5751,21 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .filter-section:last-child {
   border-bottom: none;
 }
-.filter-owner {
-  margin-top: 10px;
+.filters-list {
+  list-style: none;
+  padding: 0;
 }
-.filter-owner:first-child {
-  margin-top: 0;
+.filters-list label {
+  display: inline;
+  font-weight: normal;
 }
-.filter-owner-list {
+.filter-owners-list {
   list-style: none;
   margin: 0;
   padding-left: 0;
 }
-.filter-owner-label {
-  width: 90%;
-}
-.filter-owner select {
-  width: 100%;
+.filter-owners-list label {
+  margin-left: 10px;
 }
 .filter-section-boundaries-item {
   margin-top: 10px;
