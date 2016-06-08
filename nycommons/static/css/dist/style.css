@@ -5741,8 +5741,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   display: block;
 }
 .filter-select {
-  margin-left: 10%;
-  width: 80%;
+  width: 100%;
 }
 .filter-section {
   border-bottom: 1px solid black;
@@ -5767,8 +5766,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   width: 90%;
 }
 .filter-owner select {
-  margin-left: 10%;
-  width: 80%;
+  width: 100%;
 }
 .filter-section-boundaries-item {
   margin-top: 10px;
@@ -5777,8 +5775,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   margin-top: 0;
 }
 .filter-section-boundaries select {
-  margin-left: 10%;
-  width: 80%;
+  width: 100%;
 }
 footer {
   background: #f6f6f6;
