@@ -5744,12 +5744,12 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   width: 100%;
 }
 .filter-section {
-  border-bottom: 1px solid black;
   padding-bottom: 10px;
   padding-top: 10px;
 }
-.filter-section:last-child {
-  border-bottom: none;
+.filter-section h3 {
+  font-weight: normal;
+  margin: 0;
 }
 .filters-list {
   list-style: none;
