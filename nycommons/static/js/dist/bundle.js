@@ -1,4 +1,210 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
+//
+// filters.js
+//
+// Map filters
+//
+var _ = require('underscore');
+var flight = require('flightjs');
+var turf = {};
+turf.inside = require('turf-inside');
+turf.point = require('turf-point');
+
+
+var defaultFilters = {
+    layers: ['organizing', 'in_use', 'no_people', 'in_use_started_here'],
+    ownerTypes: ['private_opt_in', 'public'],
+    parents_only: true
+};
+
+
+var renamedFilters = {
+    ownerTypes: 'owner_types',
+    privateOwnerPks: 'private_owners',
+    publicOwnerPks: 'public_owners'
+};
+
+
+function normalizeFilters(filters) {
+    // Normalize filters that are arrays
+    _.each(['layers', 'ownerTypes', 'privateOwnerPks', 'publicOwnerPks'], function (key) {
+        if (filters[key]) {
+            filters[key] = filters[key].join(',');
+        }
+    });
+
+    // Rename filters for url
+    _.each(renamedFilters, function (newName, oldName) {
+        if (filters[oldName] !== undefined) {
+            filters[newName] = filters[oldName];
+            delete filters[oldName];
+        }
+    });
+
+    // Handle boundary
+    if (filters.boundaryLayer && filters.boundaryPk) {
+        filters.boundary = filters.boundaryLayer + '::' + filters.boundaryPk;
+        delete filters.boundaryPk;
+        delete filters.boundaryLayer;
+    }
+    return filters;
+}
+
+
+function toParams(filters) {
+    return normalizeFilters(_.extend({}, defaultFilters, filters));
+}
+
+
+
+// An individual filter (eg a checkbox)
+var filter = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleChange = function (event) {
+        this.attr.filterList.trigger('filterChanged', {
+            name: this.name,
+            type: this.type,
+            value: this.$node.prop('checked')
+        });
+    };
+
+    this.after('initialize', function () {
+        this.name = this.$node.attr('name');
+        this.type = this.$node.data('type');
+        this.on('change', this.handleChange);
+    });
+});
+
+// A group of filters, should be one per page
+var filters = flight.component(function () {
+    this.handleFilterChanged = function (event, data) {
+        $(document).trigger('filtersChanged', {
+            filters: this.aggregateFilters()
+        });
+    };
+
+    this.aggregateFilters = function () {
+        var layers = this.$node.find('.filter[data-type=layer]:checked').map(function () {
+            return $(this).attr('name');
+        });
+        return {
+            layers: layers
+        }
+    };
+
+    this.currentFilters = function () {
+        return this.aggregateFilters();
+    };
+
+    this.after('initialize', function () {
+        filter.attachTo(this.$node.find('.filter'), {
+            filterList: this
+        });
+
+        // Set off filterChanged with current state of filters
+        this.handleFilterChanged();
+
+        this.on('filterChanged', this.handleFilterChanged);
+    });
+});
+
+module.exports = {
+    filters: filters,
+
+    lotShouldAppear: function (lot, filters, boundariesLayer) {
+        // Should a lot show up on the map?
+        //
+        // The filters UI is split into three categories:
+        //  * boundaries
+        //  * ownership
+        //  * layers / categories
+        //
+        // We follow these three categories to find a reason to exclude a lot.
+        // If a lot fails for any of the three categories, it fails for all and
+        // is not shown.
+        var layer = lot.feature.properties.commons_type;
+        if (!_.contains(filters.layers, layer)) {
+            return false;
+        }
+
+        /*
+         * Boundaries
+         */
+
+        // Look at current boundary, hide anything not in it
+        /*
+        if (boundariesLayer.getLayers().length > 0) {
+            var centroid = lot.getBounds().getCenter(),
+                point = turf.point([centroid.lng, centroid.lat]),
+                polygon = boundariesLayer.getLayers()[0].toGeoJSON();
+            if (!turf.inside(point, polygon)) {
+                return false;
+            }
+        }
+        */
+
+        return true;
+    },
+
+    paramsToFilters: function (params) {
+        var filters = _.extend({}, params);
+        //filters.layers = filters.layers.split(',');
+        //filters.owner_types = filters.owner_types.split(',');
+        if (filters.public_owners) {
+            filters.public_owners = _.map(filters.public_owners.split(','), function (ownerPk) {
+                return parseInt(ownerPk);
+            });
+        }
+        if (filters.private_owners) {
+            filters.private_owners = _.map(filters.private_owners.split(','), function (ownerPk) {
+                return parseInt(ownerPk);
+            });
+        }
+        return filters;
+    },
+
+    // Take the current state of the map and filters to create params suitable
+    // for requests (eg counts)
+    filtersToParams: function (map, options) {
+        /*
+        var filters = {
+            publicOwnerPks: $('.filter-owner-public').val().split(','),
+            privateOwnerPks: $('.filter-owner-private').val().split(',')
+        };
+        filters.layers = _.map($('.filter-layer:checked'), function (layer) {
+            return $(layer).attr('name'); 
+        });
+        filters.ownerTypes = _.map($('.filter-owner-type:checked'), function (ownerType) {
+            return $(ownerType).attr('name'); 
+        });
+
+        // Add boundary, if any
+        $.each($('.filter-boundaries'), function () {
+            if ($(this).val() !== '') {
+                filters.boundaryLayer = $(this).data('layer');
+                filters.boundaryPk = $(this).val();
+            }
+        });
+
+        var params = toParams(filters);
+
+        // Add BBOX if requested
+        if (options && options.bbox) {
+            params.bbox = map.getBounds().toBBoxString();
+        }
+
+        return params;
+        */
+        return {};
+    },
+
+    toParams: toParams
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","turf-inside":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/turf-inside/index.js","turf-point":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/turf-point/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js":[function(require,module,exports){
 var _ = require('underscore');
 var flight = require('flightjs');
 var singleminded = require('../lib/singleminded');
@@ -172,186 +378,7 @@ $(document).ready(function () {
     recentActivity.attachTo('.recent-activity');
 });
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js":[function(require,module,exports){
-var _ = require('underscore');
-var turf = {};
-turf.inside = require('turf-inside');
-turf.point = require('turf-point');
-
-
-var defaultFilters = {
-    layers: ['organizing', 'in_use', 'no_people', 'in_use_started_here'],
-    ownerTypes: ['private_opt_in', 'public'],
-    parents_only: true
-};
-
-
-var renamedFilters = {
-    ownerTypes: 'owner_types',
-    privateOwnerPks: 'private_owners',
-    publicOwnerPks: 'public_owners'
-};
-
-
-function normalizeFilters(filters) {
-    // Normalize filters that are arrays
-    _.each(['layers', 'ownerTypes', 'privateOwnerPks', 'publicOwnerPks'], function (key) {
-        if (filters[key]) {
-            filters[key] = filters[key].join(',');
-        }
-    });
-
-    // Rename filters for url
-    _.each(renamedFilters, function (newName, oldName) {
-        if (filters[oldName] !== undefined) {
-            filters[newName] = filters[oldName];
-            delete filters[oldName];
-        }
-    });
-
-    // Handle boundary
-    if (filters.boundaryLayer && filters.boundaryPk) {
-        filters.boundary = filters.boundaryLayer + '::' + filters.boundaryPk;
-        delete filters.boundaryPk;
-        delete filters.boundaryLayer;
-    }
-    return filters;
-}
-
-
-function toParams(filters) {
-    return normalizeFilters(_.extend({}, defaultFilters, filters));
-}
-
-
-module.exports = {
-    lotShouldAppear: function (lot, filters, boundariesLayer) {
-        // Should a lot show up on the map?
-        //
-        // The filters UI is split into three categories:
-        //  * boundaries
-        //  * ownership
-        //  * layers / categories
-        //
-        // We follow these three categories to find a reason to exclude a lot.
-        // If a lot fails for any of the three categories, it fails for all and
-        // is not shown.
-        var ownershipLayers = ['public', 'private_opt_in'],
-            peopleInvolvedLayers = ['in_use', 'in_use_started_here', 'organizing'],
-            lotLayers = lot.feature.properties.layers.split(','),
-            lotLayersOwnership = _.intersection(lotLayers, ownershipLayers),
-            lotLayersNotOwnership = _.difference(lotLayers, ownershipLayers);
-
-        /*
-         * Boundaries
-         */
-
-        // Look at current boundary, hide anything not in it
-        if (boundariesLayer.getLayers().length > 0) {
-            var centroid = lot.getBounds().getCenter(),
-                point = turf.point([centroid.lng, centroid.lat]),
-                polygon = boundariesLayer.getLayers()[0].toGeoJSON();
-            if (!turf.inside(point, polygon)) {
-                return false;
-            }
-        }
-
-        /*
-         * Ownership
-         */
-
-        // Ownership types
-        if (_.isEmpty(_.intersection(lotLayersOwnership, filters.owner_types))) {
-            return false;
-        }
-
-        // Individual owners
-        if (filters.public_owners && _.contains(lotLayersOwnership, 'public') &&
-                !_.contains(filters.public_owners, lot.feature.properties.owner)) {
-            return false;
-        }
-        if (filters.private_owners && _.contains(lotLayersOwnership, 'private_opt_in') &&
-                !_.contains(filters.private_owners, lot.feature.properties.owner)) {
-            return false;
-        }
-
-        /*
-         * Layers
-         */
-
-        // No people involved (just vacant): no_people selected, lot has no
-        // people-involving layers associated with it. This is considered
-        // separate to gutterspace, so we check for gutterspace, too.
-        if (_.contains(filters.layers, 'no_people') &&
-            _.isEmpty(_.intersection(peopleInvolvedLayers, lotLayersNotOwnership)) &&
-            !_.contains(lotLayers, 'gutterspace')) {
-            return true;
-        }
-
-        // Other layers
-        if (_.isEmpty(_.intersection(lotLayersNotOwnership, filters.layers))) {
-            return false;
-        }
-
-        return true;
-    },
-
-    paramsToFilters: function (params) {
-        var filters = _.extend({}, params);
-        //filters.layers = filters.layers.split(',');
-        //filters.owner_types = filters.owner_types.split(',');
-        if (filters.public_owners) {
-            filters.public_owners = _.map(filters.public_owners.split(','), function (ownerPk) {
-                return parseInt(ownerPk);
-            });
-        }
-        if (filters.private_owners) {
-            filters.private_owners = _.map(filters.private_owners.split(','), function (ownerPk) {
-                return parseInt(ownerPk);
-            });
-        }
-        return filters;
-    },
-
-    // Take the current state of the map and filters to create params suitable
-    // for requests (eg counts)
-    filtersToParams: function (map, options) {
-        /*
-        var filters = {
-            publicOwnerPks: $('.filter-owner-public').val().split(','),
-            privateOwnerPks: $('.filter-owner-private').val().split(',')
-        };
-        filters.layers = _.map($('.filter-layer:checked'), function (layer) {
-            return $(layer).attr('name'); 
-        });
-        filters.ownerTypes = _.map($('.filter-owner-type:checked'), function (ownerType) {
-            return $(ownerType).attr('name'); 
-        });
-
-        // Add boundary, if any
-        $.each($('.filter-boundaries'), function () {
-            if ($(this).val() !== '') {
-                filters.boundaryLayer = $(this).data('layer');
-                filters.boundaryPk = $(this).val();
-            }
-        });
-
-        var params = toParams(filters);
-
-        // Add BBOX if requested
-        if (options && options.bbox) {
-            params.bbox = map.getBounds().toBBoxString();
-        }
-
-        return params;
-        */
-        return {};
-    },
-
-    toParams: toParams
-};
-
-},{"turf-inside":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/turf-inside/index.js","turf-point":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/turf-point/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js":[function(require,module,exports){
 var geocoder = new google.maps.Geocoder();
 
 function geocode(address, bounds, state, f) {
@@ -451,209 +478,8 @@ Handlebars.registerHelper('pick-area', function (acres, sqft) {
     return sqft + ' sq ft';
 });
 
-},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/ie.js":[function(require,module,exports){
-/**
- * detect IE
- * returns version of IE or false, if browser is not Internet Explorer
- *
- * Taken from this SO answer:
- *  http://stackoverflow.com/questions/19999388/jquery-check-if-user-is-using-ie/21712356#21712356
- */
-function detectIE() {
-    var ua = window.navigator.userAgent;
-
-    var msie = ua.indexOf('MSIE ');
-    if (msie > 0) {
-        // IE 10 or older => return version number
-        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
-    }
-
-    var trident = ua.indexOf('Trident/');
-    if (trident > 0) {
-        // IE 11 => return version number
-        var rv = ua.indexOf('rv:');
-        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
-    }
-
-    var edge = ua.indexOf('Edge/');
-    if (edge > 0) {
-       // IE 12 => return version number
-       return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
-    }
-
-    // other browser
-    return false;
-}
-
-module.exports = {
-
-    detect: detectIE,
-
-    log: function (msg) {
-        if (detectIE()) {
-            console.log(msg);
-        }
-    }
-
-};
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.geojson.tile.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('leaflet-tilelayer-vector');
-
-L.TileLayer.Vector.include({
-
-    getTileUrl: function (coords) {
-        var x = coords.x,
-            y = coords.y,
-            z = this._getZoomForUrl(),
-            url = L.Util.template(this._url, { s: this._getSubdomain(coords) });
-        return url + z + '/' + x + '/' + y + '.geojson';
-    }
-
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-tilelayer-vector":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js":[function(require,module,exports){
-var L = require('leaflet');
+},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js":[function(require,module,exports){
 var _ = require('underscore');
-
-require('leaflet-tilelayer-vector');
-
-var ie = require('./ie');
-require('./leaflet.geojson.tile');
-require('./leaflet.lotmultipolygon');
-require('./leaflet.lotpolygon');
-
-
-L.LotGeoJson = L.GeoJSON.extend({
-
-    initialize: function (geojson, options) {
-        L.GeoJSON.prototype.initialize.call(this, geojson, options);
-    },
-
-    addData: function (geojson) {
-        var features = L.Util.isArray(geojson) ? geojson : geojson.features,
-            i, len, feature;
-
-        if (features) {
-            for (i = 0, len = features.length; i < len; i++) {
-                // Only add this if geometry or geometries are set and not null
-                feature = features[i];
-                if (feature.geometries || feature.geometry || feature.features || feature.coordinates) {
-                    this.addData(features[i]);
-                }
-            }
-            return this;
-        }
-
-        var options = this.options;
-
-        if (options.filter && !options.filter(geojson)) { return; }
-
-        var layer = this.geometryToLotLayer(geojson, options.pointToLayer, options.coordsToLatLng, options);
-        layer.feature = L.GeoJSON.asFeature(geojson);
-
-        layer.defaultOptions = layer.options;
-        this.resetStyle(layer);
-
-        if (options.onEachFeature) {
-            options.onEachFeature(geojson, layer);
-        }
-
-        return this.addLayer(layer);
-    },
-
-    geometryToLotLayer: function (geojson, pointToLayer, coordsToLatLng, vectorOptions) {
-        var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
-            coords = geometry.coordinates,
-            layers = [],
-            latlng, latlngs, i, len,
-            options = L.extend({}, vectorOptions),
-            lotLayers = geojson.properties.layers.split(',');
-
-        if (_.contains(lotLayers, 'organizing') || _.contains(lotLayers, 'in_use_started_here')) {
-            options.hasOrganizers = true;
-        }
-
-        coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
-
-        switch (geometry.type) {
-        case 'Point':
-            latlng = coordsToLatLng(coords);
-            return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
-
-        case 'MultiPoint':
-            for (i = 0, len = coords.length; i < len; i++) {
-                latlng = coordsToLatLng(coords[i]);
-                layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
-            }
-            return new L.FeatureGroup(layers);
-
-        case 'LineString':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 0, coordsToLatLng);
-            return new L.Polyline(latlngs, options);
-
-        case 'Polygon':
-            if (coords.length === 2 && !coords[1].length) {
-                throw new Error('Invalid GeoJSON object.');
-            }
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
-            return L.lotPolygon(latlngs, options);
-
-        case 'MultiLineString':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
-            return new L.MultiPolyline(latlngs, options);
-
-        case 'MultiPolygon':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 2, coordsToLatLng);
-            return new L.LotMultiPolygon(latlngs, options);
-
-        case 'GeometryCollection':
-            for (i = 0, len = geometry.geometries.length; i < len; i++) {
-
-                layers.push(L.GeoJSON.geometryToLayer({
-                    geometry: geometry.geometries[i],
-                    type: 'Feature',
-                    properties: geojson.properties
-                }, pointToLayer, coordsToLatLng, options));
-            }
-            return new L.FeatureGroup(layers);
-
-        default:
-            throw new Error('Invalid GeoJSON object.');
-        }
-    }
-
-});
-
-L.lotGeoJson = function (geojson, options) {
-    return new L.LotGeoJson(geojson, options);
-};
-
-L.LotLayer = L.TileLayer.Vector.extend({
-
-    initialize: function (url, options, geojsonOptions) {
-        options.tileCacheFactory = L.tileCache;
-        options.layerFactory = L.lotGeoJson;
-
-        // Don't use web workers for IE
-        if (ie.detect()) {
-            options.workerFactory = L.noWorker;
-        }
-        L.TileLayer.Vector.prototype.initialize.call(this, url, options,
-                                                      geojsonOptions);
-    },
-
-});
-
-L.lotLayer = function (url, options, geojsonOptions) {
-    return new L.LotLayer(url, options, geojsonOptions);
-};
-
-},{"./ie":"/home/eric/Documents/596/nycommons/nycommons/static/js/ie.js","./leaflet.geojson.tile":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.geojson.tile.js","./leaflet.lotmultipolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js","./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-tilelayer-vector":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/index.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js":[function(require,module,exports){
-var _ = require('underscore');
-var filters = require('./filters');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var mapstyles = require('./lib/map-styles');
@@ -668,16 +494,13 @@ require('leaflet-geojsongridlayer');
 require('leaflet-hash');
 require('leaflet-usermarker');
 
-require('./leaflet.lotlayer');
+var filters = require('./components/filters');
 require('./leaflet.lotmarker');
 
 
 L.LotMap = L.Map.extend({
-    centroidsLayer: null,
+    lotsLayer: null,
     currentFilters: {},
-    polygonsLayer: null,
-    lotLayerTransitionPoint: 15,
-    previousZoom: null,
     userLayer: null,
     userLocationZoom: 16,
 
@@ -744,60 +567,19 @@ L.LotMap = L.Map.extend({
         this.addBaseLayer();
         var hash = new L.Hash(this);
 
-        if (options.filterParams) {
-            this.currentFilters = filters.paramsToFilters(options.filterParams);
-        }
-
         // When new lots are added ensure they should be displayed
-        /*
         var map = this;
         this.on('layeradd', function (event) {
-            // Dig through the layers of layers
-            if (!event.layer.on) { return; }
-            event.layer.on('layeradd', function (event) {
-                // Some layers (eg, drawn lots) don't have eachLayer. Skip.
-                if (!event.layer.eachLayer) { return; }
-                event.layer.eachLayer(function (lot) {
-                    if (!lot.feature || !lot.feature.properties.layers) {
-                        return;
-                    }
-                    if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
-                        lot.show();
-                    }
-                    else {
-                        lot.hide();
-                    }
-                });
-            });
-        });
-
-        this.on('zoomend', function () {
-            var currentZoom = this.getZoom();
-            if (this.previousZoom) {
-                // Switch to centroids
-                if (currentZoom <= this.lotLayerTransitionPoint && 
-                    this.previousZoom > this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: false });
+            if (event.layer.feature) {
+                var lot = event.layer;
+                if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
                 }
-                // Switch to polygons
-                else if (currentZoom > this.lotLayerTransitionPoint &&
-                         this.previousZoom <= this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: true });
+                else {
+                    lot.removeFrom(map);
                 }
             }
-            else {
-                // Start with centroids
-                if (currentZoom <= this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: false });
-                }
-                // Start with polygons
-                else if (currentZoom > this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: true });
-                }
-            }
-            this.previousZoom = currentZoom;
         });
-        */
 
         this.on('boundarieschange', function () {
             this.updateDisplayedLots();
@@ -829,7 +611,7 @@ L.LotMap = L.Map.extend({
         var url = this.options.lotCentroidsUrl;
         var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
         var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
-        this.centroidsLayer = L.geoJsonGridLayer(url, {
+        this.lotsLayer = L.geoJsonGridLayer(url, {
             layers: {
                 'lots-centroids': centroidsOptions,
                 'lots-polygons': polygonsOptions
@@ -837,33 +619,31 @@ L.LotMap = L.Map.extend({
         }).addTo(this);
     },
 
-    updateFilters: function (params) {
-        this.currentFilters = filters.paramsToFilters(params);
-        this.updateDisplayedLots();
-        this.fire('filterschanged', this.currentFilters);
+    updateFilters: function (filters) {
+        this.currentFilters = filters;
+        this.updateDisplayedLots(filters);
     },
 
-    updateDisplayedLots: function () {
-        var map = this;
-        function updateDisplayedLotsForLayer(layer) {
-            if (layer && layer.vectorLayer) {
-                // Lots are nested in tiles so we need to do two layers of 
-                // eachLayer to get to them all
-                layer.vectorLayer.eachLayer(function (tileLayer) {
-                    tileLayer.eachLayer(function (lot) {
-                        if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
-                            lot.show();
-                        }
-                        else {
-                            lot.hide();
-                        }
-                    });
-                });
-            }
-        }
-
-        updateDisplayedLotsForLayer(this.centroidsLayer);
-        updateDisplayedLotsForLayer(this.polygonsLayer);
+    updateDisplayedLots: function (currentFilters) {
+        var layers = this.lotsLayer.getLayers();
+        var map = this,
+            zoom = map.getZoom();
+        layers.forEach(function (layer) {
+            var minZoom = layer.options.minZoom,
+                maxZoom = layer.options.maxZoom;
+            layer.eachLayer(function (lot) {
+                if ((minZoom && zoom < minZoom) || (maxZoom && zoom > maxZoom)) {
+                    lot.removeFrom(map);
+                    return;
+                }
+                if (filters.lotShouldAppear(lot, currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
+                }
+                else {
+                    lot.removeFrom(map);
+                }
+            }, this);
+        }, this);
     },
 
     addUserLayer: function (latlng, opts) {
@@ -888,7 +668,7 @@ L.lotMap = function (id, options) {
     return new L.LotMap(id, options);
 };
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-hash":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-hash/leaflet-hash.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js":[function(require,module,exports){
+},{"./components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-hash":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-hash/leaflet-hash.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js":[function(require,module,exports){
 var L = require('leaflet');
 
 require('./leaflet.lotpath');
@@ -956,63 +736,7 @@ L.lotMarker = function (latlng, options) {
     return new L.LotMarker(latlng, options);
 };
 
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('./leaflet.lotpolygon');
-
-
-L.LotMultiPolygon = L.FeatureGroup.extend({
-
-    initialize: function (latlngs, options) {
-        this._layers = {};
-        this._options = options;
-        this.setLatLngs(latlngs);
-    },
-
-    setLatLngs: function (latlngs) {
-        var i = 0,
-            len = latlngs.length;
-
-        this.eachLayer(function (layer) {
-            if (i < len) {
-                layer.setLatLngs(latlngs[i++]);
-            } else {
-                this.removeLayer(layer);
-            }
-        }, this);
-
-        while (i < len) {
-            this.addLayer(new L.LotPolygon(latlngs[i++], this._options));
-        }
-
-        return this;
-    },
-
-    getLatLngs: function () {
-        var latlngs = [];
-
-        this.eachLayer(function (layer) {
-            latlngs.push(layer.getLatLngs());
-        });
-
-        return latlngs;
-    },
-
-    show: function () {
-        this.eachLayer(function (layer) {
-            layer.show();
-        });
-    },
-
-    hide: function () {
-        this.eachLayer(function (layer) {
-            layer.hide();
-        });
-    }
-});
-
-},{"./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js":[function(require,module,exports){
+},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js":[function(require,module,exports){
 var L = require('leaflet');
 
 
@@ -1074,50 +798,7 @@ L.LotPathMixin = {
 
 };
 
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('./leaflet.lotpath');
-
-
-L.LotPolygon = L.Polygon.extend({
-
-    _pickOpacity: function (zoom) {
-        if (zoom >= 18) {
-            return 0.65;
-        }
-        if (zoom >= 17) {
-            return 0.85;
-        }
-        return 1;
-    },
-
-    _updatePath: function () {
-        // Update opacity
-        this.options.fillOpacity = this._pickOpacity(this._map.getZoom());
-        this._updateStyle();
-
-        this.updateActionPathScale();
-        L.Polygon.prototype._updatePath.call(this);
-    }
-
-});
-
-L.LotPolygon.include(L.LotPathMixin);
-
-L.LotPolygon.addInitHook(function () {
-    this.on({
-        'add': function () {
-            this.initActionPath();
-        }
-    });
-});
-
-L.lotPolygon = function (latlngs, options) {
-    return new L.LotPolygon(latlngs, options);
-};
-
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js":[function(require,module,exports){
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js":[function(require,module,exports){
 //
 // Lot map styles by layer for maps
 //
@@ -1478,7 +1159,7 @@ $.fn.mapsearch = function (options) {
 // should be in data- attributes such that they will work in 
 // filters.toParams().
 //
-var filters = require('./filters');
+var filters = require('./components/filters');
 
 
 function mapLink(linkFilters) {
@@ -1498,7 +1179,7 @@ module.exports = {
     init: init
 };
 
-},{"./filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js":[function(require,module,exports){
+},{"./components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js":[function(require,module,exports){
 //
 // addorganizer.js
 //
@@ -1672,7 +1353,6 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var filters = require('../filters');
 var styles = require('../lib/map-styles');
 
 require('../leaflet.lotmap');
@@ -1682,6 +1362,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var filters = require('../components/filters');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
@@ -1771,46 +1452,6 @@ function initializeBoundaries(map) {
     $('.filter-boundaries').each(function () {
         if ($(this).val()) {
             $(this).trigger('change', { zoomToBounds: false });
-        }
-    });
-}
-
-function initializeNYCHA(map) {
-    $('.filter-nycha').change(function () {
-        // Only add layer if admin
-        if (!Django.user.has_perm('lots.change_lot')) {
-            return;
-        }
-
-        // Create layer if we need to
-        if (!map.nychaLayer) {
-            map.nychaLayer = L.geoJson(null, {
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(feature.properties.name);
-                },
-                style: function (feature) {
-                    var color = '#FFA813';
-                    if (feature.properties.projects_within > 0) {
-                        color = styles.fillColors.in_use;
-                    }
-                    return {
-                        color: color
-                    };
-                }
-            });
-        }
-        if ($(this).is(':checked')) {
-            // If selected, show NYCHA layer
-            if (map.nychaLayer.getLayers().length === 0) {
-                $.getJSON(Django.url('nycha_list'), function (data) {
-                    map.nychaLayer.addData(data);
-                });
-            }
-            map.addLayer(map.nychaLayer);
-        }
-        else {
-            // If not select, hide and unfilter lots
-            map.removeLayer(map.nychaLayer);
         }
     });
 }
@@ -1920,13 +1561,19 @@ $(document).ready(function () {
         map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
-        initializeNYCHA(map);
 
         map.addLotsLayer();
+
+        $(document).on('filtersChanged', function (event, data) {
+            map.updateFilters(data.filters);
+            var params = map.buildLotFilterParams();
+            $(document).trigger('updateLotCount');
+        });
 
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        filters.filters.attachTo('.filters-section');
 
         $('.details-print').click(function () {
             window.print();
@@ -1943,19 +1590,6 @@ $(document).ready(function () {
                     popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing a vacant lot here that you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
                 });
             });
-
-        $('.filter').change(function () {
-            var params = map.buildLotFilterParams();
-            map.updateFilters(params);
-            $(document).trigger('updateLotCount');
-        });
-
-        // When the select for an owner is changed, check that owner type
-        $('.filter-owner select').change(function () {
-            $(this).parents('.filter-owner').find('.filter-owner-type')
-                .prop('checked', true)
-                .trigger('change');
-        });
 
         $(document).trigger('updateLotCount');
         map.on({
@@ -1987,7 +1621,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/filters.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
+},{"../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.2
  * http://getbootstrap.com/javascript/#buttons
@@ -11607,6 +11241,15 @@ if (typeof require !== 'undefined' && require.extensions) {
                 };
 
                 request.send();
+            },
+
+            getLayers: function () {
+                var geojsons = this._geojsons,
+                    layers = [];
+                Object.keys(geojsons).forEach(function (key) {
+                    layers.push(geojsons[key]);
+                });
+                return layers;
             },
 
             hasLayerWithId: function (sublayer, id) {
@@ -33663,7 +33306,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

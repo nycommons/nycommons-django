@@ -5,7 +5,7 @@
 // should be in data- attributes such that they will work in 
 // filters.toParams().
 //
-var filters = require('./filters');
+var filters = require('./components/filters');
 
 
 function mapLink(linkFilters) {

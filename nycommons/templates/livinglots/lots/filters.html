@@ -1,13 +1,13 @@
 {% load boundaries_tags citycouncildistricts_tags communitydistricts_tags i18n owners_tags %}
 
-<div>
+<div class="filters-section">
     <a href="#" class="close">Close</a>
     <h2>Property Filters</h2>
     <ul class="filters-list">
         <li>
-            <input id="layer-public" type="checkbox" class="filter filter-layer" name="public" checked />
-            <label for="layer-public">
-                {% trans "publicly owned land" %}
+            <input id="layer-post-offices" type="checkbox" class="filter filter-layer" name="post office" data-type="layer" checked />
+            <label for="layer-post-offices">
+                {% trans "post offices" %}
             </label>
 
             <ul class="filter-owners-list">
@@ -21,9 +21,15 @@
             </ul>
         </li>
         <li>
-            <input id="layer-private" type="checkbox" class="filter filter-layer" name="private" checked />
-            <label for="layer-private">
-                {% trans "private land belonging to an owner who wants to see it used" %}
+            <input id="layer-libraries" type="checkbox" class="filter filter-layer" name="library" data-type="layer" checked />
+            <label for="layer-libraries">
+                {% trans "libraries" %}
+            </label>
+        </li>
+        <li>
+            <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="NYCHA" data-type="layer" checked />
+            <label for="layer-public-housing">
+                {% trans "public housing sites" %}
             </label>
         </li>
     </ul>

@@ -1,4 +1,10 @@
+//
+// filters.js
+//
+// Map filters
+//
 var _ = require('underscore');
+var flight = require('flightjs');
 var turf = {};
 turf.inside = require('turf-inside');
 turf.point = require('turf-point');
@@ -49,7 +55,64 @@ function toParams(filters) {
 }
 
 
+
+// An individual filter (eg a checkbox)
+var filter = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleChange = function (event) {
+        this.attr.filterList.trigger('filterChanged', {
+            name: this.name,
+            type: this.type,
+            value: this.$node.prop('checked')
+        });
+    };
+
+    this.after('initialize', function () {
+        this.name = this.$node.attr('name');
+        this.type = this.$node.data('type');
+        this.on('change', this.handleChange);
+    });
+});
+
+// A group of filters, should be one per page
+var filters = flight.component(function () {
+    this.handleFilterChanged = function (event, data) {
+        $(document).trigger('filtersChanged', {
+            filters: this.aggregateFilters()
+        });
+    };
+
+    this.aggregateFilters = function () {
+        var layers = this.$node.find('.filter[data-type=layer]:checked').map(function () {
+            return $(this).attr('name');
+        });
+        return {
+            layers: layers
+        }
+    };
+
+    this.currentFilters = function () {
+        return this.aggregateFilters();
+    };
+
+    this.after('initialize', function () {
+        filter.attachTo(this.$node.find('.filter'), {
+            filterList: this
+        });
+
+        // Set off filterChanged with current state of filters
+        this.handleFilterChanged();
+
+        this.on('filterChanged', this.handleFilterChanged);
+    });
+});
+
 module.exports = {
+    filters: filters,
+
     lotShouldAppear: function (lot, filters, boundariesLayer) {
         // Should a lot show up on the map?
         //
@@ -61,17 +124,17 @@ module.exports = {
         // We follow these three categories to find a reason to exclude a lot.
         // If a lot fails for any of the three categories, it fails for all and
         // is not shown.
-        var ownershipLayers = ['public', 'private_opt_in'],
-            peopleInvolvedLayers = ['in_use', 'in_use_started_here', 'organizing'],
-            lotLayers = lot.feature.properties.layers.split(','),
-            lotLayersOwnership = _.intersection(lotLayers, ownershipLayers),
-            lotLayersNotOwnership = _.difference(lotLayers, ownershipLayers);
+        var layer = lot.feature.properties.commons_type;
+        if (!_.contains(filters.layers, layer)) {
+            return false;
+        }
 
         /*
          * Boundaries
          */
 
         // Look at current boundary, hide anything not in it
+        /*
         if (boundariesLayer.getLayers().length > 0) {
             var centroid = lot.getBounds().getCenter(),
                 point = turf.point([centroid.lng, centroid.lat]),
@@ -80,43 +143,7 @@ module.exports = {
                 return false;
             }
         }
-
-        /*
-         * Ownership
-         */
-
-        // Ownership types
-        if (_.isEmpty(_.intersection(lotLayersOwnership, filters.owner_types))) {
-            return false;
-        }
-
-        // Individual owners
-        if (filters.public_owners && _.contains(lotLayersOwnership, 'public') &&
-                !_.contains(filters.public_owners, lot.feature.properties.owner)) {
-            return false;
-        }
-        if (filters.private_owners && _.contains(lotLayersOwnership, 'private_opt_in') &&
-                !_.contains(filters.private_owners, lot.feature.properties.owner)) {
-            return false;
-        }
-
-        /*
-         * Layers
-         */
-
-        // No people involved (just vacant): no_people selected, lot has no
-        // people-involving layers associated with it. This is considered
-        // separate to gutterspace, so we check for gutterspace, too.
-        if (_.contains(filters.layers, 'no_people') &&
-            _.isEmpty(_.intersection(peopleInvolvedLayers, lotLayersNotOwnership)) &&
-            !_.contains(lotLayers, 'gutterspace')) {
-            return true;
-        }
-
-        // Other layers
-        if (_.isEmpty(_.intersection(lotLayersNotOwnership, filters.layers))) {
-            return false;
-        }
+        */
 
         return true;
     },

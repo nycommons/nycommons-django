@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var filters = require('./filters');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var mapstyles = require('./lib/map-styles');
@@ -14,16 +13,13 @@ require('leaflet-geojsongridlayer');
 require('leaflet-hash');
 require('leaflet-usermarker');
 
-require('./leaflet.lotlayer');
+var filters = require('./components/filters');
 require('./leaflet.lotmarker');
 
 
 L.LotMap = L.Map.extend({
-    centroidsLayer: null,
+    lotsLayer: null,
     currentFilters: {},
-    polygonsLayer: null,
-    lotLayerTransitionPoint: 15,
-    previousZoom: null,
     userLayer: null,
     userLocationZoom: 16,
 
@@ -90,60 +86,19 @@ L.LotMap = L.Map.extend({
         this.addBaseLayer();
         var hash = new L.Hash(this);
 
-        if (options.filterParams) {
-            this.currentFilters = filters.paramsToFilters(options.filterParams);
-        }
-
         // When new lots are added ensure they should be displayed
-        /*
         var map = this;
         this.on('layeradd', function (event) {
-            // Dig through the layers of layers
-            if (!event.layer.on) { return; }
-            event.layer.on('layeradd', function (event) {
-                // Some layers (eg, drawn lots) don't have eachLayer. Skip.
-                if (!event.layer.eachLayer) { return; }
-                event.layer.eachLayer(function (lot) {
-                    if (!lot.feature || !lot.feature.properties.layers) {
-                        return;
-                    }
-                    if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
-                        lot.show();
-                    }
-                    else {
-                        lot.hide();
-                    }
-                });
-            });
-        });
-
-        this.on('zoomend', function () {
-            var currentZoom = this.getZoom();
-            if (this.previousZoom) {
-                // Switch to centroids
-                if (currentZoom <= this.lotLayerTransitionPoint && 
-                    this.previousZoom > this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: false });
+            if (event.layer.feature) {
+                var lot = event.layer;
+                if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
                 }
-                // Switch to polygons
-                else if (currentZoom > this.lotLayerTransitionPoint &&
-                         this.previousZoom <= this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: true });
+                else {
+                    lot.removeFrom(map);
                 }
             }
-            else {
-                // Start with centroids
-                if (currentZoom <= this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: false });
-                }
-                // Start with polygons
-                else if (currentZoom > this.lotLayerTransitionPoint) {
-                    this.fire('lotlayertransition', { details: true });
-                }
-            }
-            this.previousZoom = currentZoom;
         });
-        */
 
         this.on('boundarieschange', function () {
             this.updateDisplayedLots();
@@ -175,7 +130,7 @@ L.LotMap = L.Map.extend({
         var url = this.options.lotCentroidsUrl;
         var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
         var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
-        this.centroidsLayer = L.geoJsonGridLayer(url, {
+        this.lotsLayer = L.geoJsonGridLayer(url, {
             layers: {
                 'lots-centroids': centroidsOptions,
                 'lots-polygons': polygonsOptions
@@ -183,33 +138,31 @@ L.LotMap = L.Map.extend({
         }).addTo(this);
     },
 
-    updateFilters: function (params) {
-        this.currentFilters = filters.paramsToFilters(params);
-        this.updateDisplayedLots();
-        this.fire('filterschanged', this.currentFilters);
+    updateFilters: function (filters) {
+        this.currentFilters = filters;
+        this.updateDisplayedLots(filters);
     },
 
-    updateDisplayedLots: function () {
-        var map = this;
-        function updateDisplayedLotsForLayer(layer) {
-            if (layer && layer.vectorLayer) {
-                // Lots are nested in tiles so we need to do two layers of 
-                // eachLayer to get to them all
-                layer.vectorLayer.eachLayer(function (tileLayer) {
-                    tileLayer.eachLayer(function (lot) {
-                        if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
-                            lot.show();
-                        }
-                        else {
-                            lot.hide();
-                        }
-                    });
-                });
-            }
-        }
-
-        updateDisplayedLotsForLayer(this.centroidsLayer);
-        updateDisplayedLotsForLayer(this.polygonsLayer);
+    updateDisplayedLots: function (currentFilters) {
+        var layers = this.lotsLayer.getLayers();
+        var map = this,
+            zoom = map.getZoom();
+        layers.forEach(function (layer) {
+            var minZoom = layer.options.minZoom,
+                maxZoom = layer.options.maxZoom;
+            layer.eachLayer(function (lot) {
+                if ((minZoom && zoom < minZoom) || (maxZoom && zoom > maxZoom)) {
+                    lot.removeFrom(map);
+                    return;
+                }
+                if (filters.lotShouldAppear(lot, currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
+                }
+                else {
+                    lot.removeFrom(map);
+                }
+            }, this);
+        }, this);
     },
 
     addUserLayer: function (latlng, opts) {

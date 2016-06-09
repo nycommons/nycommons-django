@@ -8,7 +8,6 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var filters = require('../filters');
 var styles = require('../lib/map-styles');
 
 require('../leaflet.lotmap');
@@ -18,6 +17,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var filters = require('../components/filters');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
@@ -107,46 +107,6 @@ function initializeBoundaries(map) {
     $('.filter-boundaries').each(function () {
         if ($(this).val()) {
             $(this).trigger('change', { zoomToBounds: false });
-        }
-    });
-}
-
-function initializeNYCHA(map) {
-    $('.filter-nycha').change(function () {
-        // Only add layer if admin
-        if (!Django.user.has_perm('lots.change_lot')) {
-            return;
-        }
-
-        // Create layer if we need to
-        if (!map.nychaLayer) {
-            map.nychaLayer = L.geoJson(null, {
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(feature.properties.name);
-                },
-                style: function (feature) {
-                    var color = '#FFA813';
-                    if (feature.properties.projects_within > 0) {
-                        color = styles.fillColors.in_use;
-                    }
-                    return {
-                        color: color
-                    };
-                }
-            });
-        }
-        if ($(this).is(':checked')) {
-            // If selected, show NYCHA layer
-            if (map.nychaLayer.getLayers().length === 0) {
-                $.getJSON(Django.url('nycha_list'), function (data) {
-                    map.nychaLayer.addData(data);
-                });
-            }
-            map.addLayer(map.nychaLayer);
-        }
-        else {
-            // If not select, hide and unfilter lots
-            map.removeLayer(map.nychaLayer);
         }
     });
 }
@@ -256,13 +216,19 @@ $(document).ready(function () {
         map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
-        initializeNYCHA(map);
 
         map.addLotsLayer();
+
+        $(document).on('filtersChanged', function (event, data) {
+            map.updateFilters(data.filters);
+            var params = map.buildLotFilterParams();
+            $(document).trigger('updateLotCount');
+        });
 
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        filters.filters.attachTo('.filters-section');
 
         $('.details-print').click(function () {
             window.print();
@@ -279,19 +245,6 @@ $(document).ready(function () {
                     popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing a vacant lot here that you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
                 });
             });
-
-        $('.filter').change(function () {
-            var params = map.buildLotFilterParams();
-            map.updateFilters(params);
-            $(document).trigger('updateLotCount');
-        });
-
-        // When the select for an owner is changed, check that owner type
-        $('.filter-owner select').change(function () {
-            $(this).parents('.filter-owner').find('.filter-owner-type')
-                .prop('checked', true)
-                .trigger('change');
-        });
 
         $(document).trigger('updateLotCount');
         map.on({
