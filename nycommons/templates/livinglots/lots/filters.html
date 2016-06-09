@@ -1,4 +1,4 @@
-{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags i18n owners_tags %}
+{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags i18n nycommons_owners_tags %}
 
 <div class="filters-section">
     <a href="#" class="close">Close</a>
@@ -11,11 +11,11 @@
             </label>
 
             <ul class="filter-owners-list">
-                {% get_owners type "public" as owners %}
+                {% get_owners_by_commons_type "post office" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner-public" id="owner-public-{{ owner.pk }}" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-public-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -25,12 +25,32 @@
             <label for="layer-libraries">
                 {% trans "libraries" %}
             </label>
+
+            <ul class="filter-owners-list">
+                {% get_owners_by_commons_type "library" as owners %}
+                {% for owner in owners %}
+                    <li>
+                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
         </li>
         <li>
             <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="NYCHA" data-type="layer" checked />
             <label for="layer-public-housing">
                 {% trans "public housing sites" %}
             </label>
+
+            <ul class="filter-owners-list">
+                {% get_owners_by_commons_type "NYCHA" as owners %}
+                {% for owner in owners %}
+                    <li>
+                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
         </li>
     </ul>
 

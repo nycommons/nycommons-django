@@ -87,11 +87,23 @@ var filters = flight.component(function () {
     };
 
     this.aggregateFilters = function () {
-        var layers = this.$node.find('.filter[data-type=layer]:checked').map(function () {
+        var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
+        var layers = $selectedLayers.map(function () {
             return $(this).attr('name');
         });
+
+        var owners = {};
+        $selectedLayers.each(function () {
+            var name = $(this).attr('name'),
+                $selectedOwners = $(this).parent().find('.filter[data-type=owner]:checked');
+            owners[name] = $selectedOwners.map(function () {
+                return $(this).data('owner-pk');
+            });
+        });
+
         return {
-            layers: layers
+            layers: layers,
+            owners: owners
         }
     };
 
@@ -125,8 +137,20 @@ module.exports = {
         // We follow these three categories to find a reason to exclude a lot.
         // If a lot fails for any of the three categories, it fails for all and
         // is not shown.
+
+        /*
+         * Layers
+         */
         var layer = lot.feature.properties.commons_type;
         if (!_.contains(filters.layers, layer)) {
+            return false;
+        }
+
+        /*
+         * Owners
+         */
+        var ownerId = lot.feature.properties.owner_id;
+        if (!_.contains(filters.owners[layer], ownerId)) {
             return false;
         }
 
@@ -33306,7 +33330,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
