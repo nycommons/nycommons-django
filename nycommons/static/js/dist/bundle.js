@@ -81,6 +81,17 @@ var filter = flight.component(function () {
 // A group of filters, should be one per page
 var filters = flight.component(function () {
     this.handleFilterChanged = function (event, data) {
+        if (data && data.type === 'layer') {
+            var $changedLayer = this.$node.find('.filter[data-type=layer][name="' + data.name + '"]'),
+                $layerOwners = $changedLayer.parent().find('.filter-owners-list');
+            if (data.value) {
+                $layerOwners.show();
+            }
+            else {
+                $layerOwners.hide();
+            }
+        }
+
         $(document).trigger('filtersChanged', {
             filters: this.aggregateFilters()
         });
@@ -33330,7 +33341,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

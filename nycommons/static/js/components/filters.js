@@ -80,6 +80,17 @@ var filter = flight.component(function () {
 // A group of filters, should be one per page
 var filters = flight.component(function () {
     this.handleFilterChanged = function (event, data) {
+        if (data && data.type === 'layer') {
+            var $changedLayer = this.$node.find('.filter[data-type=layer][name="' + data.name + '"]'),
+                $layerOwners = $changedLayer.parent().find('.filter-owners-list');
+            if (data.value) {
+                $layerOwners.show();
+            }
+            else {
+                $layerOwners.hide();
+            }
+        }
+
         $(document).trigger('filtersChanged', {
             filters: this.aggregateFilters()
         });
