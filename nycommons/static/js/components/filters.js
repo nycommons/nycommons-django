@@ -209,10 +209,10 @@ module.exports = {
             privateOwnerPks: $('.filter-owner-private').val().split(',')
         };
         filters.layers = _.map($('.filter-layer:checked'), function (layer) {
-            return $(layer).attr('name'); 
+            return $(layer).attr('name');
         });
         filters.ownerTypes = _.map($('.filter-owner-type:checked'), function (ownerType) {
-            return $(ownerType).attr('name'); 
+            return $(ownerType).attr('name');
         });
 
         // Add boundary, if any
