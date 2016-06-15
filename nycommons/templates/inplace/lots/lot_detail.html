@@ -21,6 +21,9 @@
 {% block messages %}
 {% endblock %}
 
+{% block sidebar_left %}
+{% endblock %}
+
 {% block pre_content %}
     <div class="lot-detail-header-image" 
         data-lat="{{ lot.centroid.y }}"
@@ -30,30 +33,6 @@
             {% trans "Sorry, we could not load streetview imagery for this lot." %}
         </div>
     </div>
-{% endblock %}
-
-{% block content %}
-    <div class="lot-detail-map-container row">
-        <div class="col-md-3">
-            <a href="/#18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}">
-                <div id="lot-detail-map"
-                    data-l-zoom="16" 
-                    data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
-                    data-l-bbox="{{ lot.bbox }}"
-                    data-l-zoom-control="false"
-                    data-l-lotsurl="{% inplace_setting LOT_POLYGONS_URL %}"
-                    data-l-lot-pk="{{ lot.pk }}"
-                ></div>
-            </a>
-        </div>
-
-        <div class="col-md-9">
-            <h1>
-                {{ lot.display_name|default:"unknown" }}
-            </h1>
-        </div>
-    </div>
-
 
     <div class="lot-detail-actions">
         {% if "lots.change_lot" in perms %}
@@ -93,8 +72,30 @@
             </ul>
         </div>
     </div>
+{% endblock %}
+
+{% block mainclasses %}col-sm-9{% endblock %}
+
+{% block content %}
+    <div class="lot-detail-map-container row">
+        <div class="col-md-3">
+            <a href="/#18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}">
+                <div id="lot-detail-map"
+                    data-l-zoom="16" 
+                    data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
+                    data-l-bbox="{{ lot.bbox }}"
+                    data-l-zoom-control="false"
+                    data-l-lotsurl="{% inplace_setting LOT_POLYGONS_URL %}"
+                    data-l-lot-pk="{{ lot.pk }}"
+                ></div>
+            </a>
+        </div>
+    </div>
 
     <div class="lot-detail-main">
+        <h1>
+            {{ lot.display_name|default:"unknown" }}
+        </h1>
 
         {% include "_messages.html" %}
 
@@ -133,7 +134,31 @@
                 {% endif %}
             </div>
         {% endif %}
+    </div>
+{% endblock %}
 
+{% block sidebar %}
+    <aside id="aside-right" class="col-sm-3">
+        <section class="lot-detail-organizers">
+            {% get_organizer_count for lot as organizer_count %}
+            <h2>{% trans "Number of organizers" %}: {{ organizer_count }}</h2>
+            <div>
+                <section class="lot-detail-organizer-intro">
+                    {% flatblock "lotdetail.organizer.intro" %}
+
+                    {% get_steward_project_count for lot as stewards_count %}
+                    {% if stewards_count > 0 %}
+                        {% flatblock "lotdetail.organizer.has_stewards" %}
+                    {% endif %}
+                </section>
+                {% render_organizer_list for lot %}
+                {% if "lots.change_lot" in perms %}
+                    <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
+                        {% trans "View all in admin" %}
+                    </a>
+                {% endif %}
+            </div>
+        </section>
         <div id="usercontent" class="usercontent lot-detail-main-section">
             <h2>
                 {% trans "News feed" %}
@@ -156,32 +181,6 @@
             </div>
             {% endcomment %}
         </div>
-    </div>
-{% endblock %}
-
-{% block sidebar %}
-    <aside id="aside-right" class="col-sm-3">
-        <section class="lot-detail-organizers">
-            {% get_organizer_count for lot as organizer_count %}
-            <h2>{% trans "Number of organizers" %}: {{ organizer_count }}</h2>
-            <div>
-                <section class="lot-detail-organizer-intro">
-                    <h3>{% trans "Hey organizers!" %}</h3>
-                    {% flatblock "lotdetail.organizer.intro" %}
-
-                    {% get_steward_project_count for lot as stewards_count %}
-                    {% if stewards_count > 0 %}
-                        {% flatblock "lotdetail.organizer.has_stewards" %}
-                    {% endif %}
-                </section>
-                {% render_organizer_list for lot %}
-                {% if "lots.change_lot" in perms %}
-                    <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
-                        {% trans "View all in admin" %}
-                    </a>
-                {% endif %}
-            </div>
-        </section>
     </aside>
 
     {% if lot.nearby %}

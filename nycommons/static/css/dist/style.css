@@ -6058,6 +6058,9 @@ footer .footer-right {
   margin-bottom: 50px;
   margin-top: 50px;
 }
+.lot-detail-actions {
+  float: right;
+}
 .lot-detail-actions .btn {
   margin-right: 15px;
   margin-top: 10px;
