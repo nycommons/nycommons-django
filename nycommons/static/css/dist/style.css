@@ -6032,6 +6032,9 @@ footer .footer-right {
   width: 100%;
   z-index: 500;
 }
+.lot-detail-page .page-wrapper {
+  margin: 50px;
+}
 .lot-detail-page h1 {
   font-family: "Open Sans", sans-serif;
   font-weight: bold;
