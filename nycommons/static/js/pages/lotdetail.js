@@ -4,42 +4,29 @@
 // Scripts that only run on the lot detail page.
 //
 
-var Handlebars = require('handlebars');
 var L = require('leaflet');
 
 require('leaflet-dataoptions');
+require('leaflet-geojsongridlayer');
 
-//require('../leaflet.lotlayer');
-//require('../leaflet.lotmarker');
 var mapstyles = require('../lib/map-styles');
 var StreetView = require('../lib/streetview');
 
 
-var vectorLayerOptions = {
-    serverZooms: [16],
-    unique: function (feature) {
-        return feature.id;
-    }
-};
-
 function getLotLayerOptions(lotPk) {
     return {
         pointToLayer: function (feature, latlng) {
-            var options = {};
-            if (feature.properties.has_organizers) {
-                options.hasOrganizers = true;
-            }
-            return L.lotMarker(latlng, options);
+            return L.circleMarker(latlng);
         },
         style: function (feature) {
             var style = {
                 fillOpacity: 0.2,
                 stroke: false
             };
-            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
 
             // Style this lot distinctly
-            if (feature.properties.id === lotPk) {
+            if (feature.id === lotPk) {
                 style.fillOpacity = 1;
             }
             return style;
@@ -52,9 +39,19 @@ function addBaseLayer(map) {
 }
 
 function addLotsLayer(map) {
-    var url = map.options.lotsurl,
+    var url = map.options.lotsUrl,
         lotLayerOptions = getLotLayerOptions(map.options.lotPk);
-    var lotsLayer = L.lotLayer(url, vectorLayerOptions, lotLayerOptions).addTo(map);
+    L.geoJsonGridLayer(url, {
+        layers: {
+            'lots-centroids': {
+                maxZoom: 1,
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng);
+                }
+            },
+            'lots-polygons': lotLayerOptions
+        }
+    }).addTo(map);
 }
 
 function initFacebookLink($link) {
@@ -85,13 +82,13 @@ $(document).ready(function () {
         var bbox = map.options.bbox;
         if (bbox) {
             map.fitBounds([
-                [bbox[1], bbox[0]],   
-                [bbox[3], bbox[2]]   
+                [bbox[1], bbox[0]],
+                [bbox[3], bbox[2]]
             ], { padding: [20, 20], maxZoom: 18 });
         }
 
         addBaseLayer(map);
-        //addLotsLayer(map);
+        addLotsLayer(map);
         StreetView.load_streetview(
             $('.lot-detail-header-image').data('lon'),
             $('.lot-detail-header-image').data('lat'),

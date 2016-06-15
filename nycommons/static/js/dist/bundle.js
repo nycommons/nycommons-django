@@ -210,10 +210,10 @@ module.exports = {
             privateOwnerPks: $('.filter-owner-private').val().split(',')
         };
         filters.layers = _.map($('.filter-layer:checked'), function (layer) {
-            return $(layer).attr('name'); 
+            return $(layer).attr('name');
         });
         filters.ownerTypes = _.map($('.filter-owner-type:checked'), function (ownerType) {
-            return $(ownerType).attr('name'); 
+            return $(ownerType).attr('name');
         });
 
         // Add boundary, if any
@@ -1250,42 +1250,29 @@ $(document).ready(function () {
 // Scripts that only run on the lot detail page.
 //
 
-var Handlebars = require('handlebars');
 var L = require('leaflet');
 
 require('leaflet-dataoptions');
+require('leaflet-geojsongridlayer');
 
-//require('../leaflet.lotlayer');
-//require('../leaflet.lotmarker');
 var mapstyles = require('../lib/map-styles');
 var StreetView = require('../lib/streetview');
 
 
-var vectorLayerOptions = {
-    serverZooms: [16],
-    unique: function (feature) {
-        return feature.id;
-    }
-};
-
 function getLotLayerOptions(lotPk) {
     return {
         pointToLayer: function (feature, latlng) {
-            var options = {};
-            if (feature.properties.has_organizers) {
-                options.hasOrganizers = true;
-            }
-            return L.lotMarker(latlng, options);
+            return L.circleMarker(latlng);
         },
         style: function (feature) {
             var style = {
                 fillOpacity: 0.2,
                 stroke: false
             };
-            style.fillColor = mapstyles.getLayerColor(feature.properties.layers.split(','));
+            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
 
             // Style this lot distinctly
-            if (feature.properties.id === lotPk) {
+            if (feature.id === lotPk) {
                 style.fillOpacity = 1;
             }
             return style;
@@ -1298,9 +1285,19 @@ function addBaseLayer(map) {
 }
 
 function addLotsLayer(map) {
-    var url = map.options.lotsurl,
+    var url = map.options.lotsUrl,
         lotLayerOptions = getLotLayerOptions(map.options.lotPk);
-    var lotsLayer = L.lotLayer(url, vectorLayerOptions, lotLayerOptions).addTo(map);
+    L.geoJsonGridLayer(url, {
+        layers: {
+            'lots-centroids': {
+                maxZoom: 1,
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng);
+                }
+            },
+            'lots-polygons': lotLayerOptions
+        }
+    }).addTo(map);
 }
 
 function initFacebookLink($link) {
@@ -1331,13 +1328,13 @@ $(document).ready(function () {
         var bbox = map.options.bbox;
         if (bbox) {
             map.fitBounds([
-                [bbox[1], bbox[0]],   
-                [bbox[3], bbox[2]]   
+                [bbox[1], bbox[0]],
+                [bbox[3], bbox[2]]
             ], { padding: [20, 20], maxZoom: 18 });
         }
 
         addBaseLayer(map);
-        //addLotsLayer(map);
+        addLotsLayer(map);
         StreetView.load_streetview(
             $('.lot-detail-header-image').data('lon'),
             $('.lot-detail-header-image').data('lat'),
@@ -1377,7 +1374,7 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 });
 
-},{"../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -33341,7 +33338,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
