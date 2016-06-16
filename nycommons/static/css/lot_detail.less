@@ -33,6 +33,23 @@
         margin-top: 20px;
     }
 
+    &-page .owners-lots-list {
+
+        &-priority,
+        &-organizing {
+            & + .no-lots {
+                display: none;
+            }
+
+            &:empty {
+                & + .no-lots {
+                    display: block;
+                }
+            }
+        }
+
+    }
+
     &-section {
         margin-bottom: 50px;
         margin-top: 50px;

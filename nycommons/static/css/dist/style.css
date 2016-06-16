@@ -6054,6 +6054,14 @@ footer .footer-right {
 .lot-detail-page .alert {
   margin-top: 20px;
 }
+.lot-detail-page .owners-lots-list-priority + .no-lots,
+.lot-detail-page .owners-lots-list-organizing + .no-lots {
+  display: none;
+}
+.lot-detail-page .owners-lots-list-priority:empty + .no-lots,
+.lot-detail-page .owners-lots-list-organizing:empty + .no-lots {
+  display: block;
+}
 .lot-detail-section {
   margin-bottom: 50px;
   margin-top: 50px;
