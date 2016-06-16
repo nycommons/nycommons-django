@@ -1,0 +1,18 @@
+{% load i18n %}
+
+<section class="collapsible">
+    <h2>{% trans "Properties with the Same Official Owner"%}</h2>
+    <div>
+        <ul>
+            {% for owner_lot in lot.owner.lot_set.all %}
+                {% if owner_lot != lot %}
+                    <li>
+                        <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
+                    </li>
+                {% endif %}
+            {% empty %}
+            None.
+            {% endfor %}
+        </ul>
+    </div>
+</section>

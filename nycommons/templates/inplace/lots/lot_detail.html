@@ -135,6 +135,8 @@
             {% endif %}
         {% endif %}
 
+        {% include "inplace/lots/_lot_detail_same_owner.html" with lot=lot %}
+
         {% if "lots.view_all_details" in perms %}
             <div class="lot-detail-details lot-detail-section lot-detail-main-section">
                 <h2>{% trans "Admin Details" %}</h2>

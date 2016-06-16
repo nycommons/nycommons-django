@@ -358,6 +358,7 @@ class Lot(LotMixin, LotGroupLotMixin, BaseLot):
     is_visible = property(_is_visible)
 
     class Meta:
+        ordering = ['name',]
         permissions = (
             ('view_preview', 'Can view preview map'),
         )
