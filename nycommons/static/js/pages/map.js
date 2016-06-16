@@ -18,6 +18,7 @@ require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
 var filters = require('../components/filters');
+var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
@@ -126,17 +127,6 @@ function addBoundary(map, layer, pk, options) {
     });
 }
 
-function deparam() {
-    var vars = {},
-        param,
-        params = window.location.search.slice(1).split('&');
-    for(var i = 0; i < params.length; i++) {
-        param = params[i].split('=');
-        vars[param[0]] = decodeURIComponent(param[1]);
-    }
-    return vars;
-}
-
 function setFiltersUIFromQueryParams(params) {
     // Clear checkbox filters
     $('.filter[type=checkbox]').prop('checked', false);
@@ -194,7 +184,7 @@ $(document).ready(function () {
     if ($('.map-page').length > 0) {
         var params;
         if (window.location.search.length) {
-            setFiltersUIFromQueryParams(deparam());
+            //setFiltersUIFromQueryParams(deparam());
         }
 
         var mapOptions = {
@@ -205,11 +195,12 @@ $(document).ready(function () {
 
         // Get the current center/zoom first rather than wait for map to load
         // and L.hash to set them. This is slightly smoother
-        var hash = window.location.hash;
-        if (hash && hash !== '') {
-            hash = hash.slice(1).split('/');
-            mapOptions.center = hash.slice(1);
-            mapOptions.zoom = hash[0];
+        var parsed = hashHandler.parse();
+        if (parsed.center) {
+            mapOptions.center = parsed.center;
+        }
+        if (parsed.zoom) {
+            mapOptions.zoom = parsed.zoom;
         }
 
         var map = L.lotMap('map', mapOptions);
@@ -223,6 +214,7 @@ $(document).ready(function () {
             map.updateFilters(data.filters);
             var params = map.buildLotFilterParams();
             $(document).trigger('updateLotCount');
+            hashHandler.update(map);
         });
 
         legend.attachTo('#map-legend', { map: map });
@@ -249,9 +241,11 @@ $(document).ready(function () {
         $(document).trigger('updateLotCount');
         map.on({
             'moveend': function () {
+                hashHandler.update(map);
                 $(document).trigger('updateLotCount');
             },
             'zoomend': function () {
+                hashHandler.update(map);
                 $(document).trigger('updateLotCount');
             },
             'lotlayertransition': function (e) {

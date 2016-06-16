@@ -10,7 +10,6 @@ require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
-require('leaflet-hash');
 require('leaflet-usermarker');
 
 var filters = require('./components/filters');
@@ -84,7 +83,6 @@ L.LotMap = L.Map.extend({
     initialize: function (id, options) {
         L.Map.prototype.initialize.call(this, id, options);
         this.addBaseLayer();
-        var hash = new L.Hash(this);
 
         // When new lots are added ensure they should be displayed
         var map = this;
