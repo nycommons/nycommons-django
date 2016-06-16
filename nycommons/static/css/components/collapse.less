@@ -1,0 +1,41 @@
+section.collapsible {
+    & > h1,
+    & > h2,
+    & > h3,
+    & > h4,
+    & > h5,
+    & > h6 {
+        cursor: pointer;
+
+        &::before {
+            background-image: data-uri("/static/img/collapse-arrow.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            content: "";
+            display: block;
+            height: 35px;
+            margin-left: -35px;
+            position: absolute;
+            width: 20px;
+
+            -webkit-transform: rotate(90deg);
+            -moz-transform: rotate(90deg);
+            -ms-transform: rotate(90deg);
+            -o-transform: rotate(90deg);
+            transform: rotate(90deg);
+            -webkit-transition: -webkit-transform .2s;
+            transition: transform .5s;
+        }
+
+        &.collapsed {
+            &::before {
+                -webkit-transform: rotate(0deg);
+                -moz-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                -o-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+        }
+    }
+}

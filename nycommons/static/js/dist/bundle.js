@@ -1,4 +1,31 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
+var flight = require('flightjs');
+
+var collapsibleSection = flight.component(function () {
+    this.toggle = function (event) {
+        if (this.$content.is(':visible')) {
+            this.$content.slideUp();
+            this.$header.addClass('collapsed');
+        }
+        else {
+            this.$content.slideDown();
+            this.$header.removeClass('collapsed');
+        }
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.$header = this.$node.find('h1,h2,h3,h4,h5,h6:eq(0)');
+        this.$content = this.$header.next();
+        this.$header.on('click', this.toggle.bind(this));
+    });
+});
+
+module.exports = {
+    collapsibleSection: collapsibleSection
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
 //
 // filters.js
 //
@@ -1255,6 +1282,7 @@ var L = require('leaflet');
 require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
 
+var collapsibleSection = require('../components/collapse').collapsibleSection;
 var mapstyles = require('../lib/map-styles');
 var StreetView = require('../lib/streetview');
 
@@ -1372,9 +1400,11 @@ $(document).ready(function () {
 
     initFacebookLink($('.share-facebook'));
     initTwitterLink($('.share-twitter'));
+
+    collapsibleSection.attachTo('section.collapsible');
 });
 
-},{"../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -33338,7 +33368,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

@@ -9,6 +9,7 @@ var L = require('leaflet');
 require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
 
+var collapsibleSection = require('../components/collapse').collapsibleSection;
 var mapstyles = require('../lib/map-styles');
 var StreetView = require('../lib/streetview');
 
@@ -126,4 +127,6 @@ $(document).ready(function () {
 
     initFacebookLink($('.share-facebook'));
     initTwitterLink($('.share-twitter'));
+
+    collapsibleSection.attachTo('section.collapsible');
 });

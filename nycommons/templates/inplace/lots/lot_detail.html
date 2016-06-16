@@ -111,7 +111,7 @@
             {% include "inplace/lots/_lot_detail_info.html" with lot=lot %}
         </div>
 
-        <section>
+        <section class="collapsible">
             <h2>{% trans "Why do we think that development is pending?" %}</h2>
         </section>
 
@@ -119,7 +119,7 @@
             {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}
         {% endifequal %}
 
-        <section>
+        <section class="collapsible">
             <h2>{% trans "Why is this property part of NYCommons?" %}</h2>
         </section>
 

@@ -6058,6 +6058,9 @@ footer .footer-right {
   margin-bottom: 50px;
   margin-top: 50px;
 }
+.lot-detail-main {
+  margin-left: 50px;
+}
 .lot-detail-actions {
   float: right;
 }
@@ -6755,6 +6758,50 @@ footer .social-media-twitter {
   .page-header {
     margin: 0;
   }
+}
+section.collapsible > h1,
+section.collapsible > h2,
+section.collapsible > h3,
+section.collapsible > h4,
+section.collapsible > h5,
+section.collapsible > h6 {
+  cursor: pointer;
+}
+section.collapsible > h1::before,
+section.collapsible > h2::before,
+section.collapsible > h3::before,
+section.collapsible > h4::before,
+section.collapsible > h5::before,
+section.collapsible > h6::before {
+  background-image: url("/static/img/collapse-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  content: "";
+  display: block;
+  height: 35px;
+  margin-left: -35px;
+  position: absolute;
+  width: 20px;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
+}
+section.collapsible > h1.collapsed::before,
+section.collapsible > h2.collapsed::before,
+section.collapsible > h3.collapsed::before,
+section.collapsible > h4.collapsed::before,
+section.collapsible > h5.collapsed::before,
+section.collapsible > h6.collapsed::before {
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
 }
 .map-search {
   display: none;
