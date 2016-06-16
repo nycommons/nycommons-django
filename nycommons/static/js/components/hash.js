@@ -15,7 +15,7 @@ module.exports = {
     parse: function () {
         var hash = deparam(window.location.hash.slice(1));
         var parsed = {};
-        if (hash && hash !== '') {
+        if (hash.map && hash.map !== '') {
             mapOptions = hash.map.split('/');
             parsed.center = mapOptions.slice(1);
             parsed.zoom = mapOptions[0];

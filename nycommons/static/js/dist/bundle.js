@@ -284,7 +284,7 @@ module.exports = {
     parse: function () {
         var hash = deparam(window.location.hash.slice(1));
         var parsed = {};
-        if (hash && hash !== '') {
+        if (hash.map && hash.map !== '') {
             mapOptions = hash.map.split('/');
             parsed.center = mapOptions.slice(1);
             parsed.zoom = mapOptions[0];
@@ -1539,8 +1539,8 @@ function initializeBoundaries(map) {
         addBoundary(map, $(this).data('layer'), $(this).val(), options);
     });
 
-    // If boundaries were set via query string trigger change here. Can't do 
-    // until the map exists, but we actually do want to set most the other 
+    // If boundaries were set via query string trigger change here. Can't do
+    // until the map exists, but we actually do want to set most the other
     // filters before the map exists.
     $('.filter-boundaries').each(function () {
         if ($(this).val()) {
@@ -33909,7 +33909,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
