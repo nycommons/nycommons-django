@@ -101,19 +101,29 @@
     </div>
 
     <div class="lot-detail-main">
+        {% include "_messages.html" %}
+
         <h1>
             {{ lot.display_name|default:"unknown" }}
         </h1>
 
-        {% include "_messages.html" %}
-
         <div class="lot-detail-info-box">
             {% include "inplace/lots/_lot_detail_info.html" with lot=lot %}
-
-            {% ifequal lot.owners|length 1 %}
-                {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}
-            {% endifequal %}
         </div>
+
+        <section>
+            <h2>{% trans "Why do we think that development is pending?" %}</h2>
+        </section>
+
+        {% ifequal lot.owners|length 1 %}
+            {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}
+        {% endifequal %}
+
+        <section>
+            <h2>{% trans "Why is this property part of NYCommons?" %}</h2>
+        </section>
+
+        {% include "inplace/lots/_lot_detail_take_action.html" with lot=lot %}
 
         {% get_steward_project_list for lot as stewards %}
         {% if stewards %}

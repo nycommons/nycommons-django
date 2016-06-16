@@ -1,0 +1,81 @@
+{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags i18n %}
+
+<section>
+    <h2>{% trans "Take action" %}</h2>
+
+    <section>
+        <h3>{% trans "Stay Up to Date" %}</h3>
+    </section>
+
+    <section>
+        <h3>{% trans "Key Contacts" %}</h3>
+
+        {% get_boundary "city council districts" lot.centroid.y lot.centroid.x as district %}
+        {% if district %}
+            <div>
+                {% trans "City Council District" %}
+                {{ district.label }}
+                {% city_council_member district as member %}
+                {% if member %}
+                    {% trans "represented by" %}
+                    {% if member.url %}
+                        <a href="{{ member.url }}" target="_blank">{{ member }}</a>
+                    {% else %}
+                        {{ member }}
+                    {% endif %}
+                    {% if member.email %}
+                        (<a href="mailto:{{ member.email }}">{{ member.email }}</a>)
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% get_boundary "community districts" lot.centroid.y lot.centroid.x as district %}
+        {% if district %}
+            {% get_community_district_details district as district_details %}
+            <div>
+                {% trans "Community District" %}
+                {% if district_details.url %}
+                    <a href="{{ district_details.url }}" target="_blank">
+                        {{ district.label|community_district_label }}
+                    </a>
+                {% else %}
+                    {{ district.label|community_district_label }}
+                {% endif %}
+
+                {% if district_details.email or district_details.phone %}(
+                    {% if district_details.email %}
+                        <a href="mailto:{{ district_details.email }}">{{ district_details.email }}</a>
+                    {% endif %}
+                    {% if district_details.email and district_details.phone %} / {% endif %}
+                    {% if district_details.phone %}
+                        {{ district_details.phone }}
+                    {% endif %}
+                ),{% endif %}
+
+                {% if district_details.district_manager %}
+                    {% trans "district manager" %}: {{ district_details.district_manager }}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div>
+            {% trans "Find all elected officials for this lot at" %}
+            <a href="http://www.mygovnyc.org/?levelofgovt=city&latlng={{ lot.centroid.y }}%2C{{ lot.centroid.x }}" target="_blank">
+                {% trans "Who Represents Me? NYC" %}
+            </a>
+        </div>
+    </section>
+
+    <section>
+        <h3>{% trans "Who is Organizing Here?" %}</h3>
+    </section>
+
+    <section>
+        <h3>{% trans "Public Review Processes That Might Be Required" %}</h3>
+    </section>
+
+    <section>
+        <h3>{% trans "How to Organize" %}</h3>
+    </section>
+</section>

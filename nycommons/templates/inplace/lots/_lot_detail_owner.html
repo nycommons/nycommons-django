@@ -1,13 +1,9 @@
 {% load i18n %}
 
 <section>
-    {% ifequal owner.owner_type "public" %}
-        <h2>{% trans "Government Agency" %}</h2>
-    {% else %}
-        <h2>{% trans "Owner" %}</h2>
-    {% endifequal %}
+    <h2>{% trans "Who decides what happens to this property?" %}</h2>
     <div class="lot-detail-details">
-        {{ owner|default:"unknown" }}
+        {% trans "Official Owner" %}: {{ owner|default:"unknown" }}
 
         {% if owner_contact %}
             <div class="owner-contact">
