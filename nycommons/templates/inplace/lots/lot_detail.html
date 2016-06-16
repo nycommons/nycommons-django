@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load flatblocks i18n inplace_tags organize_tags steward_tags pathways_tags usercontent_tags %}
+{% load flatblocks i18n inplace_tags steward_tags pathways_tags usercontent_tags %}
 
 {% block title %}
     {{ lot.display_name|title|default:"unknown" }} |
@@ -157,26 +157,6 @@
 
 {% block sidebar %}
     <aside id="aside-right" class="col-sm-3">
-        <section class="lot-detail-organizers">
-            {% get_organizer_count for lot as organizer_count %}
-            <h2>{% trans "Number of organizers" %}: {{ organizer_count }}</h2>
-            <div>
-                <section class="lot-detail-organizer-intro">
-                    {% flatblock "lotdetail.organizer.intro" %}
-
-                    {% get_steward_project_count for lot as stewards_count %}
-                    {% if stewards_count > 0 %}
-                        {% flatblock "lotdetail.organizer.has_stewards" %}
-                    {% endif %}
-                </section>
-                {% render_organizer_list for lot %}
-                {% if "lots.change_lot" in perms %}
-                    <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
-                        {% trans "View all in admin" %}
-                    </a>
-                {% endif %}
-            </div>
-        </section>
         <div id="usercontent" class="usercontent lot-detail-main-section">
             <h2>
                 {% trans "News feed" %}

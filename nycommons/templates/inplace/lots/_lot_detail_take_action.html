@@ -1,4 +1,4 @@
-{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags i18n %}
+{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags flatblocks i18n organize_tags steward_tags %}
 
 <section>
     <h2>{% trans "Take action" %}</h2>
@@ -69,6 +69,24 @@
 
     <section>
         <h3>{% trans "Who is Organizing Here?" %}</h3>
+        {% get_organizer_count for lot as organizer_count %}
+        <div>
+            <section class="lot-detail-organizer-intro">
+                {% flatblock "lotdetail.organizer.intro" %}
+
+                {% get_steward_project_count for lot as stewards_count %}
+                {% if stewards_count > 0 %}
+                    {% flatblock "lotdetail.organizer.has_stewards" %}
+                {% endif %}
+            </section>
+            {% render_organizer_list for lot %}
+            {% if "lots.change_lot" in perms %}
+                <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
+                    {% trans "View all in admin" %}
+                </a>
+            {% endif %}
+        </div>
+    
     </section>
 
     <section>
