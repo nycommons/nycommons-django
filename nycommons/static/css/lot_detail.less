@@ -41,9 +41,36 @@
     &-actions {
         float: right;
 
-        .btn {
-            margin-right: 15px;
-            margin-top: 10px;
+        a {
+            display: inline-block;
+            font-weight: bold;
+            padding: 15px;
+            text-transform: uppercase;
+        }
+
+        .btn-group {
+            vertical-align: inherit;
+
+            &.open .dropdown-toggle {
+                box-shadow: none;
+            }
+        }
+
+        .dropdown-menu {
+            background: @white;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+
+            & > li > a {
+                background: @white;
+                color: @foreground-color;
+
+                &:hover {
+                    background: @white;
+                    color: @foreground-color;
+                }
+            }
         }
     }
 

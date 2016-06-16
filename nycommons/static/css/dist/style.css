@@ -6061,9 +6061,31 @@ footer .footer-right {
 .lot-detail-actions {
   float: right;
 }
-.lot-detail-actions .btn {
-  margin-right: 15px;
-  margin-top: 10px;
+.lot-detail-actions a {
+  display: inline-block;
+  font-weight: bold;
+  padding: 15px;
+  text-transform: uppercase;
+}
+.lot-detail-actions .btn-group {
+  vertical-align: inherit;
+}
+.lot-detail-actions .btn-group.open .dropdown-toggle {
+  box-shadow: none;
+}
+.lot-detail-actions .dropdown-menu {
+  background: #ffffff;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+}
+.lot-detail-actions .dropdown-menu > li > a {
+  background: #ffffff;
+  color: #00adef;
+}
+.lot-detail-actions .dropdown-menu > li > a:hover {
+  background: #ffffff;
+  color: #00adef;
 }
 .lot-detail-organizers h2 {
   background: #ffffff;
