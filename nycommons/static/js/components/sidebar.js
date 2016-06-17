@@ -18,11 +18,13 @@ var sidebarHeaderContent = flight.component(function () {
         else {
             this.$node.show();
         }
+        return false;
     };
 
     this.sidebarHeaderContentHidden = function (event) {
         this.$node.hide();
         $(document).trigger('sidebarHeaderContentHidden');
+        return false;
     };
 
     this.after('initialize', function () {
