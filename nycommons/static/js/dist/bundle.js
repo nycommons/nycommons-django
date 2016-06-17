@@ -1683,8 +1683,7 @@ $(document).ready(function () {
             onMouseOutFeature: function (feature) {}
         };
 
-        // Get the current center/zoom first rather than wait for map to load
-        // and L.hash to set them. This is slightly smoother
+        // Get the current center/zoom from hash
         var parsedHash = hashHandler.parse();
         if (parsedHash.center) {
             mapOptions.center = parsedHash.center;
@@ -33963,7 +33962,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

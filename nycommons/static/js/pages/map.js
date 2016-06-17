@@ -190,8 +190,7 @@ $(document).ready(function () {
             onMouseOutFeature: function (feature) {}
         };
 
-        // Get the current center/zoom first rather than wait for map to load
-        // and L.hash to set them. This is slightly smoother
+        // Get the current center/zoom from hash
         var parsedHash = hashHandler.parse();
         if (parsedHash.center) {
             mapOptions.center = parsedHash.center;
