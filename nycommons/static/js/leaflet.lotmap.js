@@ -142,6 +142,7 @@ L.LotMap = L.Map.extend({
     },
 
     updateDisplayedLots: function (currentFilters) {
+        if (!this.lotsLayer) return;
         var layers = this.lotsLayer.getLayers();
         var map = this,
             zoom = map.getZoom();

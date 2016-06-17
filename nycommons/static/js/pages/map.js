@@ -183,9 +183,6 @@ $('.activity-stream').load(url, function () {
 $(document).ready(function () {
     if ($('.map-page').length > 0) {
         var params;
-        if (window.location.search.length) {
-            //setFiltersUIFromQueryParams(deparam());
-        }
 
         var mapOptions = {
             filterParams: filters.filtersToParams(null, {}),
@@ -195,20 +192,18 @@ $(document).ready(function () {
 
         // Get the current center/zoom first rather than wait for map to load
         // and L.hash to set them. This is slightly smoother
-        var parsed = hashHandler.parse();
-        if (parsed.center) {
-            mapOptions.center = parsed.center;
+        var parsedHash = hashHandler.parse();
+        if (parsedHash.center) {
+            mapOptions.center = parsedHash.center;
         }
-        if (parsed.zoom) {
-            mapOptions.zoom = parsed.zoom;
+        if (parsedHash.zoom) {
+            mapOptions.zoom = parsedHash.zoom;
         }
 
         var map = L.lotMap('map', mapOptions);
         map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
-
-        map.addLotsLayer();
 
         $(document).on('filtersChanged', function (event, data) {
             map.updateFilters(data.filters);
@@ -220,7 +215,10 @@ $(document).ready(function () {
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        filters.filters.attachTo('.filters-section');
+        filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
+
+        // Add lots *after* filters are set up so we have initial filters loaded
+        map.addLotsLayer();
 
         $('.details-print').click(function () {
             window.print();

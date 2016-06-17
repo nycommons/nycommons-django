@@ -63,34 +63,70 @@ var filter = flight.component(function () {
     });
 
     this.handleChange = function (event) {
+        if (this.type === 'layer') {
+            this.toggleLayerOwners();
+        }
         this.attr.filterList.trigger('filterChanged', {
             name: this.name,
             type: this.type,
-            value: this.$node.prop('checked')
+            value: this.isChecked()
         });
+    };
+
+    this.isChecked = function () {
+        return this.$node.prop('checked');
+    };
+
+    this.findParentLayer = function () {
+        return this.$node.parent().parent().parent().find('.filter-layer');
+    };
+
+    this.toggleLayerOwners = function () {
+        var $layerOwners = this.$node.parent().find('.filter-owners-list');
+        if (this.isChecked()) {
+            $layerOwners.show();
+        }
+        else {
+            $layerOwners.hide();
+        }
     };
 
     this.after('initialize', function () {
         this.name = this.$node.attr('name');
         this.type = this.$node.data('type');
+
+        var initialFilters = this.attr.filterList.attr.initialFilters;
+        if (this.type === 'layer') {
+            if (initialFilters.layers) {
+                this.$node.prop('checked', _.contains(initialFilters.layers, this.name));
+            }
+        }
+        else if (this.type === 'owner') {
+            if (initialFilters.owners) {
+                var layer = this.findParentLayer().attr('name');
+                var pk = this.$node.data('owner-pk');
+                var checked = false;
+                if (initialFilters.owners[layer] && _.contains(initialFilters.owners[layer], pk)) {
+                    checked = true;
+                }
+                this.$node.prop('checked', checked);
+            }
+        }
+
+        if (this.type === 'layer') {
+            this.toggleLayerOwners();
+        }
         this.on('change', this.handleChange);
     });
 });
 
 // A group of filters, should be one per page
 var filters = flight.component(function () {
-    this.handleFilterChanged = function (event, data) {
-        if (data && data.type === 'layer') {
-            var $changedLayer = this.$node.find('.filter[data-type=layer][name="' + data.name + '"]'),
-                $layerOwners = $changedLayer.parent().find('.filter-owners-list');
-            if (data.value) {
-                $layerOwners.show();
-            }
-            else {
-                $layerOwners.hide();
-            }
-        }
+    this.attributes({
+        initialFilters: null
+    });
 
+    this.handleFilterChanged = function (event, data) {
         $(document).trigger('filtersChanged', {
             filters: this.aggregateFilters()
         });
@@ -100,7 +136,7 @@ var filters = flight.component(function () {
         var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
         var layers = $selectedLayers.map(function () {
             return $(this).attr('name');
-        });
+        }).get();
 
         var owners = {};
         $selectedLayers.each(function () {
@@ -108,7 +144,7 @@ var filters = flight.component(function () {
                 $selectedOwners = $(this).parent().find('.filter[data-type=owner]:checked');
             owners[name] = $selectedOwners.map(function () {
                 return $(this).data('owner-pk');
-            });
+            }).get();
         });
 
         return {

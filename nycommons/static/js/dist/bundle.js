@@ -91,34 +91,70 @@ var filter = flight.component(function () {
     });
 
     this.handleChange = function (event) {
+        if (this.type === 'layer') {
+            this.toggleLayerOwners();
+        }
         this.attr.filterList.trigger('filterChanged', {
             name: this.name,
             type: this.type,
-            value: this.$node.prop('checked')
+            value: this.isChecked()
         });
+    };
+
+    this.isChecked = function () {
+        return this.$node.prop('checked');
+    };
+
+    this.findParentLayer = function () {
+        return this.$node.parent().parent().parent().find('.filter-layer');
+    };
+
+    this.toggleLayerOwners = function () {
+        var $layerOwners = this.$node.parent().find('.filter-owners-list');
+        if (this.isChecked()) {
+            $layerOwners.show();
+        }
+        else {
+            $layerOwners.hide();
+        }
     };
 
     this.after('initialize', function () {
         this.name = this.$node.attr('name');
         this.type = this.$node.data('type');
+
+        var initialFilters = this.attr.filterList.attr.initialFilters;
+        if (this.type === 'layer') {
+            if (initialFilters.layers) {
+                this.$node.prop('checked', _.contains(initialFilters.layers, this.name));
+            }
+        }
+        else if (this.type === 'owner') {
+            if (initialFilters.owners) {
+                var layer = this.findParentLayer().attr('name');
+                var pk = this.$node.data('owner-pk');
+                var checked = false;
+                if (initialFilters.owners[layer] && _.contains(initialFilters.owners[layer], pk)) {
+                    checked = true;
+                }
+                this.$node.prop('checked', checked);
+            }
+        }
+
+        if (this.type === 'layer') {
+            this.toggleLayerOwners();
+        }
         this.on('change', this.handleChange);
     });
 });
 
 // A group of filters, should be one per page
 var filters = flight.component(function () {
-    this.handleFilterChanged = function (event, data) {
-        if (data && data.type === 'layer') {
-            var $changedLayer = this.$node.find('.filter[data-type=layer][name="' + data.name + '"]'),
-                $layerOwners = $changedLayer.parent().find('.filter-owners-list');
-            if (data.value) {
-                $layerOwners.show();
-            }
-            else {
-                $layerOwners.hide();
-            }
-        }
+    this.attributes({
+        initialFilters: null
+    });
 
+    this.handleFilterChanged = function (event, data) {
         $(document).trigger('filtersChanged', {
             filters: this.aggregateFilters()
         });
@@ -128,7 +164,7 @@ var filters = flight.component(function () {
         var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
         var layers = $selectedLayers.map(function () {
             return $(this).attr('name');
-        });
+        }).get();
 
         var owners = {};
         $selectedLayers.each(function () {
@@ -136,7 +172,7 @@ var filters = flight.component(function () {
                 $selectedOwners = $(this).parent().find('.filter[data-type=owner]:checked');
             owners[name] = $selectedOwners.map(function () {
                 return $(this).data('owner-pk');
-            });
+            }).get();
         });
 
         return {
@@ -280,21 +316,38 @@ function deparam(s) {
     return vars;
 }
 
+function param(obj) {
+    var parts = Object.keys(obj).map(function (key) {
+        return [key, JSON.stringify(obj[key])].join('=');
+    });
+    return parts.join('&');
+}
+
 module.exports = {
     parse: function () {
-        var hash = deparam(window.location.hash.slice(1));
+        var hashStr = window.location.hash.slice(1);
+        if (!hashStr || hashStr.length === 0) return {};
+
+        var hash = deparam(hashStr);
         var parsed = {};
         if (hash.map && hash.map !== '') {
             mapOptions = hash.map.split('/');
             parsed.center = mapOptions.slice(1);
             parsed.zoom = mapOptions[0];
         }
+        Object.keys(hash).forEach(function (key) {
+            if (key === 'map' || hash[key] === undefined) return;
+            if (!parsed.filters) {
+                parsed.filters = {};
+            }
+            parsed.filters[key] = JSON.parse(hash[key]);
+        });
         return parsed;
     },
 
     update: function (map) {
         var mapParams = map.getZoom() + '/' + numeral(map.getCenter().lat).format('0.0000') + '/' + numeral(map.getCenter().lng).format('0.0000');
-        window.location.hash = '#map=' + mapParams;
+        window.location.hash = '#map=' + mapParams + '&' + param(map.currentFilters);
     }
 };
 
@@ -717,6 +770,7 @@ L.LotMap = L.Map.extend({
     },
 
     updateDisplayedLots: function (currentFilters) {
+        if (!this.lotsLayer) return;
         var layers = this.lotsLayer.getLayers();
         var map = this,
             zoom = map.getZoom();
@@ -1620,9 +1674,6 @@ $('.activity-stream').load(url, function () {
 $(document).ready(function () {
     if ($('.map-page').length > 0) {
         var params;
-        if (window.location.search.length) {
-            //setFiltersUIFromQueryParams(deparam());
-        }
 
         var mapOptions = {
             filterParams: filters.filtersToParams(null, {}),
@@ -1632,20 +1683,18 @@ $(document).ready(function () {
 
         // Get the current center/zoom first rather than wait for map to load
         // and L.hash to set them. This is slightly smoother
-        var parsed = hashHandler.parse();
-        if (parsed.center) {
-            mapOptions.center = parsed.center;
+        var parsedHash = hashHandler.parse();
+        if (parsedHash.center) {
+            mapOptions.center = parsedHash.center;
         }
-        if (parsed.zoom) {
-            mapOptions.zoom = parsed.zoom;
+        if (parsedHash.zoom) {
+            mapOptions.zoom = parsedHash.zoom;
         }
 
         var map = L.lotMap('map', mapOptions);
         map.addControl(L.control.zoom({ position: 'bottomright' }));
 
         initializeBoundaries(map);
-
-        map.addLotsLayer();
 
         $(document).on('filtersChanged', function (event, data) {
             map.updateFilters(data.filters);
@@ -1657,7 +1706,10 @@ $(document).ready(function () {
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        filters.filters.attachTo('.filters-section');
+        filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
+
+        // Add lots *after* filters are set up so we have initial filters loaded
+        map.addLotsLayer();
 
         $('.details-print').click(function () {
             window.print();
@@ -33909,7 +33961,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
