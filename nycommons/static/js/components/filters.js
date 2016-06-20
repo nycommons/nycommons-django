@@ -146,7 +146,7 @@ var boundaryFilter = flight.component(function () {
 
         // Check initial filters and set this input as appropriate
         var initialFilters = this.attr.filterList.attr.initialFilters;
-        if (initialFilters.boundaries.layer === this.name) {
+        if (initialFilters.boundaries && initialFilters.boundaries.layer === this.name) {
             this.$node.val(initialFilters.boundaries.value);
             this.handleChange();
         }
