@@ -208,29 +208,25 @@ class LotsGeoJSONPolygon(LotGeoJSONMixin, FilteredLotsMixin, GeoJSONListView):
 class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
-        'public': 'publicly owned land',
-        'private': 'private land belonging to an owner who wants to see it used',
+        'library': 'library',
+        'NYCHA': 'public housing site',
+        'post office': 'post office',
     }
 
     def get_owners(self, lots_qs):
         owners = []
-        for row in lots_qs.values('owner__name').annotate(count=Count('pk')):
-            label = 'owned by %s' % row['owner__name']
-            if row['owner__name'] == 'private owner':
-                label = ''
+        for row in lots_qs.values('owner__name').annotate(count=Count('pk')).order_by():
             owners.append({
                 'name': row['owner__name'],
-                'label': label,
                 'count': row['count'],
             })
         return sorted(owners, key=itemgetter('name'))
 
     def get_layers(self, lots):
         return OrderedDict({
-            'public': lots.filter(owner__owner_type='public'),
-            'private': lots.filter(
-                owner__owner_type='private',
-            ),
+            'library': lots.filter(commons_type='library'),
+            'NYCHA': lots.filter(commons_type='NYCHA'),
+            'post office': lots.filter(commons_type='post office'),
         })
 
     def get_layer_counts(self, layers):

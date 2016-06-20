@@ -36,40 +36,18 @@ var details = flight.component(function () {
 
     this.updateOwnershipOverview = function () {
         var url = Django.url('lots:lot_ownership_overview');
+        var $details = this.$node;
+
         $.getJSON(url + '?' + this.attr.map.getParamsQueryString({ bbox: true }), function (data) {
             var template = Handlebars.compile($('#details-template').html());
             var content = template({ lottypes: data });
             $('.details-body').html(content);
             $('.map-printable-details').html(content);
-            $('.details-show-owners :input').change(function () {
-                var $list = $('.details-owner-list-' + $(this).data('type')),
-                    $otherButton = $('.details-show-organizing-' + $(this).data('type'));
-                if ($(this).is(':checked')) {
-                    $list.slideDown();
 
-                    // Slide up other one
-                    if ($otherButton.is('.active')) {
-                        $('.details-show-organizing-' + $(this).data('type')).button('toggle');
-                    }
-                }
-                else {
-                    $list.slideUp();
-                }
-            });
-            $('.details-show-organizing :input').change(function () {
-                var $list = $('.details-organizing-' + $(this).data('type')),
-                    $otherButton = $('.details-show-owners-' + $(this).data('type'));
-                if ($(this).is(':checked')) {
-                    $list.slideDown();
-
-                    // Slide up other one
-                    if ($otherButton.is('.active')) {
-                        $('.details-show-owners-' + $(this).data('type')).button('toggle');
-                    }
-                }
-                else {
-                    $list.slideUp();
-                }
+            $details.find('.details-toggle-owner-list').on('click', function () {
+                $(this).toggleClass('expanded');
+                $(this).parent().find('.details-owner-list').slideToggle();
+                return false;
             });
         });
     }
@@ -33990,7 +33968,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

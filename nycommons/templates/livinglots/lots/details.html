@@ -2,15 +2,17 @@
 
 <script id="details-template" type="text/x-handlebars-template">
     {% verbatim %}
-        <ul>
+        <ul class="details-owner-layer-list">
             {{#each lottypes}}
                 <li>
                     <span class="legend-marker legend-marker-{{type}}"></span>
                     {{label}}
-                    <ul>
+                    <a href="#" class="details-toggle-owner-list">Owners</a>
+                    <ul class="details-owner-list">
                         {{#each owners}}
                             <li>
-                                {{count}} lots {{label}}
+                                {{#if name}}{{name}}{{else}}Unknown owner{{/if}}:
+                                {{count}} sites
                             </li>
                         {{/each}}
                     </ul>

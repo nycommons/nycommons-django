@@ -6806,6 +6806,24 @@ section.collapsible > h6.collapsed::before {
   -o-transform: rotate(0deg);
   transform: rotate(0deg);
 }
+.details-section .details-owner-layer-list {
+  list-style: none;
+  padding: 0;
+}
+.details-section .details-owner-list {
+  display: none;
+  list-style: none;
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+}
+.details-section .details-toggle-owner-list::after {
+  content: "\203A";
+  padding-left: 5px;
+}
+.details-section .details-toggle-owner-list.expanded::after {
+  content: "\2304";
+}
 .map-search {
   display: none;
   left: 0;
