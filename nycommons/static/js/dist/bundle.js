@@ -148,6 +148,40 @@ var filter = flight.component(function () {
     });
 });
 
+var boundaryFilter = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleChange = function () {
+        // Clear all other boundaries selects
+        var layer = this.name;
+        $('.filter-boundaries[data-layer!="' + layer + '"]').val('');
+
+        var details = {
+            name: this.name,
+            type: this.type,
+            value: this.$node.find('option:selected').val()
+        };
+        this.attr.filterList.trigger('filterChanged', details);
+        $(document).trigger('boundaryChanged', details);
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.name = this.$node.data('layer');
+        this.type = 'boundary';
+
+        // Check initial filters and set this input as appropriate
+        var initialFilters = this.attr.filterList.attr.initialFilters;
+        if (initialFilters.boundaries.layer === this.name) {
+            this.$node.val(initialFilters.boundaries.value);
+            this.handleChange();
+        }
+        this.on('change', this.handleChange);
+    });
+});
+
 // A group of filters, should be one per page
 var filters = flight.component(function () {
     this.attributes({
@@ -161,11 +195,13 @@ var filters = flight.component(function () {
     };
 
     this.aggregateFilters = function () {
+        // Get layers
         var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
         var layers = $selectedLayers.map(function () {
             return $(this).attr('name');
         }).get();
 
+        // Get owners
         var owners = {};
         $selectedLayers.each(function () {
             var name = $(this).attr('name'),
@@ -175,7 +211,18 @@ var filters = flight.component(function () {
             }).get();
         });
 
+        // Get boundaries
+        var boundaries = {};
+        var $selectedBoundary = this.$node.find('.filter-boundaries option:selected[value!=""]');
+        if ($selectedBoundary.length) {
+            boundaries = {
+                layer: $selectedBoundary.parent().data('layer'),
+                value: $selectedBoundary.val()
+            };
+        }
+
         return {
+            boundaries: boundaries,
             layers: layers,
             owners: owners
         }
@@ -187,6 +234,9 @@ var filters = flight.component(function () {
 
     this.after('initialize', function () {
         filter.attachTo(this.$node.find('.filter'), {
+            filterList: this
+        });
+        boundaryFilter.attachTo(this.$node.find('.filter-boundaries'), {
             filterList: this
         });
 
@@ -231,18 +281,20 @@ module.exports = {
         /*
          * Boundaries
          */
-
-        // Look at current boundary, hide anything not in it
-        /*
         if (boundariesLayer.getLayers().length > 0) {
-            var centroid = lot.getBounds().getCenter(),
-                point = turf.point([centroid.lng, centroid.lat]),
+            var centroid;
+            try {
+                centroid = lot.getBounds().getCenter();
+            }
+            catch (e) {
+                centroid = lot.getLatLng();
+            }
+            var point = turf.point([centroid.lng, centroid.lat]),
                 polygon = boundariesLayer.getLayers()[0].toGeoJSON();
             if (!turf.inside(point, polygon)) {
                 return false;
             }
         }
-        */
 
         return true;
     },
@@ -718,6 +770,12 @@ L.LotMap = L.Map.extend({
         var map = this;
         this.on('layeradd', function (event) {
             if (event.layer.feature) {
+                // We have something other than a layer (eg a boundary), add it
+                if (event.layer.feature.properties.commons_type === undefined) {
+                    event.layer.addTo(map);
+                    return;
+                }
+
                 var lot = event.layer;
                 if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
                     lot.addTo(map);
@@ -726,10 +784,6 @@ L.LotMap = L.Map.extend({
                     lot.removeFrom(map);
                 }
             }
-        });
-
-        this.on('boundarieschange', function () {
-            this.updateDisplayedLots();
         });
     },
 
@@ -1577,7 +1631,7 @@ function updateDetailsLink(map) {
     $('a.details-link').attr('href', url);
 }
 
-function initializeBoundaries(map) {
+function checkForBoundaries() {
     // Check for city council / community board layers, console a warning
     var url = window.location.protocol + '//' + window.location.host +
         Django.url('inplace:layer_upload');
@@ -1587,22 +1641,6 @@ function initializeBoundaries(map) {
     if ($('.filter-community-districts').length === 0) {
         console.warn('No community districts! Add some here: ' + url);
     }
-
-    $('.filter-boundaries').change(function (e, options) {
-        // Clear other boundary filters
-        $('.filter-boundaries').not('#' + $(this).attr('id')).val('');
-
-        addBoundary(map, $(this).data('layer'), $(this).val(), options);
-    });
-
-    // If boundaries were set via query string trigger change here. Can't do
-    // until the map exists, but we actually do want to set most the other
-    // filters before the map exists.
-    $('.filter-boundaries').each(function () {
-        if ($(this).val()) {
-            $(this).trigger('change', { zoomToBounds: false });
-        }
-    });
 }
 
 function addBoundary(map, layer, pk, options) {
@@ -1618,40 +1656,6 @@ function addBoundary(map, layer, pk, options) {
     $.getJSON(url, function (data) {
         map.updateBoundaries(data, options);
     });
-}
-
-function setFiltersUIFromQueryParams(params) {
-    // Clear checkbox filters
-    $('.filter[type=checkbox]').prop('checked', false);
-
-    // Set layers filters
-    var layers = params.layers.split(',');
-    _.each(layers, function (layer) {
-        $('.filter-layer[name=' + layer +']').prop('checked', true);
-    });
-
-    // Set owner types
-    if (params.owner_types) {
-        _.each(params.owner_types.split(','), function (owner_type) {
-            $('.filter-owner-type[name=' + owner_type +']').prop('checked', true);
-        });
-    }
-
-    // Set owners filters
-    if (params.public_owners) {
-        $('.filter-owner-public').val(params.public_owners);
-    }
-    if (params.private_owners) {
-        $('.filter-owner-private').val(params.private_owners);
-    }
-
-    // Set boundaries filters
-    if (params.boundary) {
-        var split = params.boundary.split('::'),
-            layer = split[0].replace(/\+/g, ' '),
-            id = split[1];
-        $('.filter-boundaries[data-layer="' + layer + '"]').val(id);
-    }
 }
 
 // TODO button no longer exists but we should load recent activity
@@ -1695,13 +1699,23 @@ $(document).ready(function () {
         var map = L.lotMap('map', mapOptions);
         map.addControl(L.control.zoom({ position: 'bottomright' }));
 
-        initializeBoundaries(map);
+        checkForBoundaries();
 
         $(document).on('filtersChanged', function (event, data) {
             map.updateFilters(data.filters);
             var params = map.buildLotFilterParams();
             $(document).trigger('updateLotCount');
             hashHandler.update(map);
+        });
+
+        // Add boundary when input changes
+        $(document).on('boundaryChanged', function (event, data) {
+            addBoundary(map, data.layer, data.value, {});
+        });
+
+        // Show and hide lots based on boundary geometry
+        map.on('boundarieschange', function (event) {
+            map.updateFilters(map.currentFilters);
         });
 
         legend.attachTo('#map-legend', { map: map });
@@ -1737,10 +1751,6 @@ $(document).ready(function () {
             'zoomend': function () {
                 hashHandler.update(map);
                 $(document).trigger('updateLotCount');
-            },
-            'lotlayertransition': function (e) {
-                map.addLotsLayer(map.buildLotFilterParams());
-                map.updateDisplayedLots();
             }
         });
 
@@ -25845,6 +25855,7 @@ L.Map.include({
     updateBoundaries: function (data, options) {
         this.boundariesLayer.clearLayers();
         this.boundariesLayer.addData(data);
+        this.boundariesLayer.addTo(this);
         this.fire('boundarieschange');
         if (options.zoomToBounds) {
             this.fitBounds(this.boundariesLayer.getBounds());
@@ -33962,7 +33973,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

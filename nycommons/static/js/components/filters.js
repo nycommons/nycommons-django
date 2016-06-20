@@ -120,6 +120,40 @@ var filter = flight.component(function () {
     });
 });
 
+var boundaryFilter = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleChange = function () {
+        // Clear all other boundaries selects
+        var layer = this.name;
+        $('.filter-boundaries[data-layer!="' + layer + '"]').val('');
+
+        var details = {
+            name: this.name,
+            type: this.type,
+            value: this.$node.find('option:selected').val()
+        };
+        this.attr.filterList.trigger('filterChanged', details);
+        $(document).trigger('boundaryChanged', details);
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.name = this.$node.data('layer');
+        this.type = 'boundary';
+
+        // Check initial filters and set this input as appropriate
+        var initialFilters = this.attr.filterList.attr.initialFilters;
+        if (initialFilters.boundaries.layer === this.name) {
+            this.$node.val(initialFilters.boundaries.value);
+            this.handleChange();
+        }
+        this.on('change', this.handleChange);
+    });
+});
+
 // A group of filters, should be one per page
 var filters = flight.component(function () {
     this.attributes({
@@ -133,11 +167,13 @@ var filters = flight.component(function () {
     };
 
     this.aggregateFilters = function () {
+        // Get layers
         var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
         var layers = $selectedLayers.map(function () {
             return $(this).attr('name');
         }).get();
 
+        // Get owners
         var owners = {};
         $selectedLayers.each(function () {
             var name = $(this).attr('name'),
@@ -147,7 +183,18 @@ var filters = flight.component(function () {
             }).get();
         });
 
+        // Get boundaries
+        var boundaries = {};
+        var $selectedBoundary = this.$node.find('.filter-boundaries option:selected[value!=""]');
+        if ($selectedBoundary.length) {
+            boundaries = {
+                layer: $selectedBoundary.parent().data('layer'),
+                value: $selectedBoundary.val()
+            };
+        }
+
         return {
+            boundaries: boundaries,
             layers: layers,
             owners: owners
         }
@@ -159,6 +206,9 @@ var filters = flight.component(function () {
 
     this.after('initialize', function () {
         filter.attachTo(this.$node.find('.filter'), {
+            filterList: this
+        });
+        boundaryFilter.attachTo(this.$node.find('.filter-boundaries'), {
             filterList: this
         });
 
@@ -203,18 +253,20 @@ module.exports = {
         /*
          * Boundaries
          */
-
-        // Look at current boundary, hide anything not in it
-        /*
         if (boundariesLayer.getLayers().length > 0) {
-            var centroid = lot.getBounds().getCenter(),
-                point = turf.point([centroid.lng, centroid.lat]),
+            var centroid;
+            try {
+                centroid = lot.getBounds().getCenter();
+            }
+            catch (e) {
+                centroid = lot.getLatLng();
+            }
+            var point = turf.point([centroid.lng, centroid.lat]),
                 polygon = boundariesLayer.getLayers()[0].toGeoJSON();
             if (!turf.inside(point, polygon)) {
                 return false;
             }
         }
-        */
 
         return true;
     },

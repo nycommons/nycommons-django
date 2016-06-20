@@ -88,6 +88,12 @@ L.LotMap = L.Map.extend({
         var map = this;
         this.on('layeradd', function (event) {
             if (event.layer.feature) {
+                // We have something other than a layer (eg a boundary), add it
+                if (event.layer.feature.properties.commons_type === undefined) {
+                    event.layer.addTo(map);
+                    return;
+                }
+
                 var lot = event.layer;
                 if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
                     lot.addTo(map);
@@ -96,10 +102,6 @@ L.LotMap = L.Map.extend({
                     lot.removeFrom(map);
                 }
             }
-        });
-
-        this.on('boundarieschange', function () {
-            this.updateDisplayedLots();
         });
     },
 
