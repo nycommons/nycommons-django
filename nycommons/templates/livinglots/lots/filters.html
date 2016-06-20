@@ -57,6 +57,18 @@
     <section class="filter-section filter-section-boundaries">
         <h3>Location</h3>
 
+        {% all_boundaries "boroughs" as boroughs %}
+        {% if boroughs %}
+            <div class="filter-section-boundaries-item">
+                <select id="boroughs" name="boroughs" class="form-control filter-boundaries filter-boroughs" data-layer="boroughs">
+                    <option value="">{% trans "All Boroughs" %}</option>
+                    {% for borough in boroughs %}
+                        <option value="{{ borough.pk }}">{{ borough.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
         {% all_boundaries "city council districts" as ccs %}
         {% if ccs %}
             <div class="filter-section-boundaries-item">
