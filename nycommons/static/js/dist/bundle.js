@@ -25,7 +25,67 @@ module.exports = {
     collapsibleSection: collapsibleSection
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js":[function(require,module,exports){
+var flight = require('flightjs');
+var Handlebars = require('handlebars');
+
+var details = flight.component(function () {
+    this.attributes({
+        map: null
+    });
+
+    this.updateOwnershipOverview = function () {
+        var url = Django.url('lots:lot_ownership_overview');
+        $.getJSON(url + '?' + this.attr.map.getParamsQueryString({ bbox: true }), function (data) {
+            var template = Handlebars.compile($('#details-template').html());
+            var content = template({ lottypes: data });
+            $('.details-body').html(content);
+            $('.map-printable-details').html(content);
+            $('.details-show-owners :input').change(function () {
+                var $list = $('.details-owner-list-' + $(this).data('type')),
+                    $otherButton = $('.details-show-organizing-' + $(this).data('type'));
+                if ($(this).is(':checked')) {
+                    $list.slideDown();
+
+                    // Slide up other one
+                    if ($otherButton.is('.active')) {
+                        $('.details-show-organizing-' + $(this).data('type')).button('toggle');
+                    }
+                }
+                else {
+                    $list.slideUp();
+                }
+            });
+            $('.details-show-organizing :input').change(function () {
+                var $list = $('.details-organizing-' + $(this).data('type')),
+                    $otherButton = $('.details-show-owners-' + $(this).data('type'));
+                if ($(this).is(':checked')) {
+                    $list.slideDown();
+
+                    // Slide up other one
+                    if ($otherButton.is('.active')) {
+                        $('.details-show-owners-' + $(this).data('type')).button('toggle');
+                    }
+                }
+                else {
+                    $list.slideUp();
+                }
+            });
+        });
+    }
+
+    this.after('initialize', function () {
+        // TODO on filters change, updateOwnershipOverview
+        this.updateOwnershipOverview();
+    });
+});
+
+
+module.exports = {
+    details: details
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
 //
 // filters.js
 //
@@ -174,7 +234,7 @@ var boundaryFilter = flight.component(function () {
 
         // Check initial filters and set this input as appropriate
         var initialFilters = this.attr.filterList.attr.initialFilters;
-        if (initialFilters.boundaries.layer === this.name) {
+        if (initialFilters.boundaries && initialFilters.boundaries.layer === this.name) {
             this.$node.val(initialFilters.boundaries.value);
             this.handleChange();
         }
@@ -1552,10 +1612,8 @@ $(document).ready(function () {
 //
 
 var _ = require('underscore');
-var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var styles = require('../lib/map-styles');
 
 require('../leaflet.lotmap');
 require('bootstrap_button');
@@ -1564,6 +1622,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var details = require('../components/details');
 var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
@@ -1577,49 +1636,6 @@ var oasis = require('../lib/oasis');
 var console = window.console || {
     warn: function () {}
 };
-
-function updateOwnershipOverview(map) {
-    var url = Django.url('lots:lot_ownership_overview');
-    $.getJSON(url + '?' + map.getParamsQueryString({ bbox: true }), function (data) {
-        var template = Handlebars.compile($('#details-template').html());
-        var content = template({
-            lottypes: data.owners
-        });
-        $('.details-overview').html(content);
-        $('.map-printable-details').html(content);
-        $('.details-area-compare-tooltip').tooltip();
-        $('.details-show-owners :input').change(function () {
-            var $list = $('.details-owner-list-' + $(this).data('type')),
-                $otherButton = $('.details-show-organizing-' + $(this).data('type'));
-            if ($(this).is(':checked')) {
-                $list.slideDown();
-
-                // Slide up other one
-                if ($otherButton.is('.active')) {
-                    $('.details-show-organizing-' + $(this).data('type')).button('toggle');
-                }
-            }
-            else {
-                $list.slideUp();
-            }
-        });
-        $('.details-show-organizing :input').change(function () {
-            var $list = $('.details-organizing-' + $(this).data('type')),
-                $otherButton = $('.details-show-owners-' + $(this).data('type'));
-            if ($(this).is(':checked')) {
-                $list.slideDown();
-
-                // Slide up other one
-                if ($otherButton.is('.active')) {
-                    $('.details-show-owners-' + $(this).data('type')).button('toggle');
-                }
-            }
-            else {
-                $list.slideUp();
-            }
-        });
-    });
-}
 
 function updateDetailsLink(map) {
     var params = map.buildLotFilterParams();
@@ -1721,6 +1737,7 @@ $(document).ready(function () {
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        details.details.attachTo('.details-section', { map: map });
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
 
         // Add lots *after* filters are set up so we have initial filters loaded
@@ -1770,7 +1787,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
+},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js":[function(require,module,exports){
 /* ========================================================================
  * Bootstrap: button.js v3.3.2
  * http://getbootstrap.com/javascript/#buttons
@@ -33973,7 +33990,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

@@ -5,10 +5,8 @@
 //
 
 var _ = require('underscore');
-var Handlebars = require('handlebars');
 var L = require('leaflet');
 var Spinner = require('spin.js');
-var styles = require('../lib/map-styles');
 
 require('../leaflet.lotmap');
 require('bootstrap_button');
@@ -17,6 +15,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
+var details = require('../components/details');
 var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
@@ -30,49 +29,6 @@ var oasis = require('../lib/oasis');
 var console = window.console || {
     warn: function () {}
 };
-
-function updateOwnershipOverview(map) {
-    var url = Django.url('lots:lot_ownership_overview');
-    $.getJSON(url + '?' + map.getParamsQueryString({ bbox: true }), function (data) {
-        var template = Handlebars.compile($('#details-template').html());
-        var content = template({
-            lottypes: data.owners
-        });
-        $('.details-overview').html(content);
-        $('.map-printable-details').html(content);
-        $('.details-area-compare-tooltip').tooltip();
-        $('.details-show-owners :input').change(function () {
-            var $list = $('.details-owner-list-' + $(this).data('type')),
-                $otherButton = $('.details-show-organizing-' + $(this).data('type'));
-            if ($(this).is(':checked')) {
-                $list.slideDown();
-
-                // Slide up other one
-                if ($otherButton.is('.active')) {
-                    $('.details-show-organizing-' + $(this).data('type')).button('toggle');
-                }
-            }
-            else {
-                $list.slideUp();
-            }
-        });
-        $('.details-show-organizing :input').change(function () {
-            var $list = $('.details-organizing-' + $(this).data('type')),
-                $otherButton = $('.details-show-owners-' + $(this).data('type'));
-            if ($(this).is(':checked')) {
-                $list.slideDown();
-
-                // Slide up other one
-                if ($otherButton.is('.active')) {
-                    $('.details-show-owners-' + $(this).data('type')).button('toggle');
-                }
-            }
-            else {
-                $list.slideUp();
-            }
-        });
-    });
-}
 
 function updateDetailsLink(map) {
     var params = map.buildLotFilterParams();
@@ -174,6 +130,7 @@ $(document).ready(function () {
         legend.attachTo('#map-legend', { map: map });
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        details.details.attachTo('.details-section', { map: map });
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
 
         // Add lots *after* filters are set up so we have initial filters loaded
