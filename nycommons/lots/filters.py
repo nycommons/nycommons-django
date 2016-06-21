@@ -7,7 +7,7 @@ from django.contrib.gis.measure import D
 
 import django_filters
 
-from .models import Lot
+from .models import Lot, COMMONS_TYPES
 
 
 class BoundingBoxFilter(django_filters.Filter):
@@ -15,26 +15,6 @@ class BoundingBoxFilter(django_filters.Filter):
     def filter(self, qs, value):
         bbox = Polygon.from_bbox(value.split(','))
         return qs.filter(centroid__within=bbox)
-
-
-class LayerFilter(django_filters.Filter):
-
-    def filter(self, qs, value):
-        layers = value.split(',')
-        layer_filter = Q()
-
-        for layer in layers:
-            if layer == 'public':
-                layer_filter = layer_filter | Q(
-                    Q(known_use=None) | Q(known_use__visible=True),
-                    owner__owner_type='public',
-                )
-            elif layer == 'private':
-                layer_filter = layer_filter | Q(
-                    Q(known_use=None) | Q(known_use__visible=True),
-                    owner__owner_type='private',
-                )
-        return qs.filter(layer_filter)
 
 
 class LotGroupParentFilter(django_filters.Filter):
@@ -94,6 +74,10 @@ class ProjectFilter(django_filters.Filter):
 class LotFilter(django_filters.FilterSet):
 
     bbox = BoundingBoxFilter()
+    commons_type = django_filters.MultipleChoiceFilter(
+        choices=COMMONS_TYPES,
+        widget=django_filters.widgets.CSVWidget()
+    )
     lot_center = LotCenterFilter()
     parents_only = LotGroupParentFilter()
     projects = ProjectFilter()
@@ -102,7 +86,6 @@ class LotFilter(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(LotFilter, self).__init__(*args, **kwargs)
-        # TODO adjust initial queryset based on user
         self.user = user
 
     def hashkey(self):
@@ -113,6 +96,7 @@ class LotFilter(django_filters.FilterSet):
         fields = [
             'address_line1',
             'bbox',
+            'commons_type',
             'known_use',
             'lot_center',
             'parents_only',

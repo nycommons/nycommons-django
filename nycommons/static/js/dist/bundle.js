@@ -53,8 +53,8 @@ var details = flight.component(function () {
     }
 
     this.after('initialize', function () {
-        // TODO on filters change, updateOwnershipOverview
         this.updateOwnershipOverview();
+        $(document).on('filtersChanged', this.updateOwnershipOverview.bind(this));
     });
 });
 
@@ -77,22 +77,16 @@ turf.point = require('turf-point');
 
 
 var defaultFilters = {
-    layers: ['organizing', 'in_use', 'no_people', 'in_use_started_here'],
-    ownerTypes: ['private_opt_in', 'public'],
     parents_only: true
 };
 
-
 var renamedFilters = {
-    ownerTypes: 'owner_types',
-    privateOwnerPks: 'private_owners',
-    publicOwnerPks: 'public_owners'
+    commonsTypes: 'commons_type'
 };
-
 
 function normalizeFilters(filters) {
     // Normalize filters that are arrays
-    _.each(['layers', 'ownerTypes', 'privateOwnerPks', 'publicOwnerPks'], function (key) {
+    _.each(['layers'], function (key) {
         if (filters[key]) {
             filters[key] = filters[key].join(',');
         }
@@ -115,12 +109,9 @@ function normalizeFilters(filters) {
     return filters;
 }
 
-
 function toParams(filters) {
     return normalizeFilters(_.extend({}, defaultFilters, filters));
 }
-
-
 
 // An individual filter (eg a checkbox)
 var filter = flight.component(function () {
@@ -337,37 +328,14 @@ module.exports = {
         return true;
     },
 
-    paramsToFilters: function (params) {
-        var filters = _.extend({}, params);
-        //filters.layers = filters.layers.split(',');
-        //filters.owner_types = filters.owner_types.split(',');
-        if (filters.public_owners) {
-            filters.public_owners = _.map(filters.public_owners.split(','), function (ownerPk) {
-                return parseInt(ownerPk);
-            });
-        }
-        if (filters.private_owners) {
-            filters.private_owners = _.map(filters.private_owners.split(','), function (ownerPk) {
-                return parseInt(ownerPk);
-            });
-        }
-        return filters;
-    },
-
     // Take the current state of the map and filters to create params suitable
-    // for requests (eg counts)
+    // for backend requests (eg counts). These will be different from permalink
+    // URL params.
     filtersToParams: function (map, options) {
-        /*
-        var filters = {
-            publicOwnerPks: $('.filter-owner-public').val().split(','),
-            privateOwnerPks: $('.filter-owner-private').val().split(',')
-        };
-        filters.layers = _.map($('.filter-layer:checked'), function (layer) {
+        var filters = {};
+        filters.commonsTypes = _.map($('.filter-layer:checked'), function (layer) {
             return $(layer).attr('name');
-        });
-        filters.ownerTypes = _.map($('.filter-owner-type:checked'), function (ownerType) {
-            return $(ownerType).attr('name');
-        });
+        }).join();
 
         // Add boundary, if any
         $.each($('.filter-boundaries'), function () {
@@ -385,8 +353,6 @@ module.exports = {
         }
 
         return params;
-        */
-        return {};
     },
 
     toParams: toParams
@@ -33968,7 +33934,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

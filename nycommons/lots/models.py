@@ -125,6 +125,14 @@ class LotGroupLotMixin(models.Model):
         abstract = True
 
 
+COMMONS_TYPES = (
+    ('library', 'library'),
+    ('post office', 'post office'),
+    ('public housing', 'public housing'),
+    ('vacant lot / garden', 'vacant lot / garden'),
+    ('waterfront', 'waterfront'),
+)
+
 class LotMixin(models.Model):
     BOROUGH_CHOICES = (
         ('Bronx', 'Bronx'),
@@ -132,13 +140,6 @@ class LotMixin(models.Model):
         ('Manhattan', 'Manhattan'),
         ('Queens', 'Queens'),
         ('Staten Island', 'Staten Island'),
-    )
-    COMMONS_TYPES = (
-        ('library', 'library'),
-        ('post office', 'post office'),
-        ('public housing', 'public housing'),
-        ('vacant lot / garden', 'vacant lot / garden'),
-        ('waterfront', 'waterfront'),
     )
 
     accessible = models.BooleanField(default=True)

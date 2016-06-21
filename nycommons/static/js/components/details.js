@@ -25,8 +25,8 @@ var details = flight.component(function () {
     }
 
     this.after('initialize', function () {
-        // TODO on filters change, updateOwnershipOverview
         this.updateOwnershipOverview();
+        $(document).on('filtersChanged', this.updateOwnershipOverview.bind(this));
     });
 });
 
