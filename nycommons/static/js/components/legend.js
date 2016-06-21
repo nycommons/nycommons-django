@@ -9,7 +9,9 @@ var legend = flight.component(function () {
     });
 
     this.onCount = function (data) {
-        this.select('lotsCount').text(data['lots-count']);
+        var count = data['lots-count'];
+        this.select('lotsCount').text(count);
+        $(document).trigger('receivedLotCount', { count: count });
     };
 
     this.updateLotCount = function (event) {

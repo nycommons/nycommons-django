@@ -24,9 +24,14 @@ var details = flight.component(function () {
         });
     }
 
+    this.receivedLotCount = function (event, data) {
+        this.$node.find('.details-header-property-count').text(data.count);
+    };
+
     this.after('initialize', function () {
         this.updateOwnershipOverview();
-        $(document).on('filtersChanged', this.updateOwnershipOverview.bind(this));
+        this.on(document, 'filtersChanged', this.updateOwnershipOverview);
+        this.on(document, 'receivedLotCount', this.receivedLotCount);
     });
 });
 
