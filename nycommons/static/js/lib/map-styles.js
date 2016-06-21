@@ -21,7 +21,7 @@ module.exports = {
         if (_.contains(layers, 'library')) {
             return fillColors.library;
         }
-        if (_.contains(layers, 'NYCHA')) {
+        if (_.contains(layers, 'public housing')) {
             return fillColors.nycha;
         }
         if (_.contains(layers, 'post office')) {

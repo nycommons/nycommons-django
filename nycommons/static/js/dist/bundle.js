@@ -1028,7 +1028,7 @@ module.exports = {
         if (_.contains(layers, 'library')) {
             return fillColors.library;
         }
-        if (_.contains(layers, 'NYCHA')) {
+        if (_.contains(layers, 'public housing')) {
             return fillColors.nycha;
         }
         if (_.contains(layers, 'post office')) {
@@ -25816,7 +25816,6 @@ L.Map.include({
     updateBoundaries: function (data, options) {
         this.boundariesLayer.clearLayers();
         this.boundariesLayer.addData(data);
-        this.boundariesLayer.addTo(this);
         this.fire('boundarieschange');
         if (options.zoomToBounds) {
             this.fitBounds(this.boundariesLayer.getBounds());
@@ -33934,7 +33933,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

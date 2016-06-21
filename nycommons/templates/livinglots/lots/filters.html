@@ -37,13 +37,13 @@
             </ul>
         </li>
         <li>
-            <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="NYCHA" data-type="layer" checked />
+            <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="public housing" data-type="layer" checked />
             <label for="layer-public-housing">
                 {% trans "public housing sites" %}
             </label>
 
             <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "NYCHA" as owners %}
+                {% get_owners_by_commons_type "public housing" as owners %}
                 {% for owner in owners %}
                     <li>
                         <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />

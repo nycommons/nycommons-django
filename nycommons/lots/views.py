@@ -209,7 +209,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
         'library': 'library',
-        'NYCHA': 'public housing site',
+        'public housing': 'public housing site',
         'post office': 'post office',
     }
 
@@ -225,7 +225,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
     def get_layers(self, lots):
         return OrderedDict({
             'library': lots.filter(commons_type='library'),
-            'NYCHA': lots.filter(commons_type='NYCHA'),
+            'public housing': lots.filter(commons_type='public housing'),
             'post office': lots.filter(commons_type='post office'),
         })
 
