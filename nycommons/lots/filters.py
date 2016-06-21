@@ -6,8 +6,22 @@ from django.contrib.gis.geos import Polygon
 from django.contrib.gis.measure import D
 
 import django_filters
+from inplace.boundaries.models import Boundary
 
 from .models import Lot, COMMONS_TYPES
+
+
+class BoundaryFilter(django_filters.Filter):
+
+    def filter(self, qs, value):
+        name, pk = value.split('::')
+        try:
+            return qs.filter(
+                centroid__within=Boundary.objects.get(layer__name=name, pk=pk).geometry
+            )
+        except Boundary.DoesNotExist:
+            print 'Could not find Boundary %s %s' % (name, pk)
+        return qs
 
 
 class BoundingBoxFilter(django_filters.Filter):
@@ -74,6 +88,7 @@ class ProjectFilter(django_filters.Filter):
 class LotFilter(django_filters.FilterSet):
 
     bbox = BoundingBoxFilter()
+    boundary = BoundaryFilter()
     commons_type = django_filters.MultipleChoiceFilter(
         choices=COMMONS_TYPES,
         widget=django_filters.widgets.CSVWidget()
@@ -96,6 +111,7 @@ class LotFilter(django_filters.FilterSet):
         fields = [
             'address_line1',
             'bbox',
+            'boundary',
             'commons_type',
             'known_use',
             'lot_center',
