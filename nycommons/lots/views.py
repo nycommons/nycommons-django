@@ -235,6 +235,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
             owners = self.get_owners(qs)
             if owners:
                 counts.append({
+                    'count': sum([o['count'] for o in owners]),
                     'label': self.layer_labels[layer],
                     'owners': owners,
                     'type': layer,

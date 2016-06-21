@@ -6,7 +6,8 @@
             {{#each lottypes}}
                 <li>
                     <span class="legend-marker legend-marker-{{type}}"></span>
-                    {{label}}
+                    <span class="details-owner-count">{{count}}</span>
+                    <span class="details-owner-label">{{label}}</span>
                     <a href="#" class="details-toggle-owner-list">Owners</a>
                     <ul class="details-owner-list">
                         {{#each owners}}
