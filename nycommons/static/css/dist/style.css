@@ -6822,6 +6822,15 @@ section.collapsible > h6.collapsed::before {
   -webkit-column-count: 2;
   column-count: 2;
 }
+.details-section .details-toggle-owner-list-wrapper {
+  display: inline-block;
+  margin-left: 15px;
+}
+.details-section .details-toggle-owner-list:hover,
+.details-section .details-toggle-owner-list:active,
+.details-section .details-toggle-owner-list:focus {
+  text-decoration: none;
+}
 .details-section .details-toggle-owner-list::after {
   content: "\203A";
   padding-left: 5px;

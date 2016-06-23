@@ -25,7 +25,7 @@ var details = flight.component(function () {
 
             $details.find('.details-toggle-owner-list').on('click', function () {
                 $(this).toggleClass('expanded');
-                $(this).parent().find('.details-owner-list').slideToggle();
+                $(this).parent().parent().find('.details-owner-list').slideToggle();
                 return false;
             });
         });

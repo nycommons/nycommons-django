@@ -19,6 +19,17 @@
     }
 
     .details-toggle-owner-list {
+        &-wrapper {
+            display: inline-block;
+            margin-left: 15px;
+        }
+
+        &:hover,
+        &:active,
+        &:focus {
+            text-decoration: none;
+        }
+
         &::after {
             content: "\203A";
             padding-left: 5px;
