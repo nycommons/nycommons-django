@@ -208,11 +208,11 @@ class LotsGeoJSONPolygon(LotGeoJSONMixin, FilteredLotsMixin, GeoJSONListView):
 class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
-        'community_projects': 'community projects',
+        'community_project': 'community project',
         'priority': 'priority',
         'library': 'library',
-        'public housing': 'public housing site',
-        'post office': 'post office',
+        'public_housing': 'public housing site',
+        'post_office': 'post office',
     }
 
     def get_owners(self, lots_qs):
@@ -230,13 +230,13 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
         return sorted(owners, key=itemgetter('name'))
 
     def get_layers(self, lots):
-        return OrderedDict({
-            'community_projects': lots.filter(steward_projects__isnull=False),
-            'priority': lots.filter(priority=True),
-            'library': lots.filter(commons_type='library'),
-            'public housing': lots.filter(commons_type='public housing'),
-            'post office': lots.filter(commons_type='post office'),
-        })
+        return OrderedDict([
+            ('community_project', lots.filter(steward_projects__isnull=False)),
+            ('priority', lots.filter(priority=True)),
+            ('library', lots.filter(commons_type='library')),
+            ('public_housing', lots.filter(commons_type='public housing')),
+            ('post_office', lots.filter(commons_type='post office')),
+        ])
 
     def get_layer_counts(self, layers):
         counts = []
@@ -247,7 +247,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
                     'count': sum([o['count'] for o in owners]),
                     'label': self.layer_labels[layer],
                     'owners': owners,
-                    'priority': layer in ('community_projects', 'priority',),
+                    'priority': layer in ('community_project', 'priority',),
                     'type': layer,
                 })
         return counts
