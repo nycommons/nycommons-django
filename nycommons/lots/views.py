@@ -208,7 +208,7 @@ class LotsGeoJSONPolygon(LotGeoJSONMixin, FilteredLotsMixin, GeoJSONListView):
 class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
-        'organizing': 'organizing',
+        'community_projects': 'community projects',
         'priority': 'priority',
         'library': 'library',
         'public housing': 'public housing site',
@@ -231,7 +231,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     def get_layers(self, lots):
         return OrderedDict({
-            'organizing': lots.filter(organizers__isnull=False),
+            'community_projects': lots.filter(steward_projects__isnull=False),
             'priority': lots.filter(priority=True),
             'library': lots.filter(commons_type='library'),
             'public housing': lots.filter(commons_type='public housing'),
@@ -247,7 +247,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
                     'count': sum([o['count'] for o in owners]),
                     'label': self.layer_labels[layer],
                     'owners': owners,
-                    'priority': layer in ('organizing', 'priority',),
+                    'priority': layer in ('community_projects', 'priority',),
                     'type': layer,
                 })
         return counts
