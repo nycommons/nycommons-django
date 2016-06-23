@@ -2,45 +2,34 @@
 
 <script id="details-template" type="text/x-handlebars-template">
     {% verbatim %}
+        {{#*inline "layerPartial"}}
+            <li>
+                <span class="legend-marker legend-marker-{{type}}"></span>
+                <span class="details-owner-count">{{count}}</span>
+                <span class="details-owner-label">{{label}}</span>
+                <a href="#" class="details-toggle-owner-list">{{owners.length}} Owners</a>
+                <ul class="details-owner-list">
+                    {{#each owners}}
+                        <li>
+                            {{#if name}}{{name}}{{else}}Unknown owner{{/if}}:
+                            {{count}} sites,
+                            {{formatArea area}}
+                        </li>
+                    {{/each}}
+                </ul>
+            </li>
+        {{/inline}}
         <ul class="details-owner-priority-list">
             {{#each lottypes}}
                 {{#if priority}}
-                    <li>
-                        <span class="legend-marker legend-marker-{{type}}"></span>
-                        <span class="details-owner-count">{{count}}</span>
-                        <span class="details-owner-label">{{label}}</span>
-                        <a href="#" class="details-toggle-owner-list">Owners</a>
-                        <ul class="details-owner-list">
-                            {{#each owners}}
-                                <li>
-                                    {{#if name}}{{name}}{{else}}Unknown owner{{/if}}:
-                                    {{count}} sites,
-                                    {{formatArea area}}
-                                </li>
-                            {{/each}}
-                        </ul>
-                    </li>
+                    {{> layerPartial}}
                 {{/if}}
             {{/each}}
         </ul>
         <ul class="details-owner-layer-list">
             {{#each lottypes}}
                 {{#unless priority}}
-                    <li>
-                        <span class="legend-marker legend-marker-{{type}}"></span>
-                        <span class="details-owner-count">{{count}}</span>
-                        <span class="details-owner-label">{{label}}</span>
-                        <a href="#" class="details-toggle-owner-list">Owners</a>
-                        <ul class="details-owner-list">
-                            {{#each owners}}
-                                <li>
-                                    {{#if name}}{{name}}{{else}}Unknown owner{{/if}}:
-                                    {{count}} sites,
-                                    {{formatArea area}}
-                                </li>
-                            {{/each}}
-                        </ul>
-                    </li>
+                    {{> layerPartial}}
                 {{/unless}}
             {{/each}}
         </ul>
