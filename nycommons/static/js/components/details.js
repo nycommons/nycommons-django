@@ -1,6 +1,13 @@
 var flight = require('flightjs');
 var Handlebars = require('handlebars');
 
+var formatSquareFeet = require('../lib/area').formatSquareFeet;
+
+Handlebars.registerHelper('formatArea', function (area) {
+    area = Handlebars.escapeExpression(area);
+    return formatSquareFeet(area);
+});
+
 var details = flight.component(function () {
     this.attributes({
         map: null

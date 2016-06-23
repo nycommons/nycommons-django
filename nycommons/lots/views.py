@@ -215,9 +215,14 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     def get_owners(self, lots_qs):
         owners = []
-        for row in lots_qs.values('owner__name').annotate(count=Count('pk')).order_by():
+        for row in lots_qs.values('owner__name').annotate(count=Count('pk'), area=Sum('polygon_area')).order_by():
+            try:
+                area = float(row['area'])
+            except TypeError:
+                area = None
             owners.append({
                 'name': row['owner__name'],
+                'area': area,
                 'count': row['count'],
             })
         return sorted(owners, key=itemgetter('name'))

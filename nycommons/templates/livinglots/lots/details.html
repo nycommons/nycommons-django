@@ -13,7 +13,8 @@
                         {{#each owners}}
                             <li>
                                 {{#if name}}{{name}}{{else}}Unknown owner{{/if}}:
-                                {{count}} sites
+                                {{count}} sites,
+                                {{formatArea area}}
                             </li>
                         {{/each}}
                     </ul>

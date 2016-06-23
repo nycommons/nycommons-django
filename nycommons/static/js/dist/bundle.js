@@ -29,6 +29,13 @@ module.exports = {
 var flight = require('flightjs');
 var Handlebars = require('handlebars');
 
+var formatSquareFeet = require('../lib/area').formatSquareFeet;
+
+Handlebars.registerHelper('formatArea', function (area) {
+    area = Handlebars.escapeExpression(area);
+    return formatSquareFeet(area);
+});
+
 var details = flight.component(function () {
     this.attributes({
         map: null
@@ -68,7 +75,7 @@ module.exports = {
     details: details
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
+},{"../lib/area":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js":[function(require,module,exports){
 //
 // filters.js
 //
@@ -1011,7 +1018,24 @@ L.LotPathMixin = {
 
 };
 
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js":[function(require,module,exports){
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
+var numeral = require('numeral');
+
+var squareFootPerAcre = 43560;
+
+module.exports = {
+    formatSquareFeet: function (area) {
+        if (!area) return 'unknown area';
+        var units = 'sq ft';
+        if (area > squareFootPerAcre) {
+            area /= squareFootPerAcre;
+            units = 'acres';
+        }
+        return numeral(area).format('0,0.[0]') + ' ' + units;
+    }
+};
+
+},{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js":[function(require,module,exports){
 //
 // Lot map styles by layer for maps
 //
@@ -33940,7 +33964,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
