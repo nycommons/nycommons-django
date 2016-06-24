@@ -16,6 +16,7 @@ require('leaflet-loading');
 require('../handlebars.helpers');
 require('../map.search.js');
 var details = require('../components/details');
+var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
@@ -132,6 +133,7 @@ $(document).ready(function () {
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
         details.details.attachTo('.details-section', { map: map });
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
+        exportLink.attachTo('.export', { map: map });
 
         // Add lots *after* filters are set up so we have initial filters loaded
         map.addLotsLayer();
@@ -156,18 +158,14 @@ $(document).ready(function () {
         map.on({
             'moveend': function () {
                 hashHandler.update(map);
+                $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount');
             },
             'zoomend': function () {
                 hashHandler.update(map);
+                $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount');
             }
-        });
-
-        $('.export').click(function (e) {
-            var url = $(this).data('baseurl') + map.getParamsQueryString({ bbox: true });
-            window.location.href = url;
-            e.preventDefault();
         });
 
         $('.admin-button-add-lot').click(function () {

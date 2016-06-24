@@ -61,9 +61,9 @@
             <div class="details-header-action details-downloads">
                 {% trans "Downloads" %}
                 <ul class="details-downloads-types">
-                    <li><a href="#">Spreadsheet</a></li>
-                    <li><a href="#">GeoJSON</a></li>
-                    <li><a href="#">KML</a></li>
+                    <li><a class="export export-csv" target="_blank" data-baseurl="{% url "lots:csv"  %}?" href="#">Spreadsheet</a></li>
+                    <li><a class="export export-geojson" target="_blank" data-baseurl="{% url "lots:geojson"  %}?download=yes&" href="#">GeoJSON</a></li>
+                    <li><a class="export export-kml" target="_blank" data-baseurl="{% url "lots:kml"  %}?" href="#">KML</a></li>
                 </ul>
             </div>
         </div>
