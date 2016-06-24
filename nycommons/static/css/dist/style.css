@@ -6827,6 +6827,9 @@ section.collapsible > h6.collapsed::before {
   -webkit-column-count: 2;
   column-count: 2;
 }
+.details-section .details-owner-label {
+  text-transform: capitalize;
+}
 .details-section .details-toggle-organizer-list-wrapper {
   display: inline-block;
   margin-left: 15px;
