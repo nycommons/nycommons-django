@@ -49,18 +49,23 @@
             Details for <span class="details-header-property-count"></span> properties
         </div>
         <div class="details-header-actions">
-            <a class="close" href="#">
+            <a class="details-header-action close" href="#">
                 {% trans "Close" %}
             </a>
-            <a class="details-print" href="#">
+            <a class="details-header-action details-print" href="#">
                 {% trans "Print" %}
             </a>
-            <a class="details-permalink" target="_blank" href="#">
+            <a class="details-header-action details-permalink" target="_blank" href="#">
                 {% trans "Link to this view" %}
             </a>
-            <a class="details-downloads" href="#">
+            <div class="details-header-action details-downloads">
                 {% trans "Downloads" %}
-            </a>
+                <ul class="details-downloads-types">
+                    <li><a href="#">Spreadsheet</a></li>
+                    <li><a href="#">GeoJSON</a></li>
+                    <li><a href="#">KML</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="details-body">

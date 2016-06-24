@@ -4,7 +4,7 @@
 
         &-actions {
             .make-md-column(6);
-            a {
+            .details-header-action {
                 float: right;
                 padding: 0 5px;
             }
@@ -72,6 +72,34 @@
 
         &.expanded::after {
             content: "\2304";
+        }
+    }
+
+    .details-downloads {
+        color: @foreground-color;
+        
+        .details-downloads-types {
+            background: @white;
+            display: none;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+
+            li {
+                display: block;
+
+                a {
+                    float: none;
+                    padding: 0;
+                }
+            }
+        }
+
+        &:hover {
+            .details-downloads-types {
+                display: block;
+            }
         }
     }
 }

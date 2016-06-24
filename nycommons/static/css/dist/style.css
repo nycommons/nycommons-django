@@ -6831,7 +6831,7 @@ section.collapsible > h6.collapsed::before {
     width: 50%;
   }
 }
-.details-section .details-header-actions a {
+.details-section .details-header-actions .details-header-action {
   float: right;
   padding: 0 5px;
 }
@@ -6893,6 +6893,27 @@ section.collapsible > h6.collapsed::before {
 }
 .details-section .details-toggle-owner-list.expanded::after {
   content: "\2304";
+}
+.details-section .details-downloads {
+  color: #00aeef;
+}
+.details-section .details-downloads .details-downloads-types {
+  background: #ffffff;
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+}
+.details-section .details-downloads .details-downloads-types li {
+  display: block;
+}
+.details-section .details-downloads .details-downloads-types li a {
+  float: none;
+  padding: 0;
+}
+.details-section .details-downloads:hover .details-downloads-types {
+  display: block;
 }
 .map-search {
   display: none;
