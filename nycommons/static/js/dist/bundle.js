@@ -322,7 +322,7 @@ module.exports = {
         /*
          * Boundaries
          */
-        if (boundariesLayer.getLayers().length > 0) {
+        if (boundariesLayer && boundariesLayer.getLayers().length > 0) {
             var centroid;
             try {
                 centroid = lot.getBounds().getCenter();
@@ -3385,960 +3385,6 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/catiline/dist/catiline.js":[function(require,module,exports){
-/*! catiline 2.9.3 2013-10-25*/
-/*!©2013 Calvin Metcalf @license MIT https://github.com/calvinmetcalf/catiline */
-if (typeof document === 'undefined') {
-	self._noTransferable=true;
-	self.onmessage=function(e){
-		/*jslint evil: true */
-		eval(e.data);
-	};
-} else {
-(function(global){
-	'use strict';
-//overall structure based on when
-//https://github.com/cujojs/when/blob/master/when.js#L805-L852
-var nextTick;
-var MutationObserver = global.MutationObserver || global.WebKitMutationObserver;
-/*if (typeof setImmediate === 'function') {
-	nextTick = setImmediate.bind(global,drainQueue);
-}else */if(MutationObserver){
-	//based on RSVP
-	//https://github.com/tildeio/rsvp.js/blob/master/lib/rsvp/async.js
-	var observer = new MutationObserver(drainQueue);
-	var element = document.createElement('div');
-	observer.observe(element, { attributes: true });
-
-	// Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-	addEventListener('unload', function () {
-		observer.disconnect();
-		observer = null;
-	}, false);
-	nextTick =   function () {
-		element.setAttribute('drainQueue', 'drainQueue');
-	};
-}else{
-	var codeWord = 'com.catiline.setImmediate' + Math.random();
-	addEventListener('message', function (event) {
-		// This will catch all incoming messages (even from other windows!), so we need to try reasonably hard to
-		// avoid letting anyone else trick us into firing off. We test the origin is still this window, and that a
-		// (randomly generated) unpredictable identifying prefix is present.
-		if (event.source === window && event.data === codeWord) {
-			drainQueue();
-		}
-	}, false);
-	nextTick =  function() {
-		postMessage(codeWord, '*');
-	};
-}
-var mainQueue = [];
-
-/**
- * Enqueue a task. If the queue is not currently scheduled to be
- * drained, schedule it.
- * @param {function} task
- */
-catiline.nextTick = function(task) {
-	if (mainQueue.push(task) === 1) {
-		nextTick();
-	}
-};
-
-/**
- * Drain the handler queue entirely, being careful to allow the
- * queue to be extended while it is being processed, and to continue
- * processing until it is truly empty.
- */
-function drainQueue() {
-	var i = 0;
-	var task;
-	var innerQueue = mainQueue;
-	mainQueue = [];
-	/*jslint boss: true */
-	while (task = innerQueue[i++]) {
-		task();
-	}
-
-}
-
-var func = 'function';
-// Creates a deferred: an object with a promise and corresponding resolve/reject methods
-function Deferred() {
-	// The `handler` variable points to the function that will
-	// 1) handle a .then(onFulfilled, onRejected) call
-	// 2) handle a .resolve or .reject call (if not fulfilled)
-	// Before 2), `handler` holds a queue of callbacks.
-	// After 2), `handler` is a simple .then handler.
-	// We use only one function to save memory and complexity.
-	var handler = function(onFulfilled, onRejected, value) {
-		// Case 1) handle a .then(onFulfilled, onRejected) call
-		if (onFulfilled !== handler) {
-			var createdDeffered = createDeferred();
-			handler.queue.push({
-				deferred: createdDeffered,
-				resolve: onFulfilled,
-				reject: onRejected
-			});
-			return createdDeffered.promise;
-		}
-
-		// Case 2) handle a .resolve or .reject call
-		// (`onFulfilled` acts as a sentinel)
-		// The actual function signature is
-		// .re[ject|solve](sentinel, success, value)
-		var action = onRejected ? 'resolve' : 'reject';
-		for (var i = 0, l = handler.queue.length; i < l; i++) {
-			var queue = handler.queue[i];
-			var deferred = queue.deferred;
-			var callback = queue[action];
-			if (typeof callback !== func) {
-				deferred[action](value);
-			}
-			else {
-				execute(callback, value, deferred);
-			}
-		}
-		// Replace this handler with a simple resolved or rejected handler
-		handler = createHandler(promise, value, onRejected);
-	};
-
-	function Promise() {
-		this.then = function(onFulfilled, onRejected) {
-			return handler(onFulfilled, onRejected);
-		};
-	}
-	var promise = new Promise();
-	this.promise = promise;
-	// The queue of deferreds
-	handler.queue = [];
-
-	this.resolve = function(value) {
-		if (handler.queue) {
-			handler(handler, true, value);
-		}
-	};
-
-	this.fulfill = this.resolve;
-
-	this.reject = function(reason) {
-		if (handler.queue) {
-			handler(handler, false, reason);
-		}
-	};
-}
-
-function createDeferred() {
-	return new Deferred();
-}
-
-// Creates a fulfilled or rejected .then function
-function createHandler(promise, value, success) {
-	return function(onFulfilled, onRejected) {
-		var callback = success ? onFulfilled : onRejected;
-		if (typeof callback !== func) {
-			return promise;
-		}
-		var result = createDeferred();
-		execute(callback, value, result);
-		return result.promise;
-	};
-}
-
-// Executes the callback with the specified value,
-// resolving or rejecting the deferred
-function execute(callback, value, deferred) {
-	catiline.nextTick(function() {
-		try {
-			var result = callback(value);
-			if (result && typeof result.then === func) {
-				result.then(deferred.resolve, deferred.reject);
-			}
-			else {
-				deferred.resolve(result);
-			}
-		}
-		catch (error) {
-			deferred.reject(error);
-		}
-	});
-}
-catiline.deferred = createDeferred;
-// Returns a resolved promise
-catiline.resolve = function(value) {
-	var promise = {};
-	promise.then = createHandler(promise, value, true);
-	return promise;
-};
-// Returns a rejected promise
-catiline.reject = function(reason) {
-	var promise = {};
-	promise.then = createHandler(promise, reason, false);
-	return promise;
-};
-// Returns a deferred
-
-catiline.all = function(array) {
-	var promise = createDeferred();
-	var len = array.length;
-	var resolved = 0;
-	var out = [];
-	var onSuccess = function(n) {
-		return function(v) {
-			out[n] = v;
-			resolved++;
-			if (resolved === len) {
-				promise.resolve(out);
-			}
-		};
-	};
-	array.forEach(function(v, i) {
-		v.then(onSuccess(i), function(a) {
-			promise.reject(a);
-		});
-	});
-	return promise.promise;
-};
-catiline._hasWorker = typeof Worker !== 'undefined'&&typeof fakeLegacy === 'undefined';
-catiline.URL = window.URL || window.webkitURL;
-catiline._noTransferable=!catiline.URL;
-//regex out the importScript call and move it up to the top out of the function.
-function regexImports(string){
-	var rest=string;
-	var match = true;
-	var matches = {};
-	var loopFunc = function(a,b){
-		if(b){
-			'importScripts('+b.split(',').forEach(function(cc){
-				matches[catiline.makeUrl(cc.match(/\s*[\'\"](\S*)[\'\"]\s*/)[1])]=true; // trim whitespace, add to matches
-			})+');\n';
-		}
-	};
-	while(match){
-		match = rest.match(/(importScripts\(.*?\);?)/);
-		rest = rest.replace(/(importScripts\(\s*(?:[\'\"].*?[\'\"])?\s*\);?)/,'\n');
-		if(match){
-			match[0].replace(/importScripts\(\s*([\'\"].*?[\'\"])?\s*\);?/g,loopFunc);
-		}
-	}
-	matches = Object.keys(matches);
-	return [matches,rest];
-}
-
-function moveImports(string,after){
-	var str = regexImports(string);
-	var matches = str[0];
-	var rest = str[1];
-	if(matches.length>0){
-		return 'importScripts(\''+matches.join('\',\'')+after+rest;
-	}else{
-		return rest;
-	}
-}
-function getPath(){
-	if(typeof SHIM_WORKER_PATH !== 'undefined'){
-		return SHIM_WORKER_PATH;
-	}else if('SHIM_WORKER_PATH' in catiline){
-		return catiline.SHIM_WORKER_PATH;
-	}
-	var scripts = document.getElementsByTagName('script');
-	var len = scripts.length;
-	var i = 0;
-	while(i<len){
-		if(/catiline(\.min)?\.js/.test(scripts[i].src)){
-			return scripts[i].src;
-		}
-		i++;
-	}
-}
-function appendScript(iDoc,text){
-	var iScript = iDoc.createElement('script');
-	if (typeof iScript.text !== 'undefined') {
-		iScript.text = text;
-	} else {
-		iScript.innerHTML = text;
-	}
-	if(iDoc.readyState==='complete'){
-		iDoc.documentElement.appendChild(iScript);
-	}else{
-		iDoc.onreadystatechange=function(){
-			if(iDoc.readyState==='complete'){
-				iDoc.documentElement.appendChild(iScript);
-			}
-		};
-	}
-}
-//much of the iframe stuff inspired by https://github.com/padolsey/operative
-//most things besides the names have since been changed
-function actualMakeI(script,codeword){
-	var iFrame = document.createElement('iframe');
-	iFrame.style.display = 'none';
-	document.body.appendChild(iFrame);
-	var iDoc = iFrame.contentWindow.document;
-	var text=['try{ ',
-	'var __scripts__=\'\';function importScripts(scripts){',
-	'	if(Array.isArray(scripts)&&scripts.length>0){',
-	'		scripts.forEach(function(url){',
-	'			var ajax = new XMLHttpRequest();',
-	'			ajax.open(\'GET\',url,false);',
-	'			ajax.send();__scripts__+=ajax.responseText;',
-	'			__scripts__+=\'\\n;\';',
-	'		});',
-	'	}',
-	'};',
-	script,
-	'}catch(e){',
-	'	window.parent.postMessage([\''+codeword+'\',\'error\'],\'*\')',
-	'}'].join('\n');
-	appendScript(iDoc,text);
-	return iFrame;
-}
-function makeIframe(script,codeword){
-	var promise = catiline.deferred();
-	if(document.readyState==='complete'){
-		promise.resolve(actualMakeI(script,codeword));
-	}else{
-		window.addEventListener('load',function(){
-			promise.resolve(actualMakeI(script,codeword));
-		},false);
-	}
-	return promise.promise;
-}
-catiline.makeIWorker = function (strings,codeword){
-	var script =moveImports(strings.join(''),'\');eval(__scripts__);\n');
-	var worker = {onmessage:function(){}};
-	var ipromise = makeIframe(script,codeword);
-	window.addEventListener('message',function(e){
-		if(e.data.slice && e.data.slice(0,codeword.length) === codeword){
-			worker.onmessage({data:JSON.parse(e.data.slice(codeword.length))});
-		}
-	});
-	worker.postMessage=function(data){
-		ipromise.then(function(iFrame){
-			iFrame.contentWindow.postMessage(JSON.stringify(data),'*');
-		});
-	};
-	worker.terminate=function(){
-		ipromise.then(function(iFrame){
-			document.body.removeChild(iFrame);
-		});
-	};
-	return worker;
-	
-};
-
-function makeFallbackWorker(script){
-	catiline._noTransferable=true;
-	var worker = new Worker(getPath());
-	worker.postMessage(script);
-	return worker;
-}
-//accepts an array of strings, joins them, and turns them into a worker.
-catiline.makeWorker = function (strings, codeword){
-	if(!catiline._hasWorker){
-		return catiline.makeIWorker(strings,codeword);
-	}
-	var worker;
-	var script = moveImports(strings.join('\n'),'\');\n');
-	if(catiline._noTransferable){
-		return makeFallbackWorker(script);
-	}
-	try{
-		worker= new Worker(catiline.URL.createObjectURL(new Blob([script],{type: 'text/javascript'})));
-	}catch(e){
-		try{
-			worker=makeFallbackWorker(script);
-		}catch(ee){
-			worker = catiline.makeIWorker(strings,codeword);
-		}
-	}finally{
-		return worker;
-	}
-};
-
-catiline.makeUrl = function (fileName) {
-	var link = document.createElement('link');
-	link.href = fileName;
-	return link.href;
-};
-
-function stringifyObject(obj){
-	var out = '{';
-	var first = true;
-	for(var key in obj){
-		if(first){
-			first = false;
-		}else{
-			out+=',';
-		}
-		out += key;
-		out += ':';
-		out += catiline.stringify(obj[key]);
-	}
-	out += '}';
-	return out;
-}
-function stringifyArray(array){
-	if(array.length){
-		var out = '[';
-		out += catiline.stringify(array[0]);
-		var i = 0;
-		var len = array.length;
-		while(++i<len){
-			out += ',';
-			out += catiline.stringify(array[i]);
-		}
-		out += ']';
-		return out;
-	}else{
-		return '[]';
-	}
-}
-catiline.stringify = function(thing){
-	if(Array.isArray(thing)){
-		return stringifyArray(thing);
-	}else if(typeof thing === 'function'||typeof thing === 'number'||typeof thing === 'boolean'){
-		return thing.toString();
-	}else if(typeof thing === 'string'){
-		return '"' + thing + '"';
-	}else if(thing.toString() === '[object Object]'){
-		return stringifyObject(thing);
-	}
-};
-
-var workerSetup = function(context) {
-	self.__iFrame__ = typeof document !== 'undefined';
-	self.__self__ = {
-		onmessage: function(e) {
-			context.trigger('messege', e.data[1]);
-			if (e.data[0][0] === context.__codeWord__) {
-				return regMsg(e);
-			}
-			else {
-				context.trigger(e.data[0][0], e.data[1]);
-			}
-		}
-	};
-	if (__iFrame__) {
-		window.onmessage = function(e) {
-			if (typeof e.data === 'string') {
-				e = {
-					data: JSON.parse(e.data)
-				};
-			}
-			__self__.onmessage(e);
-		};
-	}
-	else {
-		self.onmessage = __self__.onmessage;
-	}
-	__self__.postMessage = function(rawData, transfer) {
-		if (!self._noTransferable && !__iFrame__) {
-			self.postMessage(rawData, transfer);
-		}
-		else if (__iFrame__) {
-			var data = context.__codeWord__ + JSON.stringify(rawData);
-			window.parent.postMessage(data, '*');
-		}
-		else if (self._noTransferable) {
-			self.postMessage(rawData);
-		}
-	};
-	self.console = {};
-	var regMsg = function(e) {
-		var cb = function(data, transfer) {
-			__self__.postMessage([e.data[0], data], transfer);
-		};
-		var result;
-		if (__iFrame__) {
-			try {
-				result = context[e.data[1]](e.data[2], cb, context);
-			}
-			catch (ee) {
-				context.fire('error', JSON.stringify(ee));
-			}
-		}
-		else {
-			result = context[e.data[1]](e.data[2], cb, context);
-		}
-		if (typeof result !== 'undefined') {
-			cb(result);
-		}
-	};
-};
-function addEvents(context, msg) {
-	var listeners = {};
-	var sendMessage;
-	if(typeof __self__ !== 'undefined'){
-		sendMessage = __self__.postMessage;
-	}else if (msg) {
-		sendMessage = msg;
-	}
-	context.on = function(eventName, func, scope) {
-		scope = scope || context;
-		if (eventName.indexOf(' ') > 0) {
-			eventName.split(' ').map(function(v) {
-				return context.on(v, func, scope);
-			}, this);
-			return context;
-		}
-		if (!(eventName in listeners)) {
-			listeners[eventName] = [];
-		}
-		var newFunc = function(a) {
-			func.call(scope, a, scope);
-		};
-		newFunc.orig = func;
-		listeners[eventName].push(newFunc);
-		return context;
-	};
-	context.one = function(eventName, func, scope) {
-		scope = scope || context;
-
-		function ourFunc(a) {
-			context.off(eventName, ourFunc);
-			func.call(scope, a, scope);
-		}
-		return context.on(eventName, ourFunc);
-	};
-
-	context.trigger = function(eventName, data) {
-		if (eventName.indexOf(' ') > 0) {
-			eventName.split(' ').forEach(function(v) {
-				context.trigger(v, data);
-			});
-			return context;
-		}
-		if (!(eventName in listeners)) {
-			return context;
-		}
-		listeners[eventName].forEach(function(v) {
-			v(data);
-		});
-		return context;
-	};
-	context.fire = function(eventName, data, transfer) {
-		sendMessage([[eventName],data],transfer);
-		return context;
-	};
-	context.off = function(eventName, func) {
-		if (eventName.indexOf(' ') > 0) {
-			eventName.split(' ').map(function(v) {
-				return context.off(v, func);
-			});
-			return context;
-		}
-		if (!(eventName in listeners)) {
-			return context;
-		}
-		else {
-			if (func) {
-				listeners[eventName] = listeners[eventName].map(function(a) {
-					if (a.orig === func) {
-						return false;
-					}
-					else {
-						return a;
-					}
-				}).filter(function(a) {
-					return a;
-				});
-			}
-			else {
-				delete listeners[eventName];
-			}
-		}
-		return context;
-	};
-}
-function makeConsole(msg) {
-	if (typeof console !== 'undefined') {
-		var method = console[msg[0]] ? msg[0] : 'log';
-		if (typeof console[method].apply === 'undefined') {
-			console[method](msg[1].join(' '));
-		}
-		else {
-			console[method].apply(console, msg[1]);
-		}
-	}
-}
-function makeWorkerConsole(context){
-	function makeConsole(method) {
-		return function() {
-			var len = arguments.length;
-			var out = [];
-			var i = 0;
-			while (i < len) {
-				out.push(arguments[i]);
-				i++;
-			}
-			context.fire('console', [method, out]);
-		};
-	}
-	['log', 'debug', 'error', 'info', 'warn', 'time', 'timeEnd'].forEach(function(v) {
-		console[v] = makeConsole(v);
-	});
-}
-function Catiline(obj) {
-	if (typeof obj === 'function') {
-		obj = {
-			data: obj
-		};
-	}
-	var codeWord = 'com.catilinejs.' + (Catiline._hasWorker ? 'iframe' : 'worker') + Math.random();
-	var self = this;
-	var promises = [];
-	addEvents(self, function(data, transfer) {
-		if (catiline._noTransferable) {
-			worker.postMessage(data);
-		}
-		else {
-			worker.postMessage(data, transfer);
-		}
-	});
-	var rejectPromises = function(msg) {
-		if (typeof msg !== 'string' && 'preventDefault' in msg) {
-			msg.preventDefault();
-			msg = msg.message;
-		}
-		promises.forEach(function(p) {
-			if (p) {
-				p.reject(msg);
-			}
-		});
-	};
-	obj.__codeWord__ = codeWord;
-	obj.__initialize__ = [workerSetup, addEvents, makeWorkerConsole];
-	if (!('initialize' in obj)) {
-		if ('init' in obj) {
-			obj.__initialize__.push(obj.init);
-		}
-	}
-	else {
-		obj.__initialize__.push(obj.initialize);
-	}
-
-	if (!('events' in obj)) {
-		obj.events = {};
-	}
-	if ('listners' in obj && typeof obj.listners !== 'function') {
-		for (var key in obj.listners) {
-			self.on(key, obj.listners[key]);
-		}
-	}
-	var fObj = 'var _db = {\n\t';
-	var keyFunc = function(key) {
-		var out = function(data, transfer) {
-			var i = promises.length;
-			promises[i] = catiline.deferred();
-			if (catiline._noTransferable) {
-				worker.postMessage([
-					[codeWord, i], key, data]);
-			}
-			else {
-				worker.postMessage([
-					[codeWord, i], key, data], transfer);
-			}
-			return promises[i].promise;
-		};
-		return out;
-	};
-	var i = false;
-	for (var key$0 in obj) {
-		if(['listners','initialize','init'].indexOf(key$0)>-1){
-			continue;
-		}
-		if (i) {
-			fObj += ',\n\t';
-		}
-		else {
-			i = true;
-		}
-		if (typeof obj[key$0] === 'function') {
-			fObj = fObj + key$0 + ':' + obj[key$0].toString();
-			self[key$0] = keyFunc(key$0);
-		}
-		else {
-			var outThing = catiline.stringify(obj[key$0]);
-			if (typeof outThing !== 'undefined') {
-				fObj = fObj + key$0 + ':' + outThing;
-			}
-		}
-	}
-	fObj = fObj + '};';
-	var worker = catiline.makeWorker(['\'use strict\';', '',
-	fObj, '_db.__initialize__.forEach(function(f){', '	f.call(_db,_db);', '});', 'for(var key in _db.events){', '	_db.on(key,_db.events[key]);', '}'], codeWord);
-	worker.onmessage = function(e) {
-		self.trigger('message', e.data[1]);
-		if (e.data[0][0] === codeWord) {
-			promises[e.data[0][1]].resolve(e.data[1]);
-			promises[e.data[0][1]] = 0;
-		}
-		else {
-			self.trigger(e.data[0][0], e.data[1]);
-		}
-	};
-	self.on('error', rejectPromises);
-	worker.onerror = function(e) {
-		self.trigger('error', e);
-	};
-	self.on('console', makeConsole);
-	self._close = function() {
-		worker.terminate();
-		rejectPromises('closed');
-		return catiline.resolve();
-	};
-	if (!('close' in self)) {
-		self.close = self._close;
-	}
-}
-catiline.Worker = Catiline;
-
-catiline.worker = function(obj){
-    return new Catiline(obj);
-};
-function makeActualKeyFuncs(resolvePromises, self) {
-	return {
-		keyFunc: function(k) {
-			return function(data, transfer) {
-				return resolvePromises(k, data, transfer);
-			};
-		},
-		keyFuncBatch: function(k) {
-			return function(array) {
-				return catiline.all(array.map(function(data) {
-					return resolvePromises(k, data);
-				}));
-			};
-		},
-		keyFuncBatchCB: function(k) {
-			return function(array) {
-				return catiline.all(array.map(function(data) {
-					return resolvePromises(k, data).then(self.__cb__);
-				}));
-			};
-		},
-		keyFuncBatchTransfer: function(k) {
-			return function(array) {
-				return catiline.all(array.map(function(data) {
-					return resolvePromises(k, data[0], data[1]);
-				}));
-			};
-		},
-		keyFuncBatchTransferCB: function(k) {
-			return function(array) {
-				return catiline.all(array.map(function(data) {
-					return resolvePromises(k, data[0], data[1]).then(self.__cb__);
-				}));
-			};
-		}
-	};
-}
-function makeKeyFuncs(resolvePromises, self, obj){
-	var funcs = makeActualKeyFuncs(resolvePromises, self);
-	for (var key in obj) {
-		self[key] = funcs.keyFunc(key);
-		self.batch[key] = funcs.keyFuncBatch(key);
-		self.__batchcb__[key] = funcs.keyFuncBatchCB(key);
-		self.batchTransfer[key] = funcs.keyFuncBatchTransfer(key);
-		self.__batchtcb__[key] = funcs.keyFuncBatchTransferCB(key);
-	}
-}
-function addBatchEvents(self, workers, n){
-	self.on = function (eventName, func, context) {
-		workers.forEach(function (worker) {
-			worker.on(eventName, func, context);
-		});
-		return self;
-	};
-	self.off = function (eventName, func, context) {
-		workers.forEach(function (worker) {
-			worker.off(eventName, func, context);
-		});
-		return self;
-	};
-	self.fire = function (eventName, data) {
-		workers[~~ (Math.random() * n)].fire(eventName, data);
-		return self;
-	};
-}
-function makeUnmanaged(workers, n){
-	return function(key, data, transfer, promise){
-		promise.promise.cancel = function(reason){
-			return promise.reject(reason);
-		};
-		workers[~~ (Math.random() * n)][key](data, transfer).then(function(v){
-			return promise.resolve(v);
-		},function(v){
-			return promise.reject(v);
-		});
-		return promise.promise;
-	};
-}
-function makeQueueWorkers(n,idle,obj){
-	var workers = [];
-	var numIdle = -1;
-	while (++numIdle < n) {
-		workers[numIdle] = new catiline.Worker(obj);
-		idle.push(numIdle);
-	}
-	return workers;
-}
-function CatilineQueue(obj, n, dumb) {
-	var self = this;
-	var numIdle = n;
-	var idle = [];
-	var que = [];
-	var queueLen = 0;
-	var workers = makeQueueWorkers(n,idle,obj);
-	addBatchEvents(self, workers, n);
-	var batchFire = function (eventName, data) {
-		workers.forEach(function (worker) {
-			worker.fire(eventName, data);
-		});
-		return self;
-	};
-	
-	self.batch.fire = batchFire;
-	self.batchTransfer.fire = batchFire;
-
-	function clearQueue(mgs) {
-		mgs = mgs || 'canceled';
-		queueLen = 0;
-		var oQ = que;
-		que = [];
-		oQ.forEach(function (p) {
-			p[3].reject(mgs);
-		});
-		return self;
-	}
-	self.clearQueue = clearQueue;
-	makeKeyFuncs(resolvePromises, self, obj);
-	
-
-	function done(num) {
-		if (queueLen) {
-			var data = que.shift();
-			queueLen--;
-			workers[num][data[0]](data[1], data[2]).then(function (d) {
-				done(num);
-				data[3].resolve(d);
-			}, function (d) {
-				done(num);
-				data[3].reject(d);
-			});
-		}
-		else {
-			numIdle++;
-			idle.push(num);
-		}
-	}
-	var resolveUnmanagedPromises;
-	if(dumb){
-		resolveUnmanagedPromises = makeUnmanaged(workers, n);
-	}
-	function resolvePromises(key, data, transfer) { //srsly better name!
-		var promise = catiline.deferred();
-		if (dumb) {
-			return resolveUnmanagedPromises(key, data, transfer,promise);
-		}
-		if (!queueLen && numIdle) {
-			var num = idle.pop();
-			numIdle--;
-			promise.promise.cancel = function(reason){
-				return promise.reject(reason);
-			};
-			workers[num][key](data, transfer).then(function (d) {
-				done(num);
-				promise.resolve(d);
-			}, function (d) {
-				done(num);
-				promise.reject(d);
-			});
-		} else if (queueLen || !numIdle) {
-			var queueItem = [key, data, transfer, promise];
-			promise.promise.cancel = function(reason){
-				var loc = que.indexOf(queueItem);
-				if(loc>-1){
-					que.splice(loc,1);
-					queueLen--;
-				}
-				return promise.reject(reason);
-			};
-			queueLen = que.push(queueItem);
-		}
-		return promise.promise;
-	}
-	self._close = function () {
-		return catiline.all(workers.map(function (w) {
-			return w._close();
-		}));
-	};
-	if (!('close' in self)) {
-		self.close = self._close;
-	}
-}
-CatilineQueue.prototype.__batchcb__ = {};
-CatilineQueue.prototype.__batchtcb__ = {};
-CatilineQueue.prototype.batch = function (cb) {
-	if (typeof cb === 'function') {
-		this.__cb__ = cb;
-		return this.__batchcb__;
-	}
-	else {
-		return this.clearQueue(cb);
-	}
-};
-CatilineQueue.prototype.batchTransfer = function (cb) {
-	if (typeof cb === 'function') {
-		this.__batchtcb__.__cb__ = cb;
-		return this.__batchtcb__;
-	}
-	else {
-		return this.clearQueue(cb);
-	}
-};
-catiline.Queue = CatilineQueue;
-catiline.queue = function (obj, n, dumb) {
-	return new catiline.Queue(obj, n, dumb);
-};
-
-function catiline(object,queueLength,unmanaged){
-	if(arguments.length === 1 || !queueLength || queueLength <= 1){
-		return new catiline.Worker(object);
-	}else{
-		return new catiline.Queue(object,queueLength,unmanaged);
-	}
-}
-//will be removed in v3
-catiline.setImmediate = catiline.nextTick;
-function initBrowser(catiline){
-	var origCW = global.cw;
-	catiline.noConflict=function(newName){
-		global.cw = origCW;
-		if(newName){
-			global[newName]=catiline;
-		}
-	};
-	global.catiline = catiline;
-	global.cw = catiline;
-	if(!('communist' in global)){
-		global.communist=catiline;
-	}
-
-}
-
-if(typeof define === 'function'){
-	define(function(require){
-		catiline.SHIM_WORKER_PATH=require.toUrl('./catiline.js');
-		return catiline;
-	});
-}else if(typeof module === 'undefined' || !('exports' in module)){
-	initBrowser(catiline);
-} else {
-	module.exports=catiline;
-}catiline.version = '2.9.3';
-})(this);}
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js":[function(require,module,exports){
 /*!
  * fancyBox - jQuery Plugin
@@ -16168,948 +15214,7 @@ L.bingLayer = function (key, options) {
 }).call(global, module, undefined, undefined);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/AbstractWorker.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.AbstractWorker = L.Class.extend({
-    initialize: function () {
-    },
-
-    onAdd: function (map) {
-    },
-
-    onRemove: function (map) {
-    },
-
-    process: function(tile, callback) {
-        callback(tile);
-    },
-    
-    abort: function(tile) {
-    },
-    
-    clear: function() {
-    }
-});
-
-// dummy worker (= no worker) when used directly
-L.noWorker = function () {
-    return new L.AbstractWorker();
-};
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/CatilineWorker.js":[function(require,module,exports){
-var catiline = require('catiline');
-var L = require('leaflet');
-
-L.CatilineWorker = L.AbstractWorker.extend({
-
-    statics: {
-        // number of web workers, not using web workers when falsy
-        NUM_WORKERS: 2
-    },
-
-    initialize: function (workerFunc) {
-        this.workerFunc = workerFunc;
-    },
-
-    onAdd: function (map) {
-        this._workers = L.CatilineWorker.createWorkers(this.workerFunc);
-    },
-
-    onRemove: function (map) {
-        if (this._workers) {
-            // TODO do not close when other layers are still using the static instance
-            //this._workers.close();
-        }
-    },
-
-    process: function(tile, callback) {
-        if (this._workers){ 
-            tile._worker = this._workers.data(tile.datum).then(function(parsed) {
-                if (tile._worker) {
-                    tile._worker = null;
-                    tile.parsed = parsed;
-                    tile.datum = null;
-                    callback(tile);
-                } else {
-                    // tile has been unloaded, don't continue with adding
-                    //console.log('worker aborted ' + tile.key);
-                }
-            });
-        } else {
-            callback(tile);
-        }
-    },
-    
-    abort: function(tile) {
-        if (tile._worker) {
-            // TODO abort worker, would need to recreate after close
-            //tile._worker.close();
-            tile._worker = null;
-        }
-    }
-});
-
-L.catilineWorker = function (workerFunc) {
-    return new L.CatilineWorker(workerFunc);
-};
-
-L.extend(L.CatilineWorker, {
-    createWorkers: function(workerFunc) {
-        if ( L.CatilineWorker.NUM_WORKERS && typeof Worker === "function" && typeof catiline === "function"
-                && !("workers" in L.CatilineWorker)) {
-            L.CatilineWorker.workers = catiline({
-                //data : L.TileLayer.Vector.parseData
-                data : workerFunc
-            }, L.CatilineWorker.NUM_WORKERS);
-        }
-        return L.CatilineWorker.workers;
-    }
-});
-
-},{"catiline":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/catiline/dist/catiline.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/Leaflet.label-patch.js":[function(require,module,exports){
-
-// patch Leaflet.label plugin to avoid null error on viewreset when label has
-// already been removed (v0.5.1), also see comment in L.TileLayer.Vector.onAdd
-if (L.Label) {
-    var orig = L.Label.prototype._updatePosition;
-    L.Label.prototype._updatePosition = function() {
-        if (this._map) {
-            orig.apply(this, arguments);
-        }
-    };
-}
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileCache.js":[function(require,module,exports){
-/**
- * Simple tile cache to keep tiles while zooming with overzoom
- */
-var L = require('leaflet');
-
-L.TileCache = function() {
-};
-
-L.TileCache.prototype = {
-    // cache key: tile (String: Object)
-    _cache: {},
-
-    // flag to determine switch between tile unloading (put) and loading (get) phase
-    _unloading: false,
-
-    // flag to only cache tiles when zooming, not when moving
-    _zooming: false,
-
-    onAdd: function(map) {
-        this._map = map;
-        
-        map.on('zoomstart', this._onZoomStart, this);
-        map.on('zoomend', this._onZoomEnd, this);
-    },
-
-    onRemove: function(map) {
-        this._map = null;
-
-        map.off('zoomstart', this._onZoomStart, this);
-        map.off('zoomend', this._onZoomEnd, this);
-    },
-
-    _onZoomStart: function(evt) {
-        this._zooming = true;
-    },
-
-    _onZoomEnd: function(evt) {
-        this._zooming = false;
-    },
-
-    get: function(key, urlZoom) {
-        var ckey = this._getCacheKey(key, urlZoom);
-        var tile = this._cache[ckey];
-        this._unloading = false;
-        //console.log('cache ' + (tile ? 'hit ' : 'miss') + ': ' + ckey);
-        return tile;
-    },
-    
-    put: function(tile) {
-        if (!this._zooming) return;
-
-        if (!this._unloading) {
-            // clear old entries before adding newly removed tiles after zoom or move
-            this.clear();
-            this._unloading = true;
-        }
-
-        var ckey = this._getCacheKeyFromTile(tile);
-        if (!(ckey in this._cache)) {
-            // vector layer is recreated because of feature filter
-            delete tile.layer;
-            this._cache[ckey] = tile;
-            //console.log('cache put : ' + ckey + ' (' + Object.keys(this._cache).length + ')');
-        }
-    },
-    
-    clear: function() {
-        //console.log('cache clear');
-        this._cache = {};
-    },
-
-    _getCacheKeyFromTile: function(tile) {
-        return this._getCacheKey(tile.key, tile.urlZoom);
-    },
-
-    _getCacheKey: function(key, urlZoom) {
-        return urlZoom + ':' + key
-    }
-};
-
-L.tileCache = function() {
-    return new L.TileCache();
-};
-
-// dummy impl. to turn caching off
-L.tileCacheNone = function() {
-    return {
-        onAdd: function(map) {},
-        onRemove: function(map) {},
-        get: function(key, urlZoom) {},
-        put: function(tile) {},
-        clear: function() {}
-    };
-};
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.BBox.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.TileLayer.Vector.include({
-
-    getTileUrl: function (coords) {
-        var x = coords.x,
-            y = coords.y,
-            z = this._getZoomForUrl(),
-            bounds = this.getTileBBox(x, y, z),
-            url = this._url;
-        if (url.indexOf('?') < 0) {
-            url += '?';
-        }
-        if (this.options.getTileQueryString) {
-            url += this.options.getTileQueryString.apply(this);
-        }
-        return url + '&bbox=' + bounds.toBBoxString();
-    },
-
-    getTileBBox: function (x, y, z) {
-        var west = this.getTileLng(x, z),
-            north = this.getTileLat(y, z),
-            east = this.getTileLng(x + 1, z),
-            south = this.getTileLat(y + 1, z),
-            bounds = L.latLngBounds([[south, west], [north, east]]);
-        return bounds;
-    },
-
-    getTileLng: function (x, z) {
-        return (x / Math.pow(2, z) * 360 - 180);
-    },
-
-    getTileLat: function (y, z) {
-        var n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
-        return (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))));
-    }
-
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Div.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.TileLayer.Div = L.TileLayer.extend({
-
-    initialize: function (options) {
-        L.TileLayer.prototype.initialize.call(this, null, options);
-    },
-
-    _createTile: function () {
-        var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-tile-loaded');
-        var tileSize = this._getTileSize();
-        tile.style.width = tileSize + 'px';
-        tile.style.height = tileSize + 'px';
-        tile.onselectstart = tile.onmousemove = L.Util.falseFn;
-        return tile;        
-    },
-
-    _loadTile: function (tile, tilePoint) {
-        tile._layer = this;
-        tile._tilePoint = tilePoint;
-        this._adjustTilePoint(tilePoint);
-        
-        this.drawTile(tile, tilePoint);
-        
-        this._tileLoaded();
-    },
-    
-    drawTile: function (tile, tilePoint) {
-        // override with rendering code
-    }
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.GeoJSON.js":[function(require,module,exports){
-// Load data tiles using the JQuery ajax function
-var L = require('leaflet');
-
-L.TileLayer.Ajax = L.TileLayer.extend({
-    options: {
-        // use L.tileCacheNone to turn caching off
-        tileCacheFactory: L.tileCache
-    },
-
-    _tileCache: null,
-
-    initialize: function (url, options) {
-        L.TileLayer.prototype.initialize.call(this, url, options);
-        
-        this._tileCache = this.options.tileCacheFactory();
-    },
-
-    onAdd: function (map) {
-        L.TileLayer.prototype.onAdd.call(this, map);
-        this.on('tileunload', this._unloadTile);
-    },
-
-    onRemove: function (map) {
-        L.TileLayer.prototype.onRemove.call(this, map);
-        this.off('tileunload', this._unloadTile);
-    },
-
-    _addTile: function(tilePoint, container) {
-        var cached = null;
-        var key = tilePoint.x + ':' + tilePoint.y;
-        var urlZoom = this._getZoomForUrl();
-        var tile = cached = this._tileCache.get(key, urlZoom);
-        if (!tile) {
-            tile = { key: key, urlZoom: urlZoom, datum: null, loading: true };
-        } else {
-            tile.loading = true;
-        }
-
-        this._tiles[key] = tile;
-        this.fire('tileloadstart', {tile: tile});
-
-        if (cached) {
-            this._addTileData(tile);
-        } else {
-            this._loadTile(tile, tilePoint);
-        }
-    },
-
-    _addTileData: function(tile) {
-        // override in subclass
-    },
-
-    // XMLHttpRequest handler; closure over the XHR object, the layer, and the tile
-    _xhrHandler: function (req, layer, tile) {
-        return function() {
-            if (req.readyState != 4) {
-                return;
-            }
-            var s = req.status;
-
-            // Fire dataload for Leaflet.loading
-            layer._map.fire('dataload');
-
-            if ((s >= 200 && s < 300) || s == 304) {
-                // check if request is about to be aborted, avoid rare error when aborted while parsing
-                if (tile._request) {
-                    tile._request = null;
-                    layer.fire('tileresponse', {tile: tile, request: req});
-                    tile.datum = req.responseText;
-                    layer._addTileData(tile);
-                }
-            } else {
-                tile.loading = false;
-                tile._request = null;
-                layer.fire('tileerror', {tile: tile, request: req});
-                layer._tileLoaded();
-            }
-        }
-    },
-
-    // Load the requested tile via AJAX
-    _loadTile: function (tile, tilePoint) {
-        this._adjustTilePoint(tilePoint);
-        var layer = this;
-
-        // File dataloading for Leaflet.loading
-        layer._map.fire('dataloading');
-
-        var req = new XMLHttpRequest();
-        tile._request = req;
-        req.onreadystatechange = this._xhrHandler(req, layer, tile);
-        this.fire('tilerequest', {tile: tile, request: req});
-        req.open('GET', this.getTileUrl(tilePoint), true);
-        req.send();
-    },
-
-    _unloadTile: function(evt) {
-        var tile = evt.tile,
-            req = tile._request;
-        if (req) {
-            tile._request = null;
-            req.abort();
-            this.fire('tilerequestabort', {tile: tile, request: req});
-        }
-    }
-});
-
-
-L.TileLayer.Vector = L.TileLayer.Ajax.extend({
-    options: {
-        // factory function to create the vector tile layers (defaults to L.GeoJSON)
-        layerFactory: L.geoJson,
-        // factory function to create a web worker for parsing/preparing tile data
-        workerFactory: L.catilineWorker
-        //workerFactory: L.noWorker
-    },
-
-    initialize: function (url, options, vectorOptions) {
-        L.TileLayer.Ajax.prototype.initialize.call(this, url, options);
-        this.vectorOptions = vectorOptions || {};
-        this._worker = this.options.workerFactory(L.TileLayer.Vector.parseData);
-        this._addQueue = new L.TileQueue(L.bind(this._addTileDataInternal, this));
-    },
-
-    onAdd: function (map) {
-        this._map = map;
-        
-        L.TileLayer.Ajax.prototype.onAdd.call(this, map);
-
-        // root vector layer, contains tile vector layers as children 
-        this.vectorLayer = this._createVectorLayer(); 
-        map.addLayer(this.vectorLayer);
-
-        this._worker.onAdd(map);
-        this._tileCache.onAdd(map);
-    },
-
-    onRemove: function (map) {
-        // unload tiles (L.TileLayer only calls _reset in onAdd)
-        this._reset();
-        map.removeLayer(this.vectorLayer);
-
-        L.TileLayer.Ajax.prototype.onRemove.call(this, map);
-
-        this._worker.onRemove(map);
-        this._tileCache.onRemove(map);
-
-        this.vectorLayer = null;
-        this._map = null;
-    },
-
-    _createVectorLayer: function() {
-        return this.options.layerFactory(null, this.vectorOptions);
-    },
-
-    _createTileLayer: function() {
-        return this._createVectorLayer();
-    },
-
-    _addTileData: function(tile) {
-        if (!tile.parsed) {
-            this._worker.process(tile, L.bind(function(tile) {
-                this._addQueue.add(tile);
-            },this));
-        } else {
-            // from cache
-            this._addQueue.add(tile);
-        }
-    },
-
-    _addTileDataInternal: function(tile) {
-        var tileLayer = this._createTileLayer();
-        if (!tile.parsed) {
-            // when no worker for parsing
-            tile.parsed = L.TileLayer.Vector.parseData(tile.datum);
-            tile.datum = null;
-        }
-        tileLayer.addData(tile.parsed);
-        tile.layer = tileLayer;
-        this.vectorLayer.addLayer(tileLayer);
-
-        tile.loading = false;
-        this.fire('tileload', {tile: tile});
-        this._tileLoaded();
-    },
-
-    _unloadTile: function(evt) {
-        L.TileLayer.Ajax.prototype._unloadTile.apply(this, arguments);
-
-        var tile = evt.tile,
-            tileLayer = tile.layer;
-        if (tile.loading) {
-            this._addQueue.remove(tile);
-            // not from cache or not loaded and parsed yet
-            if (!tile.parsed) {
-                this._worker.abort(tile);
-            }
-            this.fire('tileabort', {tile: tile});
-            this._tileLoaded();
-        }
-        if (tileLayer && this.vectorLayer.hasLayer(tileLayer)) {
-            if (this._shouldRemoveLayersAtZoom(this._map.getZoom())) {
-                this.vectorLayer.removeLayer(tileLayer);
-            }
-        }
-
-        if (tile.parsed) {
-            this._tileCache.put(tile);
-        }
-    },
-
-    _shouldRemoveLayersAtZoom: function(zoom) {
-        return true;
-    },
-
-    _retainTiles: function() {
-        return {};
-    },
-
-    _reset: function(e) {
-        var tilesToRetain = this._retainTiles();
-
-        L.TileLayer.Ajax.prototype._reset.apply(this, arguments);
-
-        // Restore useful tiles
-        L.extend(this._tiles, tilesToRetain);
-
-        this._addQueue.clear();
-        this._worker.clear();
-    }
-});
-
-
-L.extend(L.TileLayer.Vector, {
-    parseData: function(data) {
-        return JSON.parse(data);
-    }
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Overzoom.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.TileLayer.Overzoom = {
-    
-    overzoomOptions: {
-        // List of available server zoom levels in ascending order. Empty means all  
-        // client zooms are available (default). Allows to only request tiles at certain
-        // zooms and resizes tiles on the other zooms.
-        serverZooms: [],
-        // workaround: wrapping loads tiles multiple times when zoom < serverZooms[0]
-        noWrap: true
-    },
-
-    // override _getTileSize to add serverZooms (when maxNativeZoom is not defined)
-    _getTileSize: function() {
-        var map = this._map,
-            options = this.options,
-            zoom = map.getZoom() + options.zoomOffset,
-            zoomN = options.maxNativeZoom || this._getServerZoom(zoom);
-
-        // increase tile size when overscaling
-        //return zoomN && zoom > zoomN ?
-        var tileSize = zoomN && zoom !== zoomN ?
-            Math.round(map.getZoomScale(zoom) / map.getZoomScale(zoomN) * options.tileSize) :
-            options.tileSize;
-
-        //console.log('tileSize = ' + tileSize + ', zoomOffset = ' + this.options.zoomOffset + ', serverZoom = ' + zoomN + ', zoom = ' + zoom);
-        return tileSize;
-    },
-
-    _getZoomForUrl: function () {
-        var zoom = L.TileLayer.prototype._getZoomForUrl.call(this);
-        var result = this._getServerZoom(zoom);
-        //console.log('zoomForUrl = ' + result);
-        return result;
-    },
-
-    // Returns the appropriate server zoom to request tiles for the current zoom level.
-    // Next lower or equal server zoom to current zoom, or minimum server zoom if no lower 
-    // (should be restricted by setting minZoom to avoid loading too many tiles).
-    _getServerZoom: function(zoom) {
-        var serverZooms = this.options.serverZooms || [],
-            result = zoom;
-        // expects serverZooms to be sorted ascending
-        for (var i = 0, len = serverZooms.length; i < len; i++) {
-            if (serverZooms[i] <= zoom) {
-                result = serverZooms[i];
-            } else {
-                if (i === 0) {
-                    // zoom < smallest serverZoom
-                    result = serverZooms[0];
-                }
-                break;
-            }
-        }
-        return result;
-    },
-
-    _shouldRemoveLayersAtZoom: function(zoom) {
-        if (this.options.serverZooms) {
-            if (this._map.getZoom() in this.options.serverZooms) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-        return true;
-    },
-
-    // Only keep the tiles that are going to be useful on the map's current zoom
-    _retainTiles: function() {
-        var tiles = L.extend({}, this._tiles),
-            zoom = this._getServerZoom(this._map.getZoom());
-
-        for (var key in tiles) {
-            // Do not retain tiles that won't be used at this zoom
-            if (tiles[key].urlZoom !== zoom) {
-                delete tiles[key];
-            }
-
-            // Do not retain tiles that don't have a layer. They might
-            // have been interrupted from loading that layer because the
-            // user zoomed in or out very quickly, for example.
-            if (!tiles[key] || !tiles[key].layer) {
-                delete tiles[key];
-            }
-        }
-        return tiles;
-    }
-};
-
-if (typeof L.TileLayer.Vector !== 'undefined') {
-    L.TileLayer.Vector.include(L.TileLayer.Overzoom);
-    L.TileLayer.Vector.mergeOptions(L.TileLayer.Overzoom.overzoomOptions);
-}
-
-if (typeof L.TileLayer.Div !== 'undefined') {
-    L.TileLayer.Div.include(L.TileLayer.Overzoom);
-    L.TileLayer.Div.mergeOptions(L.TileLayer.Overzoom.overzoomOptions);
-}
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Progress.js":[function(require,module,exports){
-/*
- * Loading progress info layer for L.TileLayer.Vector
- */
-var L = require('leaflet');
-
-L.TileLayer.Progress = L.TileLayer.Div.extend({
-    _adding: false,
-
-    /* key hash of vector tiles currently loading {String: true} */
-    _loadingTiles: {},
-    
-    initialize: function (vectorLayer) {
-        L.TileLayer.Div.prototype.initialize.call(this, vectorLayer.options);
-
-        this.vectorLayer = vectorLayer;
-    },
-
-    onAdd: function (map) {
-        this._adding = true;
-        map.on('layerremove', this._onVecRemove, this);
-        this.vectorLayer.on('tileloadstart', this._onTileLoading, this);
-        this.vectorLayer.on('tileload', this._onTileLoad, this);
-        this.vectorLayer.on('tileerror', this._onTileError, this);
-        this.vectorLayer.on('tileunload', this._onTileLoad, this);
-        L.TileLayer.Div.prototype.onAdd.apply(this, arguments);
-        this._adding = false;
-    },
-
-    onRemove: function (map) {
-        L.TileLayer.Div.prototype.onRemove.apply(this, arguments);
-        this._loadingTiles = {};
-        this.vectorLayer.off('tileloadstart', this._onTileLoading, this);
-        this.vectorLayer.off('tileload', this._onTileLoad, this);
-        this.vectorLayer.off('tileerror', this._onTileError, this);
-        this.vectorLayer.off('tileunload', this._onTileLoad, this);
-    },
-
-    drawTile: function (tile, tilePoint) {
-        var vecTile, 
-            loading, 
-            key = tilePoint.x + ':' + tilePoint.y;
-
-        tile.style.backgroundColor = 'rgba(128, 128, 128, 0.3)';
-        tile.style.border = '1px solid rgba(128, 128, 128, 0.8)';
-        tile.style.boxSizing = 'border-box';
-
-        if (!this._loadingTiles[key]) {
-            this._hide(tile);
-        }
-
-        // check for already loading tiles, because initial tileloadstart
-        // events might have been missed when layer is added
-        if (this._adding) {
-            vecTile = this.vectorLayer._tiles[key];
-            loading = vecTile && vecTile.loading;
-            if (loading) {
-                this._show(tile);
-            }
-        }
-    },
-
-    _onVecRemove: function(evt) {
-        if (evt.layer === this.vectorLayer) {
-            this._hideAll();
-        }
-    },
-
-    _hideAll: function() {
-        for (var key in this._tiles) {
-            var tile = this._tiles[key];
-            this._hide(tile);
-        }
-    },
-
-    _onTileLoading: function(evt) {
-        var key = evt.tile.key,
-            tile = this._tiles[key];
-        if (tile) {
-            this._show(tile);
-        } else {
-            this._loadingTiles[key] = true;
-        }
-    },
-
-    _onTileLoad: function(evt) {
-        var key = evt.tile.key,
-            tile = this._tiles[key];
-        this._hide(tile);
-        delete this._loadingTiles[key];
-    },
-
-    _onTileError: function(evt) {
-        var key = evt.tile.key,
-            tile = this._tiles[key];
-        if (tile) {
-            tile.style.backgroundColor = 'rgba(128, 128, 128, 0.7)';
-            tile.style.border = 'none';
-        }
-        delete this._loadingTiles[key];
-    },
-    
-    _show: function(tile) {
-        if (tile) {
-            tile.classList.add('leaflet-tile-loaded');
-        }
-    },
-    
-    _hide: function(tile) {
-        if (tile) {
-            tile.classList.remove('leaflet-tile-loaded');
-        }
-    }
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Vector.Unclipped.js":[function(require,module,exports){
-/*
- * Tile layer for unclipped vector tiles where features spanning multiple tiles are contained with
- * their full geometry in each tile (as opposed to clipping geometries at tile boundary).
- * 
- * This layer loads such duplicated features only once by using a 'unique' function given in the options
- * to identify identical features and to keep track of the tiles that are referencing the same feature.
- * 
- * Uses a filter to remove duplicates, so a vector layer set with options.layerFactory must support 
- * feature filtering like in L.GeoJSON.
- */
-var L = require('leaflet');
-
-L.TileLayer.Vector.Unclipped = L.TileLayer.Vector.extend({
-    // hash: unique featureKey -> number of tiles referencing the feature
-    featureRefCounts: {},
-    // hash: unique featureKey -> feature layer
-    commonFeatures: {},
-
-    initialize: function (url, options, vectorOptions) {
-        L.TileLayer.Vector.prototype.initialize.apply(this, arguments);
-
-        if (!options || !options.unique) {
-            console.warn('"unique" function missing in options, deduplicating disabled');
-        }
-    },
-
-    _createTileLayer: function() {
-        var tileLayer = L.TileLayer.Vector.prototype._createTileLayer.apply(this, arguments);
-        if (this.options.unique) {
-            if (tileLayer.options.filter) {
-                tileLayer.options.filter = this._andFilter(tileLayer.options.filter, L.bind(this._filterDuplicates, tileLayer));
-            } else {
-                tileLayer.options.filter = L.bind(this._filterDuplicates, tileLayer);
-            }
-            tileLayer._tilingLayer = this;
-            // common features this tile is referencing (array of unique feature keys)
-            tileLayer._featureRefs = [];
-        }
-        return tileLayer;
-    },
-
-    // filter out duplicate features that are contained in multiple tiles
-    // (true keeps, false discards feature)
-    _filterDuplicates: function(feature) {
-        var featureKey = this._tilingLayer.options.unique(feature);
-        var refs = this._tilingLayer.featureRefCounts[featureKey];
-
-        if (refs && refs > 0) {
-            refs++;
-            this._featureRefs.push(featureKey);
-        } else {
-            refs = 1;
-        }
-        this._tilingLayer.featureRefCounts[featureKey] = refs;
-
-        return refs <= 1;
-    },
-    
-    _andFilter: function(filterA, filterB) {
-        return function(feature) {
-            return filterA(feature) && filterB(feature);
-        };
-    },
-    
-    _unloadTile: function(evt) {
-        var tileLayer = evt.tile.layer;
-        if (tileLayer) {
-            if (this.options.unique) {
-                this._clearFeatureLayers(tileLayer);
-                this._clearCommonFeatureLayers(tileLayer);
-            }
-        }        
-        L.TileLayer.Vector.prototype._unloadTile.apply(this, arguments);
-    },
-    
-    // Remove feature layers from the given tile layer and
-    // decrease reference counter for all features of the tile. 
-    _clearFeatureLayers: function(tileLayer) {
-        tileLayer.eachLayer(function (layer) {
-            if (layer.feature) {
-                var featureKey = this.options.unique(layer.feature);
-                var refs = this._decreaseFeatureRefCount(featureKey);
-                if (refs > 0) {
-                    // referenced by other tiles, keep feature (move to root vector layer)
-                    this.vectorLayer.addLayer(layer);
-                    this.commonFeatures[featureKey] = layer;
-
-                    // from removeLayer: remove layer from tileLayer but not from map (not sure if necessary)
-                    var id = L.stamp(layer);
-                    delete tileLayer._layers[id];
-                } else {
-                    tileLayer.removeLayer(layer);
-                }
-            }
-        }, this);
-    },
-
-    // Remove common features that are only referenced by the given tile
-    _clearCommonFeatureLayers: function(tileLayer) {
-        var featureRefs = tileLayer._featureRefs;
-        for (i = 0, len = featureRefs.length; i < len; i++) {
-            var featureKey = featureRefs[i];
-            var refs = this._decreaseFeatureRefCount(featureKey);
-            if (refs <= 0) {
-                var layer = this.commonFeatures[featureKey];
-                if (layer) {
-                    this.vectorLayer.removeLayer(layer);
-                }
-            }
-        }
-    },
-
-    _decreaseFeatureRefCount: function(featureKey) {
-        var refs = --this.featureRefCounts[featureKey];
-        if (refs <= 0) {
-            delete this.featureRefCounts[featureKey];
-        }
-        return refs;
-    }
-});
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileQueue.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.TileQueue = function(callback) {
-    this.callback = callback;
-};
-
-L.TileQueue.prototype = {
-
-    _queue: [],
-    _queueTimeout: null,
-    
-    add: function(aTile) {
-        this._queue.push(aTile);
-        if (!this._queueTimeout) {
-            this._queueTimeout = setTimeout(L.bind(function(){
-                var time, timeout, start = +new Date, tile;
-
-                // handle empty elements, see remove
-                do { 
-                    tile = this._queue.shift();
-                }
-                while (!tile && this._queue.length > 0);
-
-                if (tile) {
-                    //console.log('adding ' + tile.key + ' ...');
-
-                    this.callback(tile);
-
-                    // pause a percentage of adding time to keep UI responsive
-                    time = +new Date - start;
-                    timeout = Math.floor(time * 0.3);
-                    //console.log('added  ' + tile.key + ' (' + time + 'ms > ' + timeout + 'ms)');
-                    this._queueTimeout = setTimeout(L.bind(arguments.callee, this), timeout);
-                } else {
-                    this._queueTimeout = null;
-                }
-            }, this), 0);
-        }
-    },
-
-    remove: function(tile) {
-        var key = tile.key, 
-            val;
-        for (var i = 0, len = this._queue.length; i < len; i++) {
-            val = this._queue[i];
-            if (val && val.key === key) {
-                //console.log('##### delete ' + key);
-                // set entry to undefined only for better performance (?) - 
-                // queue consumer needs to handle empty entries!
-                delete this._queue[i];
-            }
-        }
-    },
-
-    clear: function() {
-        if (this._queueTimeout) {
-            clearTimeout(this._queueTimeout);
-            this._queueTimeout = null;
-        }
-        this._queue = [];
-    }
-};
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/index.js":[function(require,module,exports){
-// Index for npm/browserify
-//
-// No explicit exports, as classes add themselves to the global Leaflet package
-// structure.
-require('./AbstractWorker.js');
-require('./CatilineWorker.js');
-require('./TileCache.js');
-require('./TileQueue.js');
-require('./TileLayer.GeoJSON.js');
-require('./TileLayer.BBox.js');
-require('./TileLayer.Vector.Unclipped.js');
-require('./TileLayer.Div.js');
-require('./TileLayer.Progress.js');
-require('./TileLayer.Overzoom.js');
-require('./Leaflet.label-patch.js');
-
-},{"./AbstractWorker.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/AbstractWorker.js","./CatilineWorker.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/CatilineWorker.js","./Leaflet.label-patch.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/Leaflet.label-patch.js","./TileCache.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileCache.js","./TileLayer.BBox.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.BBox.js","./TileLayer.Div.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Div.js","./TileLayer.GeoJSON.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.GeoJSON.js","./TileLayer.Overzoom.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Overzoom.js","./TileLayer.Progress.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Progress.js","./TileLayer.Vector.Unclipped.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileLayer.Vector.Unclipped.js","./TileQueue.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/TileQueue.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js":[function(require,module,exports){
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js":[function(require,module,exports){
 /**
  * Leaflet.UserMarker v1.0
  * 
@@ -29643,7 +27748,5908 @@ L.Map.include({
 
 }(window, document));
 //# sourceMappingURL=leaflet-src.map
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-draw/dist/leaflet.draw.js":[function(require,module,exports){
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+(function (process,__filename){
+/** vim: et:ts=4:sw=4:sts=4
+ * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
+ * Available via the MIT or new BSD license.
+ * see: http://github.com/jrburke/amdefine for details
+ */
+
+/*jslint node: true */
+/*global module, process */
+'use strict';
+
+/**
+ * Creates a define for node.
+ * @param {Object} module the "module" object that is defined by Node for the
+ * current module.
+ * @param {Function} [requireFn]. Node's require function for the current module.
+ * It only needs to be passed in Node versions before 0.5, when module.require
+ * did not exist.
+ * @returns {Function} a define function that is usable for the current node
+ * module.
+ */
+function amdefine(module, requireFn) {
+    'use strict';
+    var defineCache = {},
+        loaderCache = {},
+        alreadyCalled = false,
+        path = require('path'),
+        makeRequire, stringRequire;
+
+    /**
+     * Trims the . and .. from an array of path segments.
+     * It will keep a leading path segment if a .. will become
+     * the first path segment, to help with module name lookups,
+     * which act like paths, but can be remapped. But the end result,
+     * all paths that use this function should look normalized.
+     * NOTE: this method MODIFIES the input array.
+     * @param {Array} ary the array of path segments.
+     */
+    function trimDots(ary) {
+        var i, part;
+        for (i = 0; ary[i]; i+= 1) {
+            part = ary[i];
+            if (part === '.') {
+                ary.splice(i, 1);
+                i -= 1;
+            } else if (part === '..') {
+                if (i === 1 && (ary[2] === '..' || ary[0] === '..')) {
+                    //End of the line. Keep at least one non-dot
+                    //path segment at the front so it can be mapped
+                    //correctly to disk. Otherwise, there is likely
+                    //no path mapping for a path starting with '..'.
+                    //This can still fail, but catches the most reasonable
+                    //uses of ..
+                    break;
+                } else if (i > 0) {
+                    ary.splice(i - 1, 2);
+                    i -= 2;
+                }
+            }
+        }
+    }
+
+    function normalize(name, baseName) {
+        var baseParts;
+
+        //Adjust any relative paths.
+        if (name && name.charAt(0) === '.') {
+            //If have a base name, try to normalize against it,
+            //otherwise, assume it is a top-level require that will
+            //be relative to baseUrl in the end.
+            if (baseName) {
+                baseParts = baseName.split('/');
+                baseParts = baseParts.slice(0, baseParts.length - 1);
+                baseParts = baseParts.concat(name.split('/'));
+                trimDots(baseParts);
+                name = baseParts.join('/');
+            }
+        }
+
+        return name;
+    }
+
+    /**
+     * Create the normalize() function passed to a loader plugin's
+     * normalize method.
+     */
+    function makeNormalize(relName) {
+        return function (name) {
+            return normalize(name, relName);
+        };
+    }
+
+    function makeLoad(id) {
+        function load(value) {
+            loaderCache[id] = value;
+        }
+
+        load.fromText = function (id, text) {
+            //This one is difficult because the text can/probably uses
+            //define, and any relative paths and requires should be relative
+            //to that id was it would be found on disk. But this would require
+            //bootstrapping a module/require fairly deeply from node core.
+            //Not sure how best to go about that yet.
+            throw new Error('amdefine does not implement load.fromText');
+        };
+
+        return load;
+    }
+
+    makeRequire = function (systemRequire, exports, module, relId) {
+        function amdRequire(deps, callback) {
+            if (typeof deps === 'string') {
+                //Synchronous, single module require('')
+                return stringRequire(systemRequire, exports, module, deps, relId);
+            } else {
+                //Array of dependencies with a callback.
+
+                //Convert the dependencies to modules.
+                deps = deps.map(function (depName) {
+                    return stringRequire(systemRequire, exports, module, depName, relId);
+                });
+
+                //Wait for next tick to call back the require call.
+                if (callback) {
+                    process.nextTick(function () {
+                        callback.apply(null, deps);
+                    });
+                }
+            }
+        }
+
+        amdRequire.toUrl = function (filePath) {
+            if (filePath.indexOf('.') === 0) {
+                return normalize(filePath, path.dirname(module.filename));
+            } else {
+                return filePath;
+            }
+        };
+
+        return amdRequire;
+    };
+
+    //Favor explicit value, passed in if the module wants to support Node 0.4.
+    requireFn = requireFn || function req() {
+        return module.require.apply(module, arguments);
+    };
+
+    function runFactory(id, deps, factory) {
+        var r, e, m, result;
+
+        if (id) {
+            e = loaderCache[id] = {};
+            m = {
+                id: id,
+                uri: __filename,
+                exports: e
+            };
+            r = makeRequire(requireFn, e, m, id);
+        } else {
+            //Only support one define call per file
+            if (alreadyCalled) {
+                throw new Error('amdefine with no module ID cannot be called more than once per file.');
+            }
+            alreadyCalled = true;
+
+            //Use the real variables from node
+            //Use module.exports for exports, since
+            //the exports in here is amdefine exports.
+            e = module.exports;
+            m = module;
+            r = makeRequire(requireFn, e, m, module.id);
+        }
+
+        //If there are dependencies, they are strings, so need
+        //to convert them to dependency values.
+        if (deps) {
+            deps = deps.map(function (depName) {
+                return r(depName);
+            });
+        }
+
+        //Call the factory with the right dependencies.
+        if (typeof factory === 'function') {
+            result = factory.apply(m.exports, deps);
+        } else {
+            result = factory;
+        }
+
+        if (result !== undefined) {
+            m.exports = result;
+            if (id) {
+                loaderCache[id] = m.exports;
+            }
+        }
+    }
+
+    stringRequire = function (systemRequire, exports, module, id, relId) {
+        //Split the ID by a ! so that
+        var index = id.indexOf('!'),
+            originalId = id,
+            prefix, plugin;
+
+        if (index === -1) {
+            id = normalize(id, relId);
+
+            //Straight module lookup. If it is one of the special dependencies,
+            //deal with it, otherwise, delegate to node.
+            if (id === 'require') {
+                return makeRequire(systemRequire, exports, module, relId);
+            } else if (id === 'exports') {
+                return exports;
+            } else if (id === 'module') {
+                return module;
+            } else if (loaderCache.hasOwnProperty(id)) {
+                return loaderCache[id];
+            } else if (defineCache[id]) {
+                runFactory.apply(null, defineCache[id]);
+                return loaderCache[id];
+            } else {
+                if(systemRequire) {
+                    return systemRequire(originalId);
+                } else {
+                    throw new Error('No module with ID: ' + id);
+                }
+            }
+        } else {
+            //There is a plugin in play.
+            prefix = id.substring(0, index);
+            id = id.substring(index + 1, id.length);
+
+            plugin = stringRequire(systemRequire, exports, module, prefix, relId);
+
+            if (plugin.normalize) {
+                id = plugin.normalize(id, makeNormalize(relId));
+            } else {
+                //Normalize the ID normally.
+                id = normalize(id, relId);
+            }
+
+            if (loaderCache[id]) {
+                return loaderCache[id];
+            } else {
+                plugin.load(id, makeRequire(systemRequire, exports, module, relId), makeLoad(id), {});
+
+                return loaderCache[id];
+            }
+        }
+    };
+
+    //Create a define function specific to the module asking for amdefine.
+    function define(id, deps, factory) {
+        if (Array.isArray(id)) {
+            factory = deps;
+            deps = id;
+            id = undefined;
+        } else if (typeof id !== 'string') {
+            factory = id;
+            id = deps = undefined;
+        }
+
+        if (deps && !Array.isArray(deps)) {
+            factory = deps;
+            deps = undefined;
+        }
+
+        if (!deps) {
+            deps = ['require', 'exports', 'module'];
+        }
+
+        //Set up properties for this module. If an ID, then use
+        //internal cache. If no ID, then use the external variables
+        //for this node module.
+        if (id) {
+            //Put the module in deep freeze until there is a
+            //require call for it.
+            defineCache[id] = [id, deps, factory];
+        } else {
+            runFactory(id, deps, factory);
+        }
+    }
+
+    //define.require, which has access to all the values in the
+    //cache. Useful for AMD modules that all have IDs in the file,
+    //but need to finally export a value to node based on one of those
+    //IDs.
+    define.require = function (id) {
+        if (loaderCache[id]) {
+            return loaderCache[id];
+        }
+
+        if (defineCache[id]) {
+            runFactory.apply(null, defineCache[id]);
+            return loaderCache[id];
+        }
+    };
+
+    define.amd = {};
+
+    return define;
+}
+
+module.exports = amdefine;
+
+}).call(this,require('_process'),"/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js")
+},{"_process":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/browserify/node_modules/process/browser.js","path":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/browserify/node_modules/path-browserify/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/catiline/dist/catiline.js":[function(require,module,exports){
+/*! catiline 2.9.3 2013-10-25*/
+/*!©2013 Calvin Metcalf @license MIT https://github.com/calvinmetcalf/catiline */
+if (typeof document === 'undefined') {
+	self._noTransferable=true;
+	self.onmessage=function(e){
+		/*jslint evil: true */
+		eval(e.data);
+	};
+} else {
+(function(global){
+	'use strict';
+//overall structure based on when
+//https://github.com/cujojs/when/blob/master/when.js#L805-L852
+var nextTick;
+var MutationObserver = global.MutationObserver || global.WebKitMutationObserver;
+/*if (typeof setImmediate === 'function') {
+	nextTick = setImmediate.bind(global,drainQueue);
+}else */if(MutationObserver){
+	//based on RSVP
+	//https://github.com/tildeio/rsvp.js/blob/master/lib/rsvp/async.js
+	var observer = new MutationObserver(drainQueue);
+	var element = document.createElement('div');
+	observer.observe(element, { attributes: true });
+
+	// Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
+	addEventListener('unload', function () {
+		observer.disconnect();
+		observer = null;
+	}, false);
+	nextTick =   function () {
+		element.setAttribute('drainQueue', 'drainQueue');
+	};
+}else{
+	var codeWord = 'com.catiline.setImmediate' + Math.random();
+	addEventListener('message', function (event) {
+		// This will catch all incoming messages (even from other windows!), so we need to try reasonably hard to
+		// avoid letting anyone else trick us into firing off. We test the origin is still this window, and that a
+		// (randomly generated) unpredictable identifying prefix is present.
+		if (event.source === window && event.data === codeWord) {
+			drainQueue();
+		}
+	}, false);
+	nextTick =  function() {
+		postMessage(codeWord, '*');
+	};
+}
+var mainQueue = [];
+
+/**
+ * Enqueue a task. If the queue is not currently scheduled to be
+ * drained, schedule it.
+ * @param {function} task
+ */
+catiline.nextTick = function(task) {
+	if (mainQueue.push(task) === 1) {
+		nextTick();
+	}
+};
+
+/**
+ * Drain the handler queue entirely, being careful to allow the
+ * queue to be extended while it is being processed, and to continue
+ * processing until it is truly empty.
+ */
+function drainQueue() {
+	var i = 0;
+	var task;
+	var innerQueue = mainQueue;
+	mainQueue = [];
+	/*jslint boss: true */
+	while (task = innerQueue[i++]) {
+		task();
+	}
+
+}
+
+var func = 'function';
+// Creates a deferred: an object with a promise and corresponding resolve/reject methods
+function Deferred() {
+	// The `handler` variable points to the function that will
+	// 1) handle a .then(onFulfilled, onRejected) call
+	// 2) handle a .resolve or .reject call (if not fulfilled)
+	// Before 2), `handler` holds a queue of callbacks.
+	// After 2), `handler` is a simple .then handler.
+	// We use only one function to save memory and complexity.
+	var handler = function(onFulfilled, onRejected, value) {
+		// Case 1) handle a .then(onFulfilled, onRejected) call
+		if (onFulfilled !== handler) {
+			var createdDeffered = createDeferred();
+			handler.queue.push({
+				deferred: createdDeffered,
+				resolve: onFulfilled,
+				reject: onRejected
+			});
+			return createdDeffered.promise;
+		}
+
+		// Case 2) handle a .resolve or .reject call
+		// (`onFulfilled` acts as a sentinel)
+		// The actual function signature is
+		// .re[ject|solve](sentinel, success, value)
+		var action = onRejected ? 'resolve' : 'reject';
+		for (var i = 0, l = handler.queue.length; i < l; i++) {
+			var queue = handler.queue[i];
+			var deferred = queue.deferred;
+			var callback = queue[action];
+			if (typeof callback !== func) {
+				deferred[action](value);
+			}
+			else {
+				execute(callback, value, deferred);
+			}
+		}
+		// Replace this handler with a simple resolved or rejected handler
+		handler = createHandler(promise, value, onRejected);
+	};
+
+	function Promise() {
+		this.then = function(onFulfilled, onRejected) {
+			return handler(onFulfilled, onRejected);
+		};
+	}
+	var promise = new Promise();
+	this.promise = promise;
+	// The queue of deferreds
+	handler.queue = [];
+
+	this.resolve = function(value) {
+		if (handler.queue) {
+			handler(handler, true, value);
+		}
+	};
+
+	this.fulfill = this.resolve;
+
+	this.reject = function(reason) {
+		if (handler.queue) {
+			handler(handler, false, reason);
+		}
+	};
+}
+
+function createDeferred() {
+	return new Deferred();
+}
+
+// Creates a fulfilled or rejected .then function
+function createHandler(promise, value, success) {
+	return function(onFulfilled, onRejected) {
+		var callback = success ? onFulfilled : onRejected;
+		if (typeof callback !== func) {
+			return promise;
+		}
+		var result = createDeferred();
+		execute(callback, value, result);
+		return result.promise;
+	};
+}
+
+// Executes the callback with the specified value,
+// resolving or rejecting the deferred
+function execute(callback, value, deferred) {
+	catiline.nextTick(function() {
+		try {
+			var result = callback(value);
+			if (result && typeof result.then === func) {
+				result.then(deferred.resolve, deferred.reject);
+			}
+			else {
+				deferred.resolve(result);
+			}
+		}
+		catch (error) {
+			deferred.reject(error);
+		}
+	});
+}
+catiline.deferred = createDeferred;
+// Returns a resolved promise
+catiline.resolve = function(value) {
+	var promise = {};
+	promise.then = createHandler(promise, value, true);
+	return promise;
+};
+// Returns a rejected promise
+catiline.reject = function(reason) {
+	var promise = {};
+	promise.then = createHandler(promise, reason, false);
+	return promise;
+};
+// Returns a deferred
+
+catiline.all = function(array) {
+	var promise = createDeferred();
+	var len = array.length;
+	var resolved = 0;
+	var out = [];
+	var onSuccess = function(n) {
+		return function(v) {
+			out[n] = v;
+			resolved++;
+			if (resolved === len) {
+				promise.resolve(out);
+			}
+		};
+	};
+	array.forEach(function(v, i) {
+		v.then(onSuccess(i), function(a) {
+			promise.reject(a);
+		});
+	});
+	return promise.promise;
+};
+catiline._hasWorker = typeof Worker !== 'undefined'&&typeof fakeLegacy === 'undefined';
+catiline.URL = window.URL || window.webkitURL;
+catiline._noTransferable=!catiline.URL;
+//regex out the importScript call and move it up to the top out of the function.
+function regexImports(string){
+	var rest=string;
+	var match = true;
+	var matches = {};
+	var loopFunc = function(a,b){
+		if(b){
+			'importScripts('+b.split(',').forEach(function(cc){
+				matches[catiline.makeUrl(cc.match(/\s*[\'\"](\S*)[\'\"]\s*/)[1])]=true; // trim whitespace, add to matches
+			})+');\n';
+		}
+	};
+	while(match){
+		match = rest.match(/(importScripts\(.*?\);?)/);
+		rest = rest.replace(/(importScripts\(\s*(?:[\'\"].*?[\'\"])?\s*\);?)/,'\n');
+		if(match){
+			match[0].replace(/importScripts\(\s*([\'\"].*?[\'\"])?\s*\);?/g,loopFunc);
+		}
+	}
+	matches = Object.keys(matches);
+	return [matches,rest];
+}
+
+function moveImports(string,after){
+	var str = regexImports(string);
+	var matches = str[0];
+	var rest = str[1];
+	if(matches.length>0){
+		return 'importScripts(\''+matches.join('\',\'')+after+rest;
+	}else{
+		return rest;
+	}
+}
+function getPath(){
+	if(typeof SHIM_WORKER_PATH !== 'undefined'){
+		return SHIM_WORKER_PATH;
+	}else if('SHIM_WORKER_PATH' in catiline){
+		return catiline.SHIM_WORKER_PATH;
+	}
+	var scripts = document.getElementsByTagName('script');
+	var len = scripts.length;
+	var i = 0;
+	while(i<len){
+		if(/catiline(\.min)?\.js/.test(scripts[i].src)){
+			return scripts[i].src;
+		}
+		i++;
+	}
+}
+function appendScript(iDoc,text){
+	var iScript = iDoc.createElement('script');
+	if (typeof iScript.text !== 'undefined') {
+		iScript.text = text;
+	} else {
+		iScript.innerHTML = text;
+	}
+	if(iDoc.readyState==='complete'){
+		iDoc.documentElement.appendChild(iScript);
+	}else{
+		iDoc.onreadystatechange=function(){
+			if(iDoc.readyState==='complete'){
+				iDoc.documentElement.appendChild(iScript);
+			}
+		};
+	}
+}
+//much of the iframe stuff inspired by https://github.com/padolsey/operative
+//most things besides the names have since been changed
+function actualMakeI(script,codeword){
+	var iFrame = document.createElement('iframe');
+	iFrame.style.display = 'none';
+	document.body.appendChild(iFrame);
+	var iDoc = iFrame.contentWindow.document;
+	var text=['try{ ',
+	'var __scripts__=\'\';function importScripts(scripts){',
+	'	if(Array.isArray(scripts)&&scripts.length>0){',
+	'		scripts.forEach(function(url){',
+	'			var ajax = new XMLHttpRequest();',
+	'			ajax.open(\'GET\',url,false);',
+	'			ajax.send();__scripts__+=ajax.responseText;',
+	'			__scripts__+=\'\\n;\';',
+	'		});',
+	'	}',
+	'};',
+	script,
+	'}catch(e){',
+	'	window.parent.postMessage([\''+codeword+'\',\'error\'],\'*\')',
+	'}'].join('\n');
+	appendScript(iDoc,text);
+	return iFrame;
+}
+function makeIframe(script,codeword){
+	var promise = catiline.deferred();
+	if(document.readyState==='complete'){
+		promise.resolve(actualMakeI(script,codeword));
+	}else{
+		window.addEventListener('load',function(){
+			promise.resolve(actualMakeI(script,codeword));
+		},false);
+	}
+	return promise.promise;
+}
+catiline.makeIWorker = function (strings,codeword){
+	var script =moveImports(strings.join(''),'\');eval(__scripts__);\n');
+	var worker = {onmessage:function(){}};
+	var ipromise = makeIframe(script,codeword);
+	window.addEventListener('message',function(e){
+		if(e.data.slice && e.data.slice(0,codeword.length) === codeword){
+			worker.onmessage({data:JSON.parse(e.data.slice(codeword.length))});
+		}
+	});
+	worker.postMessage=function(data){
+		ipromise.then(function(iFrame){
+			iFrame.contentWindow.postMessage(JSON.stringify(data),'*');
+		});
+	};
+	worker.terminate=function(){
+		ipromise.then(function(iFrame){
+			document.body.removeChild(iFrame);
+		});
+	};
+	return worker;
+	
+};
+
+function makeFallbackWorker(script){
+	catiline._noTransferable=true;
+	var worker = new Worker(getPath());
+	worker.postMessage(script);
+	return worker;
+}
+//accepts an array of strings, joins them, and turns them into a worker.
+catiline.makeWorker = function (strings, codeword){
+	if(!catiline._hasWorker){
+		return catiline.makeIWorker(strings,codeword);
+	}
+	var worker;
+	var script = moveImports(strings.join('\n'),'\');\n');
+	if(catiline._noTransferable){
+		return makeFallbackWorker(script);
+	}
+	try{
+		worker= new Worker(catiline.URL.createObjectURL(new Blob([script],{type: 'text/javascript'})));
+	}catch(e){
+		try{
+			worker=makeFallbackWorker(script);
+		}catch(ee){
+			worker = catiline.makeIWorker(strings,codeword);
+		}
+	}finally{
+		return worker;
+	}
+};
+
+catiline.makeUrl = function (fileName) {
+	var link = document.createElement('link');
+	link.href = fileName;
+	return link.href;
+};
+
+function stringifyObject(obj){
+	var out = '{';
+	var first = true;
+	for(var key in obj){
+		if(first){
+			first = false;
+		}else{
+			out+=',';
+		}
+		out += key;
+		out += ':';
+		out += catiline.stringify(obj[key]);
+	}
+	out += '}';
+	return out;
+}
+function stringifyArray(array){
+	if(array.length){
+		var out = '[';
+		out += catiline.stringify(array[0]);
+		var i = 0;
+		var len = array.length;
+		while(++i<len){
+			out += ',';
+			out += catiline.stringify(array[i]);
+		}
+		out += ']';
+		return out;
+	}else{
+		return '[]';
+	}
+}
+catiline.stringify = function(thing){
+	if(Array.isArray(thing)){
+		return stringifyArray(thing);
+	}else if(typeof thing === 'function'||typeof thing === 'number'||typeof thing === 'boolean'){
+		return thing.toString();
+	}else if(typeof thing === 'string'){
+		return '"' + thing + '"';
+	}else if(thing.toString() === '[object Object]'){
+		return stringifyObject(thing);
+	}
+};
+
+var workerSetup = function(context) {
+	self.__iFrame__ = typeof document !== 'undefined';
+	self.__self__ = {
+		onmessage: function(e) {
+			context.trigger('messege', e.data[1]);
+			if (e.data[0][0] === context.__codeWord__) {
+				return regMsg(e);
+			}
+			else {
+				context.trigger(e.data[0][0], e.data[1]);
+			}
+		}
+	};
+	if (__iFrame__) {
+		window.onmessage = function(e) {
+			if (typeof e.data === 'string') {
+				e = {
+					data: JSON.parse(e.data)
+				};
+			}
+			__self__.onmessage(e);
+		};
+	}
+	else {
+		self.onmessage = __self__.onmessage;
+	}
+	__self__.postMessage = function(rawData, transfer) {
+		if (!self._noTransferable && !__iFrame__) {
+			self.postMessage(rawData, transfer);
+		}
+		else if (__iFrame__) {
+			var data = context.__codeWord__ + JSON.stringify(rawData);
+			window.parent.postMessage(data, '*');
+		}
+		else if (self._noTransferable) {
+			self.postMessage(rawData);
+		}
+	};
+	self.console = {};
+	var regMsg = function(e) {
+		var cb = function(data, transfer) {
+			__self__.postMessage([e.data[0], data], transfer);
+		};
+		var result;
+		if (__iFrame__) {
+			try {
+				result = context[e.data[1]](e.data[2], cb, context);
+			}
+			catch (ee) {
+				context.fire('error', JSON.stringify(ee));
+			}
+		}
+		else {
+			result = context[e.data[1]](e.data[2], cb, context);
+		}
+		if (typeof result !== 'undefined') {
+			cb(result);
+		}
+	};
+};
+function addEvents(context, msg) {
+	var listeners = {};
+	var sendMessage;
+	if(typeof __self__ !== 'undefined'){
+		sendMessage = __self__.postMessage;
+	}else if (msg) {
+		sendMessage = msg;
+	}
+	context.on = function(eventName, func, scope) {
+		scope = scope || context;
+		if (eventName.indexOf(' ') > 0) {
+			eventName.split(' ').map(function(v) {
+				return context.on(v, func, scope);
+			}, this);
+			return context;
+		}
+		if (!(eventName in listeners)) {
+			listeners[eventName] = [];
+		}
+		var newFunc = function(a) {
+			func.call(scope, a, scope);
+		};
+		newFunc.orig = func;
+		listeners[eventName].push(newFunc);
+		return context;
+	};
+	context.one = function(eventName, func, scope) {
+		scope = scope || context;
+
+		function ourFunc(a) {
+			context.off(eventName, ourFunc);
+			func.call(scope, a, scope);
+		}
+		return context.on(eventName, ourFunc);
+	};
+
+	context.trigger = function(eventName, data) {
+		if (eventName.indexOf(' ') > 0) {
+			eventName.split(' ').forEach(function(v) {
+				context.trigger(v, data);
+			});
+			return context;
+		}
+		if (!(eventName in listeners)) {
+			return context;
+		}
+		listeners[eventName].forEach(function(v) {
+			v(data);
+		});
+		return context;
+	};
+	context.fire = function(eventName, data, transfer) {
+		sendMessage([[eventName],data],transfer);
+		return context;
+	};
+	context.off = function(eventName, func) {
+		if (eventName.indexOf(' ') > 0) {
+			eventName.split(' ').map(function(v) {
+				return context.off(v, func);
+			});
+			return context;
+		}
+		if (!(eventName in listeners)) {
+			return context;
+		}
+		else {
+			if (func) {
+				listeners[eventName] = listeners[eventName].map(function(a) {
+					if (a.orig === func) {
+						return false;
+					}
+					else {
+						return a;
+					}
+				}).filter(function(a) {
+					return a;
+				});
+			}
+			else {
+				delete listeners[eventName];
+			}
+		}
+		return context;
+	};
+}
+function makeConsole(msg) {
+	if (typeof console !== 'undefined') {
+		var method = console[msg[0]] ? msg[0] : 'log';
+		if (typeof console[method].apply === 'undefined') {
+			console[method](msg[1].join(' '));
+		}
+		else {
+			console[method].apply(console, msg[1]);
+		}
+	}
+}
+function makeWorkerConsole(context){
+	function makeConsole(method) {
+		return function() {
+			var len = arguments.length;
+			var out = [];
+			var i = 0;
+			while (i < len) {
+				out.push(arguments[i]);
+				i++;
+			}
+			context.fire('console', [method, out]);
+		};
+	}
+	['log', 'debug', 'error', 'info', 'warn', 'time', 'timeEnd'].forEach(function(v) {
+		console[v] = makeConsole(v);
+	});
+}
+function Catiline(obj) {
+	if (typeof obj === 'function') {
+		obj = {
+			data: obj
+		};
+	}
+	var codeWord = 'com.catilinejs.' + (Catiline._hasWorker ? 'iframe' : 'worker') + Math.random();
+	var self = this;
+	var promises = [];
+	addEvents(self, function(data, transfer) {
+		if (catiline._noTransferable) {
+			worker.postMessage(data);
+		}
+		else {
+			worker.postMessage(data, transfer);
+		}
+	});
+	var rejectPromises = function(msg) {
+		if (typeof msg !== 'string' && 'preventDefault' in msg) {
+			msg.preventDefault();
+			msg = msg.message;
+		}
+		promises.forEach(function(p) {
+			if (p) {
+				p.reject(msg);
+			}
+		});
+	};
+	obj.__codeWord__ = codeWord;
+	obj.__initialize__ = [workerSetup, addEvents, makeWorkerConsole];
+	if (!('initialize' in obj)) {
+		if ('init' in obj) {
+			obj.__initialize__.push(obj.init);
+		}
+	}
+	else {
+		obj.__initialize__.push(obj.initialize);
+	}
+
+	if (!('events' in obj)) {
+		obj.events = {};
+	}
+	if ('listners' in obj && typeof obj.listners !== 'function') {
+		for (var key in obj.listners) {
+			self.on(key, obj.listners[key]);
+		}
+	}
+	var fObj = 'var _db = {\n\t';
+	var keyFunc = function(key) {
+		var out = function(data, transfer) {
+			var i = promises.length;
+			promises[i] = catiline.deferred();
+			if (catiline._noTransferable) {
+				worker.postMessage([
+					[codeWord, i], key, data]);
+			}
+			else {
+				worker.postMessage([
+					[codeWord, i], key, data], transfer);
+			}
+			return promises[i].promise;
+		};
+		return out;
+	};
+	var i = false;
+	for (var key$0 in obj) {
+		if(['listners','initialize','init'].indexOf(key$0)>-1){
+			continue;
+		}
+		if (i) {
+			fObj += ',\n\t';
+		}
+		else {
+			i = true;
+		}
+		if (typeof obj[key$0] === 'function') {
+			fObj = fObj + key$0 + ':' + obj[key$0].toString();
+			self[key$0] = keyFunc(key$0);
+		}
+		else {
+			var outThing = catiline.stringify(obj[key$0]);
+			if (typeof outThing !== 'undefined') {
+				fObj = fObj + key$0 + ':' + outThing;
+			}
+		}
+	}
+	fObj = fObj + '};';
+	var worker = catiline.makeWorker(['\'use strict\';', '',
+	fObj, '_db.__initialize__.forEach(function(f){', '	f.call(_db,_db);', '});', 'for(var key in _db.events){', '	_db.on(key,_db.events[key]);', '}'], codeWord);
+	worker.onmessage = function(e) {
+		self.trigger('message', e.data[1]);
+		if (e.data[0][0] === codeWord) {
+			promises[e.data[0][1]].resolve(e.data[1]);
+			promises[e.data[0][1]] = 0;
+		}
+		else {
+			self.trigger(e.data[0][0], e.data[1]);
+		}
+	};
+	self.on('error', rejectPromises);
+	worker.onerror = function(e) {
+		self.trigger('error', e);
+	};
+	self.on('console', makeConsole);
+	self._close = function() {
+		worker.terminate();
+		rejectPromises('closed');
+		return catiline.resolve();
+	};
+	if (!('close' in self)) {
+		self.close = self._close;
+	}
+}
+catiline.Worker = Catiline;
+
+catiline.worker = function(obj){
+    return new Catiline(obj);
+};
+function makeActualKeyFuncs(resolvePromises, self) {
+	return {
+		keyFunc: function(k) {
+			return function(data, transfer) {
+				return resolvePromises(k, data, transfer);
+			};
+		},
+		keyFuncBatch: function(k) {
+			return function(array) {
+				return catiline.all(array.map(function(data) {
+					return resolvePromises(k, data);
+				}));
+			};
+		},
+		keyFuncBatchCB: function(k) {
+			return function(array) {
+				return catiline.all(array.map(function(data) {
+					return resolvePromises(k, data).then(self.__cb__);
+				}));
+			};
+		},
+		keyFuncBatchTransfer: function(k) {
+			return function(array) {
+				return catiline.all(array.map(function(data) {
+					return resolvePromises(k, data[0], data[1]);
+				}));
+			};
+		},
+		keyFuncBatchTransferCB: function(k) {
+			return function(array) {
+				return catiline.all(array.map(function(data) {
+					return resolvePromises(k, data[0], data[1]).then(self.__cb__);
+				}));
+			};
+		}
+	};
+}
+function makeKeyFuncs(resolvePromises, self, obj){
+	var funcs = makeActualKeyFuncs(resolvePromises, self);
+	for (var key in obj) {
+		self[key] = funcs.keyFunc(key);
+		self.batch[key] = funcs.keyFuncBatch(key);
+		self.__batchcb__[key] = funcs.keyFuncBatchCB(key);
+		self.batchTransfer[key] = funcs.keyFuncBatchTransfer(key);
+		self.__batchtcb__[key] = funcs.keyFuncBatchTransferCB(key);
+	}
+}
+function addBatchEvents(self, workers, n){
+	self.on = function (eventName, func, context) {
+		workers.forEach(function (worker) {
+			worker.on(eventName, func, context);
+		});
+		return self;
+	};
+	self.off = function (eventName, func, context) {
+		workers.forEach(function (worker) {
+			worker.off(eventName, func, context);
+		});
+		return self;
+	};
+	self.fire = function (eventName, data) {
+		workers[~~ (Math.random() * n)].fire(eventName, data);
+		return self;
+	};
+}
+function makeUnmanaged(workers, n){
+	return function(key, data, transfer, promise){
+		promise.promise.cancel = function(reason){
+			return promise.reject(reason);
+		};
+		workers[~~ (Math.random() * n)][key](data, transfer).then(function(v){
+			return promise.resolve(v);
+		},function(v){
+			return promise.reject(v);
+		});
+		return promise.promise;
+	};
+}
+function makeQueueWorkers(n,idle,obj){
+	var workers = [];
+	var numIdle = -1;
+	while (++numIdle < n) {
+		workers[numIdle] = new catiline.Worker(obj);
+		idle.push(numIdle);
+	}
+	return workers;
+}
+function CatilineQueue(obj, n, dumb) {
+	var self = this;
+	var numIdle = n;
+	var idle = [];
+	var que = [];
+	var queueLen = 0;
+	var workers = makeQueueWorkers(n,idle,obj);
+	addBatchEvents(self, workers, n);
+	var batchFire = function (eventName, data) {
+		workers.forEach(function (worker) {
+			worker.fire(eventName, data);
+		});
+		return self;
+	};
+	
+	self.batch.fire = batchFire;
+	self.batchTransfer.fire = batchFire;
+
+	function clearQueue(mgs) {
+		mgs = mgs || 'canceled';
+		queueLen = 0;
+		var oQ = que;
+		que = [];
+		oQ.forEach(function (p) {
+			p[3].reject(mgs);
+		});
+		return self;
+	}
+	self.clearQueue = clearQueue;
+	makeKeyFuncs(resolvePromises, self, obj);
+	
+
+	function done(num) {
+		if (queueLen) {
+			var data = que.shift();
+			queueLen--;
+			workers[num][data[0]](data[1], data[2]).then(function (d) {
+				done(num);
+				data[3].resolve(d);
+			}, function (d) {
+				done(num);
+				data[3].reject(d);
+			});
+		}
+		else {
+			numIdle++;
+			idle.push(num);
+		}
+	}
+	var resolveUnmanagedPromises;
+	if(dumb){
+		resolveUnmanagedPromises = makeUnmanaged(workers, n);
+	}
+	function resolvePromises(key, data, transfer) { //srsly better name!
+		var promise = catiline.deferred();
+		if (dumb) {
+			return resolveUnmanagedPromises(key, data, transfer,promise);
+		}
+		if (!queueLen && numIdle) {
+			var num = idle.pop();
+			numIdle--;
+			promise.promise.cancel = function(reason){
+				return promise.reject(reason);
+			};
+			workers[num][key](data, transfer).then(function (d) {
+				done(num);
+				promise.resolve(d);
+			}, function (d) {
+				done(num);
+				promise.reject(d);
+			});
+		} else if (queueLen || !numIdle) {
+			var queueItem = [key, data, transfer, promise];
+			promise.promise.cancel = function(reason){
+				var loc = que.indexOf(queueItem);
+				if(loc>-1){
+					que.splice(loc,1);
+					queueLen--;
+				}
+				return promise.reject(reason);
+			};
+			queueLen = que.push(queueItem);
+		}
+		return promise.promise;
+	}
+	self._close = function () {
+		return catiline.all(workers.map(function (w) {
+			return w._close();
+		}));
+	};
+	if (!('close' in self)) {
+		self.close = self._close;
+	}
+}
+CatilineQueue.prototype.__batchcb__ = {};
+CatilineQueue.prototype.__batchtcb__ = {};
+CatilineQueue.prototype.batch = function (cb) {
+	if (typeof cb === 'function') {
+		this.__cb__ = cb;
+		return this.__batchcb__;
+	}
+	else {
+		return this.clearQueue(cb);
+	}
+};
+CatilineQueue.prototype.batchTransfer = function (cb) {
+	if (typeof cb === 'function') {
+		this.__batchtcb__.__cb__ = cb;
+		return this.__batchtcb__;
+	}
+	else {
+		return this.clearQueue(cb);
+	}
+};
+catiline.Queue = CatilineQueue;
+catiline.queue = function (obj, n, dumb) {
+	return new catiline.Queue(obj, n, dumb);
+};
+
+function catiline(object,queueLength,unmanaged){
+	if(arguments.length === 1 || !queueLength || queueLength <= 1){
+		return new catiline.Worker(object);
+	}else{
+		return new catiline.Queue(object,queueLength,unmanaged);
+	}
+}
+//will be removed in v3
+catiline.setImmediate = catiline.nextTick;
+function initBrowser(catiline){
+	var origCW = global.cw;
+	catiline.noConflict=function(newName){
+		global.cw = origCW;
+		if(newName){
+			global[newName]=catiline;
+		}
+	};
+	global.catiline = catiline;
+	global.cw = catiline;
+	if(!('communist' in global)){
+		global.communist=catiline;
+	}
+
+}
+
+if(typeof define === 'function'){
+	define(function(require){
+		catiline.SHIM_WORKER_PATH=require.toUrl('./catiline.js');
+		return catiline;
+	});
+}else if(typeof module === 'undefined' || !('exports' in module)){
+	initBrowser(catiline);
+} else {
+	module.exports=catiline;
+}catiline.version = '2.9.3';
+})(this);}
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _handlebarsRuntime = require('./handlebars.runtime');
+
+var _handlebarsRuntime2 = _interopRequireDefault(_handlebarsRuntime);
+
+// Compiler imports
+
+var _handlebarsCompilerAst = require('./handlebars/compiler/ast');
+
+var _handlebarsCompilerAst2 = _interopRequireDefault(_handlebarsCompilerAst);
+
+var _handlebarsCompilerBase = require('./handlebars/compiler/base');
+
+var _handlebarsCompilerCompiler = require('./handlebars/compiler/compiler');
+
+var _handlebarsCompilerJavascriptCompiler = require('./handlebars/compiler/javascript-compiler');
+
+var _handlebarsCompilerJavascriptCompiler2 = _interopRequireDefault(_handlebarsCompilerJavascriptCompiler);
+
+var _handlebarsCompilerVisitor = require('./handlebars/compiler/visitor');
+
+var _handlebarsCompilerVisitor2 = _interopRequireDefault(_handlebarsCompilerVisitor);
+
+var _handlebarsNoConflict = require('./handlebars/no-conflict');
+
+var _handlebarsNoConflict2 = _interopRequireDefault(_handlebarsNoConflict);
+
+var _create = _handlebarsRuntime2['default'].create;
+function create() {
+  var hb = _create();
+
+  hb.compile = function (input, options) {
+    return _handlebarsCompilerCompiler.compile(input, options, hb);
+  };
+  hb.precompile = function (input, options) {
+    return _handlebarsCompilerCompiler.precompile(input, options, hb);
+  };
+
+  hb.AST = _handlebarsCompilerAst2['default'];
+  hb.Compiler = _handlebarsCompilerCompiler.Compiler;
+  hb.JavaScriptCompiler = _handlebarsCompilerJavascriptCompiler2['default'];
+  hb.Parser = _handlebarsCompilerBase.parser;
+  hb.parse = _handlebarsCompilerBase.parse;
+
+  return hb;
+}
+
+var inst = create();
+inst.create = create;
+
+_handlebarsNoConflict2['default'](inst);
+
+inst.Visitor = _handlebarsCompilerVisitor2['default'];
+
+inst['default'] = inst;
+
+exports['default'] = inst;
+module.exports = exports['default'];
+
+
+},{"./handlebars.runtime":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars.runtime.js","./handlebars/compiler/ast":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/ast.js","./handlebars/compiler/base":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/base.js","./handlebars/compiler/compiler":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/compiler.js","./handlebars/compiler/javascript-compiler":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/javascript-compiler.js","./handlebars/compiler/visitor":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/visitor.js","./handlebars/no-conflict":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/no-conflict.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars.runtime.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+// istanbul ignore next
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _handlebarsBase = require('./handlebars/base');
+
+var base = _interopRequireWildcard(_handlebarsBase);
+
+// Each of these augment the Handlebars object. No need to setup here.
+// (This is done to easily share code between commonjs and browse envs)
+
+var _handlebarsSafeString = require('./handlebars/safe-string');
+
+var _handlebarsSafeString2 = _interopRequireDefault(_handlebarsSafeString);
+
+var _handlebarsException = require('./handlebars/exception');
+
+var _handlebarsException2 = _interopRequireDefault(_handlebarsException);
+
+var _handlebarsUtils = require('./handlebars/utils');
+
+var Utils = _interopRequireWildcard(_handlebarsUtils);
+
+var _handlebarsRuntime = require('./handlebars/runtime');
+
+var runtime = _interopRequireWildcard(_handlebarsRuntime);
+
+var _handlebarsNoConflict = require('./handlebars/no-conflict');
+
+var _handlebarsNoConflict2 = _interopRequireDefault(_handlebarsNoConflict);
+
+// For compatibility and usage outside of module systems, make the Handlebars object a namespace
+function create() {
+  var hb = new base.HandlebarsEnvironment();
+
+  Utils.extend(hb, base);
+  hb.SafeString = _handlebarsSafeString2['default'];
+  hb.Exception = _handlebarsException2['default'];
+  hb.Utils = Utils;
+  hb.escapeExpression = Utils.escapeExpression;
+
+  hb.VM = runtime;
+  hb.template = function (spec) {
+    return runtime.template(spec, hb);
+  };
+
+  return hb;
+}
+
+var inst = create();
+inst.create = create;
+
+_handlebarsNoConflict2['default'](inst);
+
+inst['default'] = inst;
+
+exports['default'] = inst;
+module.exports = exports['default'];
+
+
+},{"./handlebars/base":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/base.js","./handlebars/exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","./handlebars/no-conflict":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/no-conflict.js","./handlebars/runtime":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/runtime.js","./handlebars/safe-string":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/safe-string.js","./handlebars/utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/base.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.HandlebarsEnvironment = HandlebarsEnvironment;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utils = require('./utils');
+
+var _exception = require('./exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+var _helpers = require('./helpers');
+
+var _decorators = require('./decorators');
+
+var _logger = require('./logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
+var VERSION = '4.0.5';
+exports.VERSION = VERSION;
+var COMPILER_REVISION = 7;
+
+exports.COMPILER_REVISION = COMPILER_REVISION;
+var REVISION_CHANGES = {
+  1: '<= 1.0.rc.2', // 1.0.rc.2 is actually rev2 but doesn't report it
+  2: '== 1.0.0-rc.3',
+  3: '== 1.0.0-rc.4',
+  4: '== 1.x.x',
+  5: '== 2.0.0-alpha.x',
+  6: '>= 2.0.0-beta.1',
+  7: '>= 4.0.0'
+};
+
+exports.REVISION_CHANGES = REVISION_CHANGES;
+var objectType = '[object Object]';
+
+function HandlebarsEnvironment(helpers, partials, decorators) {
+  this.helpers = helpers || {};
+  this.partials = partials || {};
+  this.decorators = decorators || {};
+
+  _helpers.registerDefaultHelpers(this);
+  _decorators.registerDefaultDecorators(this);
+}
+
+HandlebarsEnvironment.prototype = {
+  constructor: HandlebarsEnvironment,
+
+  logger: _logger2['default'],
+  log: _logger2['default'].log,
+
+  registerHelper: function registerHelper(name, fn) {
+    if (_utils.toString.call(name) === objectType) {
+      if (fn) {
+        throw new _exception2['default']('Arg not supported with multiple helpers');
+      }
+      _utils.extend(this.helpers, name);
+    } else {
+      this.helpers[name] = fn;
+    }
+  },
+  unregisterHelper: function unregisterHelper(name) {
+    delete this.helpers[name];
+  },
+
+  registerPartial: function registerPartial(name, partial) {
+    if (_utils.toString.call(name) === objectType) {
+      _utils.extend(this.partials, name);
+    } else {
+      if (typeof partial === 'undefined') {
+        throw new _exception2['default']('Attempting to register a partial called "' + name + '" as undefined');
+      }
+      this.partials[name] = partial;
+    }
+  },
+  unregisterPartial: function unregisterPartial(name) {
+    delete this.partials[name];
+  },
+
+  registerDecorator: function registerDecorator(name, fn) {
+    if (_utils.toString.call(name) === objectType) {
+      if (fn) {
+        throw new _exception2['default']('Arg not supported with multiple decorators');
+      }
+      _utils.extend(this.decorators, name);
+    } else {
+      this.decorators[name] = fn;
+    }
+  },
+  unregisterDecorator: function unregisterDecorator(name) {
+    delete this.decorators[name];
+  }
+};
+
+var log = _logger2['default'].log;
+
+exports.log = log;
+exports.createFrame = _utils.createFrame;
+exports.logger = _logger2['default'];
+
+
+},{"./decorators":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/decorators.js","./exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","./helpers":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers.js","./logger":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/logger.js","./utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/ast.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+var AST = {
+  // Public API used to evaluate derived attributes regarding AST nodes
+  helpers: {
+    // a mustache is definitely a helper if:
+    // * it is an eligible helper, and
+    // * it has at least one parameter or hash segment
+    helperExpression: function helperExpression(node) {
+      return node.type === 'SubExpression' || (node.type === 'MustacheStatement' || node.type === 'BlockStatement') && !!(node.params && node.params.length || node.hash);
+    },
+
+    scopedId: function scopedId(path) {
+      return (/^\.|this\b/.test(path.original)
+      );
+    },
+
+    // an ID is simple if it only has one part, and that part is not
+    // `..` or `this`.
+    simpleId: function simpleId(path) {
+      return path.parts.length === 1 && !AST.helpers.scopedId(path) && !path.depth;
+    }
+  }
+};
+
+// Must be exported as an object rather than the root of the module as the jison lexer
+// must modify the object to operate properly.
+exports['default'] = AST;
+module.exports = exports['default'];
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/base.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.parse = parse;
+// istanbul ignore next
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _parser = require('./parser');
+
+var _parser2 = _interopRequireDefault(_parser);
+
+var _whitespaceControl = require('./whitespace-control');
+
+var _whitespaceControl2 = _interopRequireDefault(_whitespaceControl);
+
+var _helpers = require('./helpers');
+
+var Helpers = _interopRequireWildcard(_helpers);
+
+var _utils = require('../utils');
+
+exports.parser = _parser2['default'];
+
+var yy = {};
+_utils.extend(yy, Helpers);
+
+function parse(input, options) {
+  // Just return if an already-compiled AST was passed in.
+  if (input.type === 'Program') {
+    return input;
+  }
+
+  _parser2['default'].yy = yy;
+
+  // Altering the shared object here, but this is ok as parser is a sync operation
+  yy.locInfo = function (locInfo) {
+    return new yy.SourceLocation(options && options.srcName, locInfo);
+  };
+
+  var strip = new _whitespaceControl2['default'](options);
+  return strip.accept(_parser2['default'].parse(input));
+}
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js","./helpers":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/helpers.js","./parser":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/parser.js","./whitespace-control":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/whitespace-control.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/code-gen.js":[function(require,module,exports){
+/* global define */
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('../utils');
+
+var SourceNode = undefined;
+
+try {
+  /* istanbul ignore next */
+  if (typeof define !== 'function' || !define.amd) {
+    // We don't support this in AMD environments. For these environments, we asusme that
+    // they are running on the browser and thus have no need for the source-map library.
+    var SourceMap = require('source-map');
+    SourceNode = SourceMap.SourceNode;
+  }
+} catch (err) {}
+/* NOP */
+
+/* istanbul ignore if: tested but not covered in istanbul due to dist build  */
+if (!SourceNode) {
+  SourceNode = function (line, column, srcFile, chunks) {
+    this.src = '';
+    if (chunks) {
+      this.add(chunks);
+    }
+  };
+  /* istanbul ignore next */
+  SourceNode.prototype = {
+    add: function add(chunks) {
+      if (_utils.isArray(chunks)) {
+        chunks = chunks.join('');
+      }
+      this.src += chunks;
+    },
+    prepend: function prepend(chunks) {
+      if (_utils.isArray(chunks)) {
+        chunks = chunks.join('');
+      }
+      this.src = chunks + this.src;
+    },
+    toStringWithSourceMap: function toStringWithSourceMap() {
+      return { code: this.toString() };
+    },
+    toString: function toString() {
+      return this.src;
+    }
+  };
+}
+
+function castChunk(chunk, codeGen, loc) {
+  if (_utils.isArray(chunk)) {
+    var ret = [];
+
+    for (var i = 0, len = chunk.length; i < len; i++) {
+      ret.push(codeGen.wrap(chunk[i], loc));
+    }
+    return ret;
+  } else if (typeof chunk === 'boolean' || typeof chunk === 'number') {
+    // Handle primitives that the SourceNode will throw up on
+    return chunk + '';
+  }
+  return chunk;
+}
+
+function CodeGen(srcFile) {
+  this.srcFile = srcFile;
+  this.source = [];
+}
+
+CodeGen.prototype = {
+  isEmpty: function isEmpty() {
+    return !this.source.length;
+  },
+  prepend: function prepend(source, loc) {
+    this.source.unshift(this.wrap(source, loc));
+  },
+  push: function push(source, loc) {
+    this.source.push(this.wrap(source, loc));
+  },
+
+  merge: function merge() {
+    var source = this.empty();
+    this.each(function (line) {
+      source.add(['  ', line, '\n']);
+    });
+    return source;
+  },
+
+  each: function each(iter) {
+    for (var i = 0, len = this.source.length; i < len; i++) {
+      iter(this.source[i]);
+    }
+  },
+
+  empty: function empty() {
+    var loc = this.currentLocation || { start: {} };
+    return new SourceNode(loc.start.line, loc.start.column, this.srcFile);
+  },
+  wrap: function wrap(chunk) {
+    var loc = arguments.length <= 1 || arguments[1] === undefined ? this.currentLocation || { start: {} } : arguments[1];
+
+    if (chunk instanceof SourceNode) {
+      return chunk;
+    }
+
+    chunk = castChunk(chunk, this, loc);
+
+    return new SourceNode(loc.start.line, loc.start.column, this.srcFile, chunk);
+  },
+
+  functionCall: function functionCall(fn, type, params) {
+    params = this.generateList(params);
+    return this.wrap([fn, type ? '.' + type + '(' : '(', params, ')']);
+  },
+
+  quotedString: function quotedString(str) {
+    return '"' + (str + '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\u2028/g, '\\u2028') // Per Ecma-262 7.3 + 7.8.4
+    .replace(/\u2029/g, '\\u2029') + '"';
+  },
+
+  objectLiteral: function objectLiteral(obj) {
+    var pairs = [];
+
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        var value = castChunk(obj[key], this);
+        if (value !== 'undefined') {
+          pairs.push([this.quotedString(key), ':', value]);
+        }
+      }
+    }
+
+    var ret = this.generateList(pairs);
+    ret.prepend('{');
+    ret.add('}');
+    return ret;
+  },
+
+  generateList: function generateList(entries) {
+    var ret = this.empty();
+
+    for (var i = 0, len = entries.length; i < len; i++) {
+      if (i) {
+        ret.add(',');
+      }
+
+      ret.add(castChunk(entries[i], this));
+    }
+
+    return ret;
+  },
+
+  generateArray: function generateArray(entries) {
+    var ret = this.generateList(entries);
+    ret.prepend('[');
+    ret.add(']');
+
+    return ret;
+  }
+};
+
+exports['default'] = CodeGen;
+module.exports = exports['default'];
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js","source-map":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/compiler.js":[function(require,module,exports){
+/* eslint-disable new-cap */
+
+'use strict';
+
+exports.__esModule = true;
+exports.Compiler = Compiler;
+exports.precompile = precompile;
+exports.compile = compile;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+var _utils = require('../utils');
+
+var _ast = require('./ast');
+
+var _ast2 = _interopRequireDefault(_ast);
+
+var slice = [].slice;
+
+function Compiler() {}
+
+// the foundHelper register will disambiguate helper lookup from finding a
+// function in a context. This is necessary for mustache compatibility, which
+// requires that context functions in blocks are evaluated by blockHelperMissing,
+// and then proceed as if the resulting value was provided to blockHelperMissing.
+
+Compiler.prototype = {
+  compiler: Compiler,
+
+  equals: function equals(other) {
+    var len = this.opcodes.length;
+    if (other.opcodes.length !== len) {
+      return false;
+    }
+
+    for (var i = 0; i < len; i++) {
+      var opcode = this.opcodes[i],
+          otherOpcode = other.opcodes[i];
+      if (opcode.opcode !== otherOpcode.opcode || !argEquals(opcode.args, otherOpcode.args)) {
+        return false;
+      }
+    }
+
+    // We know that length is the same between the two arrays because they are directly tied
+    // to the opcode behavior above.
+    len = this.children.length;
+    for (var i = 0; i < len; i++) {
+      if (!this.children[i].equals(other.children[i])) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  guid: 0,
+
+  compile: function compile(program, options) {
+    this.sourceNode = [];
+    this.opcodes = [];
+    this.children = [];
+    this.options = options;
+    this.stringParams = options.stringParams;
+    this.trackIds = options.trackIds;
+
+    options.blockParams = options.blockParams || [];
+
+    // These changes will propagate to the other compiler components
+    var knownHelpers = options.knownHelpers;
+    options.knownHelpers = {
+      'helperMissing': true,
+      'blockHelperMissing': true,
+      'each': true,
+      'if': true,
+      'unless': true,
+      'with': true,
+      'log': true,
+      'lookup': true
+    };
+    if (knownHelpers) {
+      for (var _name in knownHelpers) {
+        /* istanbul ignore else */
+        if (_name in knownHelpers) {
+          options.knownHelpers[_name] = knownHelpers[_name];
+        }
+      }
+    }
+
+    return this.accept(program);
+  },
+
+  compileProgram: function compileProgram(program) {
+    var childCompiler = new this.compiler(),
+        // eslint-disable-line new-cap
+    result = childCompiler.compile(program, this.options),
+        guid = this.guid++;
+
+    this.usePartial = this.usePartial || result.usePartial;
+
+    this.children[guid] = result;
+    this.useDepths = this.useDepths || result.useDepths;
+
+    return guid;
+  },
+
+  accept: function accept(node) {
+    /* istanbul ignore next: Sanity code */
+    if (!this[node.type]) {
+      throw new _exception2['default']('Unknown type: ' + node.type, node);
+    }
+
+    this.sourceNode.unshift(node);
+    var ret = this[node.type](node);
+    this.sourceNode.shift();
+    return ret;
+  },
+
+  Program: function Program(program) {
+    this.options.blockParams.unshift(program.blockParams);
+
+    var body = program.body,
+        bodyLength = body.length;
+    for (var i = 0; i < bodyLength; i++) {
+      this.accept(body[i]);
+    }
+
+    this.options.blockParams.shift();
+
+    this.isSimple = bodyLength === 1;
+    this.blockParams = program.blockParams ? program.blockParams.length : 0;
+
+    return this;
+  },
+
+  BlockStatement: function BlockStatement(block) {
+    transformLiteralToPath(block);
+
+    var program = block.program,
+        inverse = block.inverse;
+
+    program = program && this.compileProgram(program);
+    inverse = inverse && this.compileProgram(inverse);
+
+    var type = this.classifySexpr(block);
+
+    if (type === 'helper') {
+      this.helperSexpr(block, program, inverse);
+    } else if (type === 'simple') {
+      this.simpleSexpr(block);
+
+      // now that the simple mustache is resolved, we need to
+      // evaluate it by executing `blockHelperMissing`
+      this.opcode('pushProgram', program);
+      this.opcode('pushProgram', inverse);
+      this.opcode('emptyHash');
+      this.opcode('blockValue', block.path.original);
+    } else {
+      this.ambiguousSexpr(block, program, inverse);
+
+      // now that the simple mustache is resolved, we need to
+      // evaluate it by executing `blockHelperMissing`
+      this.opcode('pushProgram', program);
+      this.opcode('pushProgram', inverse);
+      this.opcode('emptyHash');
+      this.opcode('ambiguousBlockValue');
+    }
+
+    this.opcode('append');
+  },
+
+  DecoratorBlock: function DecoratorBlock(decorator) {
+    var program = decorator.program && this.compileProgram(decorator.program);
+    var params = this.setupFullMustacheParams(decorator, program, undefined),
+        path = decorator.path;
+
+    this.useDecorators = true;
+    this.opcode('registerDecorator', params.length, path.original);
+  },
+
+  PartialStatement: function PartialStatement(partial) {
+    this.usePartial = true;
+
+    var program = partial.program;
+    if (program) {
+      program = this.compileProgram(partial.program);
+    }
+
+    var params = partial.params;
+    if (params.length > 1) {
+      throw new _exception2['default']('Unsupported number of partial arguments: ' + params.length, partial);
+    } else if (!params.length) {
+      if (this.options.explicitPartialContext) {
+        this.opcode('pushLiteral', 'undefined');
+      } else {
+        params.push({ type: 'PathExpression', parts: [], depth: 0 });
+      }
+    }
+
+    var partialName = partial.name.original,
+        isDynamic = partial.name.type === 'SubExpression';
+    if (isDynamic) {
+      this.accept(partial.name);
+    }
+
+    this.setupFullMustacheParams(partial, program, undefined, true);
+
+    var indent = partial.indent || '';
+    if (this.options.preventIndent && indent) {
+      this.opcode('appendContent', indent);
+      indent = '';
+    }
+
+    this.opcode('invokePartial', isDynamic, partialName, indent);
+    this.opcode('append');
+  },
+  PartialBlockStatement: function PartialBlockStatement(partialBlock) {
+    this.PartialStatement(partialBlock);
+  },
+
+  MustacheStatement: function MustacheStatement(mustache) {
+    this.SubExpression(mustache);
+
+    if (mustache.escaped && !this.options.noEscape) {
+      this.opcode('appendEscaped');
+    } else {
+      this.opcode('append');
+    }
+  },
+  Decorator: function Decorator(decorator) {
+    this.DecoratorBlock(decorator);
+  },
+
+  ContentStatement: function ContentStatement(content) {
+    if (content.value) {
+      this.opcode('appendContent', content.value);
+    }
+  },
+
+  CommentStatement: function CommentStatement() {},
+
+  SubExpression: function SubExpression(sexpr) {
+    transformLiteralToPath(sexpr);
+    var type = this.classifySexpr(sexpr);
+
+    if (type === 'simple') {
+      this.simpleSexpr(sexpr);
+    } else if (type === 'helper') {
+      this.helperSexpr(sexpr);
+    } else {
+      this.ambiguousSexpr(sexpr);
+    }
+  },
+  ambiguousSexpr: function ambiguousSexpr(sexpr, program, inverse) {
+    var path = sexpr.path,
+        name = path.parts[0],
+        isBlock = program != null || inverse != null;
+
+    this.opcode('getContext', path.depth);
+
+    this.opcode('pushProgram', program);
+    this.opcode('pushProgram', inverse);
+
+    path.strict = true;
+    this.accept(path);
+
+    this.opcode('invokeAmbiguous', name, isBlock);
+  },
+
+  simpleSexpr: function simpleSexpr(sexpr) {
+    var path = sexpr.path;
+    path.strict = true;
+    this.accept(path);
+    this.opcode('resolvePossibleLambda');
+  },
+
+  helperSexpr: function helperSexpr(sexpr, program, inverse) {
+    var params = this.setupFullMustacheParams(sexpr, program, inverse),
+        path = sexpr.path,
+        name = path.parts[0];
+
+    if (this.options.knownHelpers[name]) {
+      this.opcode('invokeKnownHelper', params.length, name);
+    } else if (this.options.knownHelpersOnly) {
+      throw new _exception2['default']('You specified knownHelpersOnly, but used the unknown helper ' + name, sexpr);
+    } else {
+      path.strict = true;
+      path.falsy = true;
+
+      this.accept(path);
+      this.opcode('invokeHelper', params.length, path.original, _ast2['default'].helpers.simpleId(path));
+    }
+  },
+
+  PathExpression: function PathExpression(path) {
+    this.addDepth(path.depth);
+    this.opcode('getContext', path.depth);
+
+    var name = path.parts[0],
+        scoped = _ast2['default'].helpers.scopedId(path),
+        blockParamId = !path.depth && !scoped && this.blockParamIndex(name);
+
+    if (blockParamId) {
+      this.opcode('lookupBlockParam', blockParamId, path.parts);
+    } else if (!name) {
+      // Context reference, i.e. `{{foo .}}` or `{{foo ..}}`
+      this.opcode('pushContext');
+    } else if (path.data) {
+      this.options.data = true;
+      this.opcode('lookupData', path.depth, path.parts, path.strict);
+    } else {
+      this.opcode('lookupOnContext', path.parts, path.falsy, path.strict, scoped);
+    }
+  },
+
+  StringLiteral: function StringLiteral(string) {
+    this.opcode('pushString', string.value);
+  },
+
+  NumberLiteral: function NumberLiteral(number) {
+    this.opcode('pushLiteral', number.value);
+  },
+
+  BooleanLiteral: function BooleanLiteral(bool) {
+    this.opcode('pushLiteral', bool.value);
+  },
+
+  UndefinedLiteral: function UndefinedLiteral() {
+    this.opcode('pushLiteral', 'undefined');
+  },
+
+  NullLiteral: function NullLiteral() {
+    this.opcode('pushLiteral', 'null');
+  },
+
+  Hash: function Hash(hash) {
+    var pairs = hash.pairs,
+        i = 0,
+        l = pairs.length;
+
+    this.opcode('pushHash');
+
+    for (; i < l; i++) {
+      this.pushParam(pairs[i].value);
+    }
+    while (i--) {
+      this.opcode('assignToHash', pairs[i].key);
+    }
+    this.opcode('popHash');
+  },
+
+  // HELPERS
+  opcode: function opcode(name) {
+    this.opcodes.push({ opcode: name, args: slice.call(arguments, 1), loc: this.sourceNode[0].loc });
+  },
+
+  addDepth: function addDepth(depth) {
+    if (!depth) {
+      return;
+    }
+
+    this.useDepths = true;
+  },
+
+  classifySexpr: function classifySexpr(sexpr) {
+    var isSimple = _ast2['default'].helpers.simpleId(sexpr.path);
+
+    var isBlockParam = isSimple && !!this.blockParamIndex(sexpr.path.parts[0]);
+
+    // a mustache is an eligible helper if:
+    // * its id is simple (a single part, not `this` or `..`)
+    var isHelper = !isBlockParam && _ast2['default'].helpers.helperExpression(sexpr);
+
+    // if a mustache is an eligible helper but not a definite
+    // helper, it is ambiguous, and will be resolved in a later
+    // pass or at runtime.
+    var isEligible = !isBlockParam && (isHelper || isSimple);
+
+    // if ambiguous, we can possibly resolve the ambiguity now
+    // An eligible helper is one that does not have a complex path, i.e. `this.foo`, `../foo` etc.
+    if (isEligible && !isHelper) {
+      var _name2 = sexpr.path.parts[0],
+          options = this.options;
+
+      if (options.knownHelpers[_name2]) {
+        isHelper = true;
+      } else if (options.knownHelpersOnly) {
+        isEligible = false;
+      }
+    }
+
+    if (isHelper) {
+      return 'helper';
+    } else if (isEligible) {
+      return 'ambiguous';
+    } else {
+      return 'simple';
+    }
+  },
+
+  pushParams: function pushParams(params) {
+    for (var i = 0, l = params.length; i < l; i++) {
+      this.pushParam(params[i]);
+    }
+  },
+
+  pushParam: function pushParam(val) {
+    var value = val.value != null ? val.value : val.original || '';
+
+    if (this.stringParams) {
+      if (value.replace) {
+        value = value.replace(/^(\.?\.\/)*/g, '').replace(/\//g, '.');
+      }
+
+      if (val.depth) {
+        this.addDepth(val.depth);
+      }
+      this.opcode('getContext', val.depth || 0);
+      this.opcode('pushStringParam', value, val.type);
+
+      if (val.type === 'SubExpression') {
+        // SubExpressions get evaluated and passed in
+        // in string params mode.
+        this.accept(val);
+      }
+    } else {
+      if (this.trackIds) {
+        var blockParamIndex = undefined;
+        if (val.parts && !_ast2['default'].helpers.scopedId(val) && !val.depth) {
+          blockParamIndex = this.blockParamIndex(val.parts[0]);
+        }
+        if (blockParamIndex) {
+          var blockParamChild = val.parts.slice(1).join('.');
+          this.opcode('pushId', 'BlockParam', blockParamIndex, blockParamChild);
+        } else {
+          value = val.original || value;
+          if (value.replace) {
+            value = value.replace(/^this(?:\.|$)/, '').replace(/^\.\//, '').replace(/^\.$/, '');
+          }
+
+          this.opcode('pushId', val.type, value);
+        }
+      }
+      this.accept(val);
+    }
+  },
+
+  setupFullMustacheParams: function setupFullMustacheParams(sexpr, program, inverse, omitEmpty) {
+    var params = sexpr.params;
+    this.pushParams(params);
+
+    this.opcode('pushProgram', program);
+    this.opcode('pushProgram', inverse);
+
+    if (sexpr.hash) {
+      this.accept(sexpr.hash);
+    } else {
+      this.opcode('emptyHash', omitEmpty);
+    }
+
+    return params;
+  },
+
+  blockParamIndex: function blockParamIndex(name) {
+    for (var depth = 0, len = this.options.blockParams.length; depth < len; depth++) {
+      var blockParams = this.options.blockParams[depth],
+          param = blockParams && _utils.indexOf(blockParams, name);
+      if (blockParams && param >= 0) {
+        return [depth, param];
+      }
+    }
+  }
+};
+
+function precompile(input, options, env) {
+  if (input == null || typeof input !== 'string' && input.type !== 'Program') {
+    throw new _exception2['default']('You must pass a string or Handlebars AST to Handlebars.precompile. You passed ' + input);
+  }
+
+  options = options || {};
+  if (!('data' in options)) {
+    options.data = true;
+  }
+  if (options.compat) {
+    options.useDepths = true;
+  }
+
+  var ast = env.parse(input, options),
+      environment = new env.Compiler().compile(ast, options);
+  return new env.JavaScriptCompiler().compile(environment, options);
+}
+
+function compile(input, options, env) {
+  if (options === undefined) options = {};
+
+  if (input == null || typeof input !== 'string' && input.type !== 'Program') {
+    throw new _exception2['default']('You must pass a string or Handlebars AST to Handlebars.compile. You passed ' + input);
+  }
+
+  if (!('data' in options)) {
+    options.data = true;
+  }
+  if (options.compat) {
+    options.useDepths = true;
+  }
+
+  var compiled = undefined;
+
+  function compileInput() {
+    var ast = env.parse(input, options),
+        environment = new env.Compiler().compile(ast, options),
+        templateSpec = new env.JavaScriptCompiler().compile(environment, options, undefined, true);
+    return env.template(templateSpec);
+  }
+
+  // Template is only compiled on first use and cached after that point.
+  function ret(context, execOptions) {
+    if (!compiled) {
+      compiled = compileInput();
+    }
+    return compiled.call(this, context, execOptions);
+  }
+  ret._setup = function (setupOptions) {
+    if (!compiled) {
+      compiled = compileInput();
+    }
+    return compiled._setup(setupOptions);
+  };
+  ret._child = function (i, data, blockParams, depths) {
+    if (!compiled) {
+      compiled = compileInput();
+    }
+    return compiled._child(i, data, blockParams, depths);
+  };
+  return ret;
+}
+
+function argEquals(a, b) {
+  if (a === b) {
+    return true;
+  }
+
+  if (_utils.isArray(a) && _utils.isArray(b) && a.length === b.length) {
+    for (var i = 0; i < a.length; i++) {
+      if (!argEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+function transformLiteralToPath(sexpr) {
+  if (!sexpr.path.parts) {
+    var literal = sexpr.path;
+    // Casting to string here to make false and 0 literal values play nicely with the rest
+    // of the system.
+    sexpr.path = {
+      type: 'PathExpression',
+      data: false,
+      depth: 0,
+      parts: [literal.original + ''],
+      original: literal.original + '',
+      loc: literal.loc
+    };
+  }
+}
+
+
+},{"../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js","./ast":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/ast.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/helpers.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.SourceLocation = SourceLocation;
+exports.id = id;
+exports.stripFlags = stripFlags;
+exports.stripComment = stripComment;
+exports.preparePath = preparePath;
+exports.prepareMustache = prepareMustache;
+exports.prepareRawBlock = prepareRawBlock;
+exports.prepareBlock = prepareBlock;
+exports.prepareProgram = prepareProgram;
+exports.preparePartialBlock = preparePartialBlock;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+function validateClose(open, close) {
+  close = close.path ? close.path.original : close;
+
+  if (open.path.original !== close) {
+    var errorNode = { loc: open.path.loc };
+
+    throw new _exception2['default'](open.path.original + " doesn't match " + close, errorNode);
+  }
+}
+
+function SourceLocation(source, locInfo) {
+  this.source = source;
+  this.start = {
+    line: locInfo.first_line,
+    column: locInfo.first_column
+  };
+  this.end = {
+    line: locInfo.last_line,
+    column: locInfo.last_column
+  };
+}
+
+function id(token) {
+  if (/^\[.*\]$/.test(token)) {
+    return token.substr(1, token.length - 2);
+  } else {
+    return token;
+  }
+}
+
+function stripFlags(open, close) {
+  return {
+    open: open.charAt(2) === '~',
+    close: close.charAt(close.length - 3) === '~'
+  };
+}
+
+function stripComment(comment) {
+  return comment.replace(/^\{\{~?\!-?-?/, '').replace(/-?-?~?\}\}$/, '');
+}
+
+function preparePath(data, parts, loc) {
+  loc = this.locInfo(loc);
+
+  var original = data ? '@' : '',
+      dig = [],
+      depth = 0,
+      depthString = '';
+
+  for (var i = 0, l = parts.length; i < l; i++) {
+    var part = parts[i].part,
+
+    // If we have [] syntax then we do not treat path references as operators,
+    // i.e. foo.[this] resolves to approximately context.foo['this']
+    isLiteral = parts[i].original !== part;
+    original += (parts[i].separator || '') + part;
+
+    if (!isLiteral && (part === '..' || part === '.' || part === 'this')) {
+      if (dig.length > 0) {
+        throw new _exception2['default']('Invalid path: ' + original, { loc: loc });
+      } else if (part === '..') {
+        depth++;
+        depthString += '../';
+      }
+    } else {
+      dig.push(part);
+    }
+  }
+
+  return {
+    type: 'PathExpression',
+    data: data,
+    depth: depth,
+    parts: dig,
+    original: original,
+    loc: loc
+  };
+}
+
+function prepareMustache(path, params, hash, open, strip, locInfo) {
+  // Must use charAt to support IE pre-10
+  var escapeFlag = open.charAt(3) || open.charAt(2),
+      escaped = escapeFlag !== '{' && escapeFlag !== '&';
+
+  var decorator = /\*/.test(open);
+  return {
+    type: decorator ? 'Decorator' : 'MustacheStatement',
+    path: path,
+    params: params,
+    hash: hash,
+    escaped: escaped,
+    strip: strip,
+    loc: this.locInfo(locInfo)
+  };
+}
+
+function prepareRawBlock(openRawBlock, contents, close, locInfo) {
+  validateClose(openRawBlock, close);
+
+  locInfo = this.locInfo(locInfo);
+  var program = {
+    type: 'Program',
+    body: contents,
+    strip: {},
+    loc: locInfo
+  };
+
+  return {
+    type: 'BlockStatement',
+    path: openRawBlock.path,
+    params: openRawBlock.params,
+    hash: openRawBlock.hash,
+    program: program,
+    openStrip: {},
+    inverseStrip: {},
+    closeStrip: {},
+    loc: locInfo
+  };
+}
+
+function prepareBlock(openBlock, program, inverseAndProgram, close, inverted, locInfo) {
+  if (close && close.path) {
+    validateClose(openBlock, close);
+  }
+
+  var decorator = /\*/.test(openBlock.open);
+
+  program.blockParams = openBlock.blockParams;
+
+  var inverse = undefined,
+      inverseStrip = undefined;
+
+  if (inverseAndProgram) {
+    if (decorator) {
+      throw new _exception2['default']('Unexpected inverse block on decorator', inverseAndProgram);
+    }
+
+    if (inverseAndProgram.chain) {
+      inverseAndProgram.program.body[0].closeStrip = close.strip;
+    }
+
+    inverseStrip = inverseAndProgram.strip;
+    inverse = inverseAndProgram.program;
+  }
+
+  if (inverted) {
+    inverted = inverse;
+    inverse = program;
+    program = inverted;
+  }
+
+  return {
+    type: decorator ? 'DecoratorBlock' : 'BlockStatement',
+    path: openBlock.path,
+    params: openBlock.params,
+    hash: openBlock.hash,
+    program: program,
+    inverse: inverse,
+    openStrip: openBlock.strip,
+    inverseStrip: inverseStrip,
+    closeStrip: close && close.strip,
+    loc: this.locInfo(locInfo)
+  };
+}
+
+function prepareProgram(statements, loc) {
+  if (!loc && statements.length) {
+    var firstLoc = statements[0].loc,
+        lastLoc = statements[statements.length - 1].loc;
+
+    /* istanbul ignore else */
+    if (firstLoc && lastLoc) {
+      loc = {
+        source: firstLoc.source,
+        start: {
+          line: firstLoc.start.line,
+          column: firstLoc.start.column
+        },
+        end: {
+          line: lastLoc.end.line,
+          column: lastLoc.end.column
+        }
+      };
+    }
+  }
+
+  return {
+    type: 'Program',
+    body: statements,
+    strip: {},
+    loc: loc
+  };
+}
+
+function preparePartialBlock(open, program, close, locInfo) {
+  validateClose(open, close);
+
+  return {
+    type: 'PartialBlockStatement',
+    name: open.path,
+    params: open.params,
+    hash: open.hash,
+    program: program,
+    openStrip: open.strip,
+    closeStrip: close && close.strip,
+    loc: this.locInfo(locInfo)
+  };
+}
+
+
+},{"../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/javascript-compiler.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _base = require('../base');
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+var _utils = require('../utils');
+
+var _codeGen = require('./code-gen');
+
+var _codeGen2 = _interopRequireDefault(_codeGen);
+
+function Literal(value) {
+  this.value = value;
+}
+
+function JavaScriptCompiler() {}
+
+JavaScriptCompiler.prototype = {
+  // PUBLIC API: You can override these methods in a subclass to provide
+  // alternative compiled forms for name lookup and buffering semantics
+  nameLookup: function nameLookup(parent, name /* , type*/) {
+    if (JavaScriptCompiler.isValidJavaScriptVariableName(name)) {
+      return [parent, '.', name];
+    } else {
+      return [parent, '[', JSON.stringify(name), ']'];
+    }
+  },
+  depthedLookup: function depthedLookup(name) {
+    return [this.aliasable('container.lookup'), '(depths, "', name, '")'];
+  },
+
+  compilerInfo: function compilerInfo() {
+    var revision = _base.COMPILER_REVISION,
+        versions = _base.REVISION_CHANGES[revision];
+    return [revision, versions];
+  },
+
+  appendToBuffer: function appendToBuffer(source, location, explicit) {
+    // Force a source as this simplifies the merge logic.
+    if (!_utils.isArray(source)) {
+      source = [source];
+    }
+    source = this.source.wrap(source, location);
+
+    if (this.environment.isSimple) {
+      return ['return ', source, ';'];
+    } else if (explicit) {
+      // This is a case where the buffer operation occurs as a child of another
+      // construct, generally braces. We have to explicitly output these buffer
+      // operations to ensure that the emitted code goes in the correct location.
+      return ['buffer += ', source, ';'];
+    } else {
+      source.appendToBuffer = true;
+      return source;
+    }
+  },
+
+  initializeBuffer: function initializeBuffer() {
+    return this.quotedString('');
+  },
+  // END PUBLIC API
+
+  compile: function compile(environment, options, context, asObject) {
+    this.environment = environment;
+    this.options = options;
+    this.stringParams = this.options.stringParams;
+    this.trackIds = this.options.trackIds;
+    this.precompile = !asObject;
+
+    this.name = this.environment.name;
+    this.isChild = !!context;
+    this.context = context || {
+      decorators: [],
+      programs: [],
+      environments: []
+    };
+
+    this.preamble();
+
+    this.stackSlot = 0;
+    this.stackVars = [];
+    this.aliases = {};
+    this.registers = { list: [] };
+    this.hashes = [];
+    this.compileStack = [];
+    this.inlineStack = [];
+    this.blockParams = [];
+
+    this.compileChildren(environment, options);
+
+    this.useDepths = this.useDepths || environment.useDepths || environment.useDecorators || this.options.compat;
+    this.useBlockParams = this.useBlockParams || environment.useBlockParams;
+
+    var opcodes = environment.opcodes,
+        opcode = undefined,
+        firstLoc = undefined,
+        i = undefined,
+        l = undefined;
+
+    for (i = 0, l = opcodes.length; i < l; i++) {
+      opcode = opcodes[i];
+
+      this.source.currentLocation = opcode.loc;
+      firstLoc = firstLoc || opcode.loc;
+      this[opcode.opcode].apply(this, opcode.args);
+    }
+
+    // Flush any trailing content that might be pending.
+    this.source.currentLocation = firstLoc;
+    this.pushSource('');
+
+    /* istanbul ignore next */
+    if (this.stackSlot || this.inlineStack.length || this.compileStack.length) {
+      throw new _exception2['default']('Compile completed with content left on stack');
+    }
+
+    if (!this.decorators.isEmpty()) {
+      this.useDecorators = true;
+
+      this.decorators.prepend('var decorators = container.decorators;\n');
+      this.decorators.push('return fn;');
+
+      if (asObject) {
+        this.decorators = Function.apply(this, ['fn', 'props', 'container', 'depth0', 'data', 'blockParams', 'depths', this.decorators.merge()]);
+      } else {
+        this.decorators.prepend('function(fn, props, container, depth0, data, blockParams, depths) {\n');
+        this.decorators.push('}\n');
+        this.decorators = this.decorators.merge();
+      }
+    } else {
+      this.decorators = undefined;
+    }
+
+    var fn = this.createFunctionContext(asObject);
+    if (!this.isChild) {
+      var ret = {
+        compiler: this.compilerInfo(),
+        main: fn
+      };
+
+      if (this.decorators) {
+        ret.main_d = this.decorators; // eslint-disable-line camelcase
+        ret.useDecorators = true;
+      }
+
+      var _context = this.context;
+      var programs = _context.programs;
+      var decorators = _context.decorators;
+
+      for (i = 0, l = programs.length; i < l; i++) {
+        if (programs[i]) {
+          ret[i] = programs[i];
+          if (decorators[i]) {
+            ret[i + '_d'] = decorators[i];
+            ret.useDecorators = true;
+          }
+        }
+      }
+
+      if (this.environment.usePartial) {
+        ret.usePartial = true;
+      }
+      if (this.options.data) {
+        ret.useData = true;
+      }
+      if (this.useDepths) {
+        ret.useDepths = true;
+      }
+      if (this.useBlockParams) {
+        ret.useBlockParams = true;
+      }
+      if (this.options.compat) {
+        ret.compat = true;
+      }
+
+      if (!asObject) {
+        ret.compiler = JSON.stringify(ret.compiler);
+
+        this.source.currentLocation = { start: { line: 1, column: 0 } };
+        ret = this.objectLiteral(ret);
+
+        if (options.srcName) {
+          ret = ret.toStringWithSourceMap({ file: options.destName });
+          ret.map = ret.map && ret.map.toString();
+        } else {
+          ret = ret.toString();
+        }
+      } else {
+        ret.compilerOptions = this.options;
+      }
+
+      return ret;
+    } else {
+      return fn;
+    }
+  },
+
+  preamble: function preamble() {
+    // track the last context pushed into place to allow skipping the
+    // getContext opcode when it would be a noop
+    this.lastContext = 0;
+    this.source = new _codeGen2['default'](this.options.srcName);
+    this.decorators = new _codeGen2['default'](this.options.srcName);
+  },
+
+  createFunctionContext: function createFunctionContext(asObject) {
+    var varDeclarations = '';
+
+    var locals = this.stackVars.concat(this.registers.list);
+    if (locals.length > 0) {
+      varDeclarations += ', ' + locals.join(', ');
+    }
+
+    // Generate minimizer alias mappings
+    //
+    // When using true SourceNodes, this will update all references to the given alias
+    // as the source nodes are reused in situ. For the non-source node compilation mode,
+    // aliases will not be used, but this case is already being run on the client and
+    // we aren't concern about minimizing the template size.
+    var aliasCount = 0;
+    for (var alias in this.aliases) {
+      // eslint-disable-line guard-for-in
+      var node = this.aliases[alias];
+
+      if (this.aliases.hasOwnProperty(alias) && node.children && node.referenceCount > 1) {
+        varDeclarations += ', alias' + ++aliasCount + '=' + alias;
+        node.children[0] = 'alias' + aliasCount;
+      }
+    }
+
+    var params = ['container', 'depth0', 'helpers', 'partials', 'data'];
+
+    if (this.useBlockParams || this.useDepths) {
+      params.push('blockParams');
+    }
+    if (this.useDepths) {
+      params.push('depths');
+    }
+
+    // Perform a second pass over the output to merge content when possible
+    var source = this.mergeSource(varDeclarations);
+
+    if (asObject) {
+      params.push(source);
+
+      return Function.apply(this, params);
+    } else {
+      return this.source.wrap(['function(', params.join(','), ') {\n  ', source, '}']);
+    }
+  },
+  mergeSource: function mergeSource(varDeclarations) {
+    var isSimple = this.environment.isSimple,
+        appendOnly = !this.forceBuffer,
+        appendFirst = undefined,
+        sourceSeen = undefined,
+        bufferStart = undefined,
+        bufferEnd = undefined;
+    this.source.each(function (line) {
+      if (line.appendToBuffer) {
+        if (bufferStart) {
+          line.prepend('  + ');
+        } else {
+          bufferStart = line;
+        }
+        bufferEnd = line;
+      } else {
+        if (bufferStart) {
+          if (!sourceSeen) {
+            appendFirst = true;
+          } else {
+            bufferStart.prepend('buffer += ');
+          }
+          bufferEnd.add(';');
+          bufferStart = bufferEnd = undefined;
+        }
+
+        sourceSeen = true;
+        if (!isSimple) {
+          appendOnly = false;
+        }
+      }
+    });
+
+    if (appendOnly) {
+      if (bufferStart) {
+        bufferStart.prepend('return ');
+        bufferEnd.add(';');
+      } else if (!sourceSeen) {
+        this.source.push('return "";');
+      }
+    } else {
+      varDeclarations += ', buffer = ' + (appendFirst ? '' : this.initializeBuffer());
+
+      if (bufferStart) {
+        bufferStart.prepend('return buffer + ');
+        bufferEnd.add(';');
+      } else {
+        this.source.push('return buffer;');
+      }
+    }
+
+    if (varDeclarations) {
+      this.source.prepend('var ' + varDeclarations.substring(2) + (appendFirst ? '' : ';\n'));
+    }
+
+    return this.source.merge();
+  },
+
+  // [blockValue]
+  //
+  // On stack, before: hash, inverse, program, value
+  // On stack, after: return value of blockHelperMissing
+  //
+  // The purpose of this opcode is to take a block of the form
+  // `{{#this.foo}}...{{/this.foo}}`, resolve the value of `foo`, and
+  // replace it on the stack with the result of properly
+  // invoking blockHelperMissing.
+  blockValue: function blockValue(name) {
+    var blockHelperMissing = this.aliasable('helpers.blockHelperMissing'),
+        params = [this.contextName(0)];
+    this.setupHelperArgs(name, 0, params);
+
+    var blockName = this.popStack();
+    params.splice(1, 0, blockName);
+
+    this.push(this.source.functionCall(blockHelperMissing, 'call', params));
+  },
+
+  // [ambiguousBlockValue]
+  //
+  // On stack, before: hash, inverse, program, value
+  // Compiler value, before: lastHelper=value of last found helper, if any
+  // On stack, after, if no lastHelper: same as [blockValue]
+  // On stack, after, if lastHelper: value
+  ambiguousBlockValue: function ambiguousBlockValue() {
+    // We're being a bit cheeky and reusing the options value from the prior exec
+    var blockHelperMissing = this.aliasable('helpers.blockHelperMissing'),
+        params = [this.contextName(0)];
+    this.setupHelperArgs('', 0, params, true);
+
+    this.flushInline();
+
+    var current = this.topStack();
+    params.splice(1, 0, current);
+
+    this.pushSource(['if (!', this.lastHelper, ') { ', current, ' = ', this.source.functionCall(blockHelperMissing, 'call', params), '}']);
+  },
+
+  // [appendContent]
+  //
+  // On stack, before: ...
+  // On stack, after: ...
+  //
+  // Appends the string value of `content` to the current buffer
+  appendContent: function appendContent(content) {
+    if (this.pendingContent) {
+      content = this.pendingContent + content;
+    } else {
+      this.pendingLocation = this.source.currentLocation;
+    }
+
+    this.pendingContent = content;
+  },
+
+  // [append]
+  //
+  // On stack, before: value, ...
+  // On stack, after: ...
+  //
+  // Coerces `value` to a String and appends it to the current buffer.
+  //
+  // If `value` is truthy, or 0, it is coerced into a string and appended
+  // Otherwise, the empty string is appended
+  append: function append() {
+    if (this.isInline()) {
+      this.replaceStack(function (current) {
+        return [' != null ? ', current, ' : ""'];
+      });
+
+      this.pushSource(this.appendToBuffer(this.popStack()));
+    } else {
+      var local = this.popStack();
+      this.pushSource(['if (', local, ' != null) { ', this.appendToBuffer(local, undefined, true), ' }']);
+      if (this.environment.isSimple) {
+        this.pushSource(['else { ', this.appendToBuffer("''", undefined, true), ' }']);
+      }
+    }
+  },
+
+  // [appendEscaped]
+  //
+  // On stack, before: value, ...
+  // On stack, after: ...
+  //
+  // Escape `value` and append it to the buffer
+  appendEscaped: function appendEscaped() {
+    this.pushSource(this.appendToBuffer([this.aliasable('container.escapeExpression'), '(', this.popStack(), ')']));
+  },
+
+  // [getContext]
+  //
+  // On stack, before: ...
+  // On stack, after: ...
+  // Compiler value, after: lastContext=depth
+  //
+  // Set the value of the `lastContext` compiler value to the depth
+  getContext: function getContext(depth) {
+    this.lastContext = depth;
+  },
+
+  // [pushContext]
+  //
+  // On stack, before: ...
+  // On stack, after: currentContext, ...
+  //
+  // Pushes the value of the current context onto the stack.
+  pushContext: function pushContext() {
+    this.pushStackLiteral(this.contextName(this.lastContext));
+  },
+
+  // [lookupOnContext]
+  //
+  // On stack, before: ...
+  // On stack, after: currentContext[name], ...
+  //
+  // Looks up the value of `name` on the current context and pushes
+  // it onto the stack.
+  lookupOnContext: function lookupOnContext(parts, falsy, strict, scoped) {
+    var i = 0;
+
+    if (!scoped && this.options.compat && !this.lastContext) {
+      // The depthed query is expected to handle the undefined logic for the root level that
+      // is implemented below, so we evaluate that directly in compat mode
+      this.push(this.depthedLookup(parts[i++]));
+    } else {
+      this.pushContext();
+    }
+
+    this.resolvePath('context', parts, i, falsy, strict);
+  },
+
+  // [lookupBlockParam]
+  //
+  // On stack, before: ...
+  // On stack, after: blockParam[name], ...
+  //
+  // Looks up the value of `parts` on the given block param and pushes
+  // it onto the stack.
+  lookupBlockParam: function lookupBlockParam(blockParamId, parts) {
+    this.useBlockParams = true;
+
+    this.push(['blockParams[', blockParamId[0], '][', blockParamId[1], ']']);
+    this.resolvePath('context', parts, 1);
+  },
+
+  // [lookupData]
+  //
+  // On stack, before: ...
+  // On stack, after: data, ...
+  //
+  // Push the data lookup operator
+  lookupData: function lookupData(depth, parts, strict) {
+    if (!depth) {
+      this.pushStackLiteral('data');
+    } else {
+      this.pushStackLiteral('container.data(data, ' + depth + ')');
+    }
+
+    this.resolvePath('data', parts, 0, true, strict);
+  },
+
+  resolvePath: function resolvePath(type, parts, i, falsy, strict) {
+    // istanbul ignore next
+
+    var _this = this;
+
+    if (this.options.strict || this.options.assumeObjects) {
+      this.push(strictLookup(this.options.strict && strict, this, parts, type));
+      return;
+    }
+
+    var len = parts.length;
+    for (; i < len; i++) {
+      /* eslint-disable no-loop-func */
+      this.replaceStack(function (current) {
+        var lookup = _this.nameLookup(current, parts[i], type);
+        // We want to ensure that zero and false are handled properly if the context (falsy flag)
+        // needs to have the special handling for these values.
+        if (!falsy) {
+          return [' != null ? ', lookup, ' : ', current];
+        } else {
+          // Otherwise we can use generic falsy handling
+          return [' && ', lookup];
+        }
+      });
+      /* eslint-enable no-loop-func */
+    }
+  },
+
+  // [resolvePossibleLambda]
+  //
+  // On stack, before: value, ...
+  // On stack, after: resolved value, ...
+  //
+  // If the `value` is a lambda, replace it on the stack by
+  // the return value of the lambda
+  resolvePossibleLambda: function resolvePossibleLambda() {
+    this.push([this.aliasable('container.lambda'), '(', this.popStack(), ', ', this.contextName(0), ')']);
+  },
+
+  // [pushStringParam]
+  //
+  // On stack, before: ...
+  // On stack, after: string, currentContext, ...
+  //
+  // This opcode is designed for use in string mode, which
+  // provides the string value of a parameter along with its
+  // depth rather than resolving it immediately.
+  pushStringParam: function pushStringParam(string, type) {
+    this.pushContext();
+    this.pushString(type);
+
+    // If it's a subexpression, the string result
+    // will be pushed after this opcode.
+    if (type !== 'SubExpression') {
+      if (typeof string === 'string') {
+        this.pushString(string);
+      } else {
+        this.pushStackLiteral(string);
+      }
+    }
+  },
+
+  emptyHash: function emptyHash(omitEmpty) {
+    if (this.trackIds) {
+      this.push('{}'); // hashIds
+    }
+    if (this.stringParams) {
+      this.push('{}'); // hashContexts
+      this.push('{}'); // hashTypes
+    }
+    this.pushStackLiteral(omitEmpty ? 'undefined' : '{}');
+  },
+  pushHash: function pushHash() {
+    if (this.hash) {
+      this.hashes.push(this.hash);
+    }
+    this.hash = { values: [], types: [], contexts: [], ids: [] };
+  },
+  popHash: function popHash() {
+    var hash = this.hash;
+    this.hash = this.hashes.pop();
+
+    if (this.trackIds) {
+      this.push(this.objectLiteral(hash.ids));
+    }
+    if (this.stringParams) {
+      this.push(this.objectLiteral(hash.contexts));
+      this.push(this.objectLiteral(hash.types));
+    }
+
+    this.push(this.objectLiteral(hash.values));
+  },
+
+  // [pushString]
+  //
+  // On stack, before: ...
+  // On stack, after: quotedString(string), ...
+  //
+  // Push a quoted version of `string` onto the stack
+  pushString: function pushString(string) {
+    this.pushStackLiteral(this.quotedString(string));
+  },
+
+  // [pushLiteral]
+  //
+  // On stack, before: ...
+  // On stack, after: value, ...
+  //
+  // Pushes a value onto the stack. This operation prevents
+  // the compiler from creating a temporary variable to hold
+  // it.
+  pushLiteral: function pushLiteral(value) {
+    this.pushStackLiteral(value);
+  },
+
+  // [pushProgram]
+  //
+  // On stack, before: ...
+  // On stack, after: program(guid), ...
+  //
+  // Push a program expression onto the stack. This takes
+  // a compile-time guid and converts it into a runtime-accessible
+  // expression.
+  pushProgram: function pushProgram(guid) {
+    if (guid != null) {
+      this.pushStackLiteral(this.programExpression(guid));
+    } else {
+      this.pushStackLiteral(null);
+    }
+  },
+
+  // [registerDecorator]
+  //
+  // On stack, before: hash, program, params..., ...
+  // On stack, after: ...
+  //
+  // Pops off the decorator's parameters, invokes the decorator,
+  // and inserts the decorator into the decorators list.
+  registerDecorator: function registerDecorator(paramSize, name) {
+    var foundDecorator = this.nameLookup('decorators', name, 'decorator'),
+        options = this.setupHelperArgs(name, paramSize);
+
+    this.decorators.push(['fn = ', this.decorators.functionCall(foundDecorator, '', ['fn', 'props', 'container', options]), ' || fn;']);
+  },
+
+  // [invokeHelper]
+  //
+  // On stack, before: hash, inverse, program, params..., ...
+  // On stack, after: result of helper invocation
+  //
+  // Pops off the helper's parameters, invokes the helper,
+  // and pushes the helper's return value onto the stack.
+  //
+  // If the helper is not found, `helperMissing` is called.
+  invokeHelper: function invokeHelper(paramSize, name, isSimple) {
+    var nonHelper = this.popStack(),
+        helper = this.setupHelper(paramSize, name),
+        simple = isSimple ? [helper.name, ' || '] : '';
+
+    var lookup = ['('].concat(simple, nonHelper);
+    if (!this.options.strict) {
+      lookup.push(' || ', this.aliasable('helpers.helperMissing'));
+    }
+    lookup.push(')');
+
+    this.push(this.source.functionCall(lookup, 'call', helper.callParams));
+  },
+
+  // [invokeKnownHelper]
+  //
+  // On stack, before: hash, inverse, program, params..., ...
+  // On stack, after: result of helper invocation
+  //
+  // This operation is used when the helper is known to exist,
+  // so a `helperMissing` fallback is not required.
+  invokeKnownHelper: function invokeKnownHelper(paramSize, name) {
+    var helper = this.setupHelper(paramSize, name);
+    this.push(this.source.functionCall(helper.name, 'call', helper.callParams));
+  },
+
+  // [invokeAmbiguous]
+  //
+  // On stack, before: hash, inverse, program, params..., ...
+  // On stack, after: result of disambiguation
+  //
+  // This operation is used when an expression like `{{foo}}`
+  // is provided, but we don't know at compile-time whether it
+  // is a helper or a path.
+  //
+  // This operation emits more code than the other options,
+  // and can be avoided by passing the `knownHelpers` and
+  // `knownHelpersOnly` flags at compile-time.
+  invokeAmbiguous: function invokeAmbiguous(name, helperCall) {
+    this.useRegister('helper');
+
+    var nonHelper = this.popStack();
+
+    this.emptyHash();
+    var helper = this.setupHelper(0, name, helperCall);
+
+    var helperName = this.lastHelper = this.nameLookup('helpers', name, 'helper');
+
+    var lookup = ['(', '(helper = ', helperName, ' || ', nonHelper, ')'];
+    if (!this.options.strict) {
+      lookup[0] = '(helper = ';
+      lookup.push(' != null ? helper : ', this.aliasable('helpers.helperMissing'));
+    }
+
+    this.push(['(', lookup, helper.paramsInit ? ['),(', helper.paramsInit] : [], '),', '(typeof helper === ', this.aliasable('"function"'), ' ? ', this.source.functionCall('helper', 'call', helper.callParams), ' : helper))']);
+  },
+
+  // [invokePartial]
+  //
+  // On stack, before: context, ...
+  // On stack after: result of partial invocation
+  //
+  // This operation pops off a context, invokes a partial with that context,
+  // and pushes the result of the invocation back.
+  invokePartial: function invokePartial(isDynamic, name, indent) {
+    var params = [],
+        options = this.setupParams(name, 1, params);
+
+    if (isDynamic) {
+      name = this.popStack();
+      delete options.name;
+    }
+
+    if (indent) {
+      options.indent = JSON.stringify(indent);
+    }
+    options.helpers = 'helpers';
+    options.partials = 'partials';
+    options.decorators = 'container.decorators';
+
+    if (!isDynamic) {
+      params.unshift(this.nameLookup('partials', name, 'partial'));
+    } else {
+      params.unshift(name);
+    }
+
+    if (this.options.compat) {
+      options.depths = 'depths';
+    }
+    options = this.objectLiteral(options);
+    params.push(options);
+
+    this.push(this.source.functionCall('container.invokePartial', '', params));
+  },
+
+  // [assignToHash]
+  //
+  // On stack, before: value, ..., hash, ...
+  // On stack, after: ..., hash, ...
+  //
+  // Pops a value off the stack and assigns it to the current hash
+  assignToHash: function assignToHash(key) {
+    var value = this.popStack(),
+        context = undefined,
+        type = undefined,
+        id = undefined;
+
+    if (this.trackIds) {
+      id = this.popStack();
+    }
+    if (this.stringParams) {
+      type = this.popStack();
+      context = this.popStack();
+    }
+
+    var hash = this.hash;
+    if (context) {
+      hash.contexts[key] = context;
+    }
+    if (type) {
+      hash.types[key] = type;
+    }
+    if (id) {
+      hash.ids[key] = id;
+    }
+    hash.values[key] = value;
+  },
+
+  pushId: function pushId(type, name, child) {
+    if (type === 'BlockParam') {
+      this.pushStackLiteral('blockParams[' + name[0] + '].path[' + name[1] + ']' + (child ? ' + ' + JSON.stringify('.' + child) : ''));
+    } else if (type === 'PathExpression') {
+      this.pushString(name);
+    } else if (type === 'SubExpression') {
+      this.pushStackLiteral('true');
+    } else {
+      this.pushStackLiteral('null');
+    }
+  },
+
+  // HELPERS
+
+  compiler: JavaScriptCompiler,
+
+  compileChildren: function compileChildren(environment, options) {
+    var children = environment.children,
+        child = undefined,
+        compiler = undefined;
+
+    for (var i = 0, l = children.length; i < l; i++) {
+      child = children[i];
+      compiler = new this.compiler(); // eslint-disable-line new-cap
+
+      var index = this.matchExistingProgram(child);
+
+      if (index == null) {
+        this.context.programs.push(''); // Placeholder to prevent name conflicts for nested children
+        index = this.context.programs.length;
+        child.index = index;
+        child.name = 'program' + index;
+        this.context.programs[index] = compiler.compile(child, options, this.context, !this.precompile);
+        this.context.decorators[index] = compiler.decorators;
+        this.context.environments[index] = child;
+
+        this.useDepths = this.useDepths || compiler.useDepths;
+        this.useBlockParams = this.useBlockParams || compiler.useBlockParams;
+      } else {
+        child.index = index;
+        child.name = 'program' + index;
+
+        this.useDepths = this.useDepths || child.useDepths;
+        this.useBlockParams = this.useBlockParams || child.useBlockParams;
+      }
+    }
+  },
+  matchExistingProgram: function matchExistingProgram(child) {
+    for (var i = 0, len = this.context.environments.length; i < len; i++) {
+      var environment = this.context.environments[i];
+      if (environment && environment.equals(child)) {
+        return i;
+      }
+    }
+  },
+
+  programExpression: function programExpression(guid) {
+    var child = this.environment.children[guid],
+        programParams = [child.index, 'data', child.blockParams];
+
+    if (this.useBlockParams || this.useDepths) {
+      programParams.push('blockParams');
+    }
+    if (this.useDepths) {
+      programParams.push('depths');
+    }
+
+    return 'container.program(' + programParams.join(', ') + ')';
+  },
+
+  useRegister: function useRegister(name) {
+    if (!this.registers[name]) {
+      this.registers[name] = true;
+      this.registers.list.push(name);
+    }
+  },
+
+  push: function push(expr) {
+    if (!(expr instanceof Literal)) {
+      expr = this.source.wrap(expr);
+    }
+
+    this.inlineStack.push(expr);
+    return expr;
+  },
+
+  pushStackLiteral: function pushStackLiteral(item) {
+    this.push(new Literal(item));
+  },
+
+  pushSource: function pushSource(source) {
+    if (this.pendingContent) {
+      this.source.push(this.appendToBuffer(this.source.quotedString(this.pendingContent), this.pendingLocation));
+      this.pendingContent = undefined;
+    }
+
+    if (source) {
+      this.source.push(source);
+    }
+  },
+
+  replaceStack: function replaceStack(callback) {
+    var prefix = ['('],
+        stack = undefined,
+        createdStack = undefined,
+        usedLiteral = undefined;
+
+    /* istanbul ignore next */
+    if (!this.isInline()) {
+      throw new _exception2['default']('replaceStack on non-inline');
+    }
+
+    // We want to merge the inline statement into the replacement statement via ','
+    var top = this.popStack(true);
+
+    if (top instanceof Literal) {
+      // Literals do not need to be inlined
+      stack = [top.value];
+      prefix = ['(', stack];
+      usedLiteral = true;
+    } else {
+      // Get or create the current stack name for use by the inline
+      createdStack = true;
+      var _name = this.incrStack();
+
+      prefix = ['((', this.push(_name), ' = ', top, ')'];
+      stack = this.topStack();
+    }
+
+    var item = callback.call(this, stack);
+
+    if (!usedLiteral) {
+      this.popStack();
+    }
+    if (createdStack) {
+      this.stackSlot--;
+    }
+    this.push(prefix.concat(item, ')'));
+  },
+
+  incrStack: function incrStack() {
+    this.stackSlot++;
+    if (this.stackSlot > this.stackVars.length) {
+      this.stackVars.push('stack' + this.stackSlot);
+    }
+    return this.topStackName();
+  },
+  topStackName: function topStackName() {
+    return 'stack' + this.stackSlot;
+  },
+  flushInline: function flushInline() {
+    var inlineStack = this.inlineStack;
+    this.inlineStack = [];
+    for (var i = 0, len = inlineStack.length; i < len; i++) {
+      var entry = inlineStack[i];
+      /* istanbul ignore if */
+      if (entry instanceof Literal) {
+        this.compileStack.push(entry);
+      } else {
+        var stack = this.incrStack();
+        this.pushSource([stack, ' = ', entry, ';']);
+        this.compileStack.push(stack);
+      }
+    }
+  },
+  isInline: function isInline() {
+    return this.inlineStack.length;
+  },
+
+  popStack: function popStack(wrapped) {
+    var inline = this.isInline(),
+        item = (inline ? this.inlineStack : this.compileStack).pop();
+
+    if (!wrapped && item instanceof Literal) {
+      return item.value;
+    } else {
+      if (!inline) {
+        /* istanbul ignore next */
+        if (!this.stackSlot) {
+          throw new _exception2['default']('Invalid stack pop');
+        }
+        this.stackSlot--;
+      }
+      return item;
+    }
+  },
+
+  topStack: function topStack() {
+    var stack = this.isInline() ? this.inlineStack : this.compileStack,
+        item = stack[stack.length - 1];
+
+    /* istanbul ignore if */
+    if (item instanceof Literal) {
+      return item.value;
+    } else {
+      return item;
+    }
+  },
+
+  contextName: function contextName(context) {
+    if (this.useDepths && context) {
+      return 'depths[' + context + ']';
+    } else {
+      return 'depth' + context;
+    }
+  },
+
+  quotedString: function quotedString(str) {
+    return this.source.quotedString(str);
+  },
+
+  objectLiteral: function objectLiteral(obj) {
+    return this.source.objectLiteral(obj);
+  },
+
+  aliasable: function aliasable(name) {
+    var ret = this.aliases[name];
+    if (ret) {
+      ret.referenceCount++;
+      return ret;
+    }
+
+    ret = this.aliases[name] = this.source.wrap(name);
+    ret.aliasable = true;
+    ret.referenceCount = 1;
+
+    return ret;
+  },
+
+  setupHelper: function setupHelper(paramSize, name, blockHelper) {
+    var params = [],
+        paramsInit = this.setupHelperArgs(name, paramSize, params, blockHelper);
+    var foundHelper = this.nameLookup('helpers', name, 'helper'),
+        callContext = this.aliasable(this.contextName(0) + ' != null ? ' + this.contextName(0) + ' : {}');
+
+    return {
+      params: params,
+      paramsInit: paramsInit,
+      name: foundHelper,
+      callParams: [callContext].concat(params)
+    };
+  },
+
+  setupParams: function setupParams(helper, paramSize, params) {
+    var options = {},
+        contexts = [],
+        types = [],
+        ids = [],
+        objectArgs = !params,
+        param = undefined;
+
+    if (objectArgs) {
+      params = [];
+    }
+
+    options.name = this.quotedString(helper);
+    options.hash = this.popStack();
+
+    if (this.trackIds) {
+      options.hashIds = this.popStack();
+    }
+    if (this.stringParams) {
+      options.hashTypes = this.popStack();
+      options.hashContexts = this.popStack();
+    }
+
+    var inverse = this.popStack(),
+        program = this.popStack();
+
+    // Avoid setting fn and inverse if neither are set. This allows
+    // helpers to do a check for `if (options.fn)`
+    if (program || inverse) {
+      options.fn = program || 'container.noop';
+      options.inverse = inverse || 'container.noop';
+    }
+
+    // The parameters go on to the stack in order (making sure that they are evaluated in order)
+    // so we need to pop them off the stack in reverse order
+    var i = paramSize;
+    while (i--) {
+      param = this.popStack();
+      params[i] = param;
+
+      if (this.trackIds) {
+        ids[i] = this.popStack();
+      }
+      if (this.stringParams) {
+        types[i] = this.popStack();
+        contexts[i] = this.popStack();
+      }
+    }
+
+    if (objectArgs) {
+      options.args = this.source.generateArray(params);
+    }
+
+    if (this.trackIds) {
+      options.ids = this.source.generateArray(ids);
+    }
+    if (this.stringParams) {
+      options.types = this.source.generateArray(types);
+      options.contexts = this.source.generateArray(contexts);
+    }
+
+    if (this.options.data) {
+      options.data = 'data';
+    }
+    if (this.useBlockParams) {
+      options.blockParams = 'blockParams';
+    }
+    return options;
+  },
+
+  setupHelperArgs: function setupHelperArgs(helper, paramSize, params, useRegister) {
+    var options = this.setupParams(helper, paramSize, params);
+    options = this.objectLiteral(options);
+    if (useRegister) {
+      this.useRegister('options');
+      params.push('options');
+      return ['options=', options];
+    } else if (params) {
+      params.push(options);
+      return '';
+    } else {
+      return options;
+    }
+  }
+};
+
+(function () {
+  var reservedWords = ('break else new var' + ' case finally return void' + ' catch for switch while' + ' continue function this with' + ' default if throw' + ' delete in try' + ' do instanceof typeof' + ' abstract enum int short' + ' boolean export interface static' + ' byte extends long super' + ' char final native synchronized' + ' class float package throws' + ' const goto private transient' + ' debugger implements protected volatile' + ' double import public let yield await' + ' null true false').split(' ');
+
+  var compilerWords = JavaScriptCompiler.RESERVED_WORDS = {};
+
+  for (var i = 0, l = reservedWords.length; i < l; i++) {
+    compilerWords[reservedWords[i]] = true;
+  }
+})();
+
+JavaScriptCompiler.isValidJavaScriptVariableName = function (name) {
+  return !JavaScriptCompiler.RESERVED_WORDS[name] && /^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(name);
+};
+
+function strictLookup(requireTerminal, compiler, parts, type) {
+  var stack = compiler.popStack(),
+      i = 0,
+      len = parts.length;
+  if (requireTerminal) {
+    len--;
+  }
+
+  for (; i < len; i++) {
+    stack = compiler.nameLookup(stack, parts[i], type);
+  }
+
+  if (requireTerminal) {
+    return [compiler.aliasable('container.strict'), '(', stack, ', ', compiler.quotedString(parts[i]), ')'];
+  } else {
+    return stack;
+  }
+}
+
+exports['default'] = JavaScriptCompiler;
+module.exports = exports['default'];
+
+
+},{"../base":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/base.js","../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js","./code-gen":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/code-gen.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/parser.js":[function(require,module,exports){
+/* istanbul ignore next */
+/* Jison generated parser */
+"use strict";
+
+var handlebars = (function () {
+    var parser = { trace: function trace() {},
+        yy: {},
+        symbols_: { "error": 2, "root": 3, "program": 4, "EOF": 5, "program_repetition0": 6, "statement": 7, "mustache": 8, "block": 9, "rawBlock": 10, "partial": 11, "partialBlock": 12, "content": 13, "COMMENT": 14, "CONTENT": 15, "openRawBlock": 16, "rawBlock_repetition_plus0": 17, "END_RAW_BLOCK": 18, "OPEN_RAW_BLOCK": 19, "helperName": 20, "openRawBlock_repetition0": 21, "openRawBlock_option0": 22, "CLOSE_RAW_BLOCK": 23, "openBlock": 24, "block_option0": 25, "closeBlock": 26, "openInverse": 27, "block_option1": 28, "OPEN_BLOCK": 29, "openBlock_repetition0": 30, "openBlock_option0": 31, "openBlock_option1": 32, "CLOSE": 33, "OPEN_INVERSE": 34, "openInverse_repetition0": 35, "openInverse_option0": 36, "openInverse_option1": 37, "openInverseChain": 38, "OPEN_INVERSE_CHAIN": 39, "openInverseChain_repetition0": 40, "openInverseChain_option0": 41, "openInverseChain_option1": 42, "inverseAndProgram": 43, "INVERSE": 44, "inverseChain": 45, "inverseChain_option0": 46, "OPEN_ENDBLOCK": 47, "OPEN": 48, "mustache_repetition0": 49, "mustache_option0": 50, "OPEN_UNESCAPED": 51, "mustache_repetition1": 52, "mustache_option1": 53, "CLOSE_UNESCAPED": 54, "OPEN_PARTIAL": 55, "partialName": 56, "partial_repetition0": 57, "partial_option0": 58, "openPartialBlock": 59, "OPEN_PARTIAL_BLOCK": 60, "openPartialBlock_repetition0": 61, "openPartialBlock_option0": 62, "param": 63, "sexpr": 64, "OPEN_SEXPR": 65, "sexpr_repetition0": 66, "sexpr_option0": 67, "CLOSE_SEXPR": 68, "hash": 69, "hash_repetition_plus0": 70, "hashSegment": 71, "ID": 72, "EQUALS": 73, "blockParams": 74, "OPEN_BLOCK_PARAMS": 75, "blockParams_repetition_plus0": 76, "CLOSE_BLOCK_PARAMS": 77, "path": 78, "dataName": 79, "STRING": 80, "NUMBER": 81, "BOOLEAN": 82, "UNDEFINED": 83, "NULL": 84, "DATA": 85, "pathSegments": 86, "SEP": 87, "$accept": 0, "$end": 1 },
+        terminals_: { 2: "error", 5: "EOF", 14: "COMMENT", 15: "CONTENT", 18: "END_RAW_BLOCK", 19: "OPEN_RAW_BLOCK", 23: "CLOSE_RAW_BLOCK", 29: "OPEN_BLOCK", 33: "CLOSE", 34: "OPEN_INVERSE", 39: "OPEN_INVERSE_CHAIN", 44: "INVERSE", 47: "OPEN_ENDBLOCK", 48: "OPEN", 51: "OPEN_UNESCAPED", 54: "CLOSE_UNESCAPED", 55: "OPEN_PARTIAL", 60: "OPEN_PARTIAL_BLOCK", 65: "OPEN_SEXPR", 68: "CLOSE_SEXPR", 72: "ID", 73: "EQUALS", 75: "OPEN_BLOCK_PARAMS", 77: "CLOSE_BLOCK_PARAMS", 80: "STRING", 81: "NUMBER", 82: "BOOLEAN", 83: "UNDEFINED", 84: "NULL", 85: "DATA", 87: "SEP" },
+        productions_: [0, [3, 2], [4, 1], [7, 1], [7, 1], [7, 1], [7, 1], [7, 1], [7, 1], [7, 1], [13, 1], [10, 3], [16, 5], [9, 4], [9, 4], [24, 6], [27, 6], [38, 6], [43, 2], [45, 3], [45, 1], [26, 3], [8, 5], [8, 5], [11, 5], [12, 3], [59, 5], [63, 1], [63, 1], [64, 5], [69, 1], [71, 3], [74, 3], [20, 1], [20, 1], [20, 1], [20, 1], [20, 1], [20, 1], [20, 1], [56, 1], [56, 1], [79, 2], [78, 1], [86, 3], [86, 1], [6, 0], [6, 2], [17, 1], [17, 2], [21, 0], [21, 2], [22, 0], [22, 1], [25, 0], [25, 1], [28, 0], [28, 1], [30, 0], [30, 2], [31, 0], [31, 1], [32, 0], [32, 1], [35, 0], [35, 2], [36, 0], [36, 1], [37, 0], [37, 1], [40, 0], [40, 2], [41, 0], [41, 1], [42, 0], [42, 1], [46, 0], [46, 1], [49, 0], [49, 2], [50, 0], [50, 1], [52, 0], [52, 2], [53, 0], [53, 1], [57, 0], [57, 2], [58, 0], [58, 1], [61, 0], [61, 2], [62, 0], [62, 1], [66, 0], [66, 2], [67, 0], [67, 1], [70, 1], [70, 2], [76, 1], [76, 2]],
+        performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate, $$, _$
+        /**/) {
+
+            var $0 = $$.length - 1;
+            switch (yystate) {
+                case 1:
+                    return $$[$0 - 1];
+                    break;
+                case 2:
+                    this.$ = yy.prepareProgram($$[$0]);
+                    break;
+                case 3:
+                    this.$ = $$[$0];
+                    break;
+                case 4:
+                    this.$ = $$[$0];
+                    break;
+                case 5:
+                    this.$ = $$[$0];
+                    break;
+                case 6:
+                    this.$ = $$[$0];
+                    break;
+                case 7:
+                    this.$ = $$[$0];
+                    break;
+                case 8:
+                    this.$ = $$[$0];
+                    break;
+                case 9:
+                    this.$ = {
+                        type: 'CommentStatement',
+                        value: yy.stripComment($$[$0]),
+                        strip: yy.stripFlags($$[$0], $$[$0]),
+                        loc: yy.locInfo(this._$)
+                    };
+
+                    break;
+                case 10:
+                    this.$ = {
+                        type: 'ContentStatement',
+                        original: $$[$0],
+                        value: $$[$0],
+                        loc: yy.locInfo(this._$)
+                    };
+
+                    break;
+                case 11:
+                    this.$ = yy.prepareRawBlock($$[$0 - 2], $$[$0 - 1], $$[$0], this._$);
+                    break;
+                case 12:
+                    this.$ = { path: $$[$0 - 3], params: $$[$0 - 2], hash: $$[$0 - 1] };
+                    break;
+                case 13:
+                    this.$ = yy.prepareBlock($$[$0 - 3], $$[$0 - 2], $$[$0 - 1], $$[$0], false, this._$);
+                    break;
+                case 14:
+                    this.$ = yy.prepareBlock($$[$0 - 3], $$[$0 - 2], $$[$0 - 1], $$[$0], true, this._$);
+                    break;
+                case 15:
+                    this.$ = { open: $$[$0 - 5], path: $$[$0 - 4], params: $$[$0 - 3], hash: $$[$0 - 2], blockParams: $$[$0 - 1], strip: yy.stripFlags($$[$0 - 5], $$[$0]) };
+                    break;
+                case 16:
+                    this.$ = { path: $$[$0 - 4], params: $$[$0 - 3], hash: $$[$0 - 2], blockParams: $$[$0 - 1], strip: yy.stripFlags($$[$0 - 5], $$[$0]) };
+                    break;
+                case 17:
+                    this.$ = { path: $$[$0 - 4], params: $$[$0 - 3], hash: $$[$0 - 2], blockParams: $$[$0 - 1], strip: yy.stripFlags($$[$0 - 5], $$[$0]) };
+                    break;
+                case 18:
+                    this.$ = { strip: yy.stripFlags($$[$0 - 1], $$[$0 - 1]), program: $$[$0] };
+                    break;
+                case 19:
+                    var inverse = yy.prepareBlock($$[$0 - 2], $$[$0 - 1], $$[$0], $$[$0], false, this._$),
+                        program = yy.prepareProgram([inverse], $$[$0 - 1].loc);
+                    program.chained = true;
+
+                    this.$ = { strip: $$[$0 - 2].strip, program: program, chain: true };
+
+                    break;
+                case 20:
+                    this.$ = $$[$0];
+                    break;
+                case 21:
+                    this.$ = { path: $$[$0 - 1], strip: yy.stripFlags($$[$0 - 2], $$[$0]) };
+                    break;
+                case 22:
+                    this.$ = yy.prepareMustache($$[$0 - 3], $$[$0 - 2], $$[$0 - 1], $$[$0 - 4], yy.stripFlags($$[$0 - 4], $$[$0]), this._$);
+                    break;
+                case 23:
+                    this.$ = yy.prepareMustache($$[$0 - 3], $$[$0 - 2], $$[$0 - 1], $$[$0 - 4], yy.stripFlags($$[$0 - 4], $$[$0]), this._$);
+                    break;
+                case 24:
+                    this.$ = {
+                        type: 'PartialStatement',
+                        name: $$[$0 - 3],
+                        params: $$[$0 - 2],
+                        hash: $$[$0 - 1],
+                        indent: '',
+                        strip: yy.stripFlags($$[$0 - 4], $$[$0]),
+                        loc: yy.locInfo(this._$)
+                    };
+
+                    break;
+                case 25:
+                    this.$ = yy.preparePartialBlock($$[$0 - 2], $$[$0 - 1], $$[$0], this._$);
+                    break;
+                case 26:
+                    this.$ = { path: $$[$0 - 3], params: $$[$0 - 2], hash: $$[$0 - 1], strip: yy.stripFlags($$[$0 - 4], $$[$0]) };
+                    break;
+                case 27:
+                    this.$ = $$[$0];
+                    break;
+                case 28:
+                    this.$ = $$[$0];
+                    break;
+                case 29:
+                    this.$ = {
+                        type: 'SubExpression',
+                        path: $$[$0 - 3],
+                        params: $$[$0 - 2],
+                        hash: $$[$0 - 1],
+                        loc: yy.locInfo(this._$)
+                    };
+
+                    break;
+                case 30:
+                    this.$ = { type: 'Hash', pairs: $$[$0], loc: yy.locInfo(this._$) };
+                    break;
+                case 31:
+                    this.$ = { type: 'HashPair', key: yy.id($$[$0 - 2]), value: $$[$0], loc: yy.locInfo(this._$) };
+                    break;
+                case 32:
+                    this.$ = yy.id($$[$0 - 1]);
+                    break;
+                case 33:
+                    this.$ = $$[$0];
+                    break;
+                case 34:
+                    this.$ = $$[$0];
+                    break;
+                case 35:
+                    this.$ = { type: 'StringLiteral', value: $$[$0], original: $$[$0], loc: yy.locInfo(this._$) };
+                    break;
+                case 36:
+                    this.$ = { type: 'NumberLiteral', value: Number($$[$0]), original: Number($$[$0]), loc: yy.locInfo(this._$) };
+                    break;
+                case 37:
+                    this.$ = { type: 'BooleanLiteral', value: $$[$0] === 'true', original: $$[$0] === 'true', loc: yy.locInfo(this._$) };
+                    break;
+                case 38:
+                    this.$ = { type: 'UndefinedLiteral', original: undefined, value: undefined, loc: yy.locInfo(this._$) };
+                    break;
+                case 39:
+                    this.$ = { type: 'NullLiteral', original: null, value: null, loc: yy.locInfo(this._$) };
+                    break;
+                case 40:
+                    this.$ = $$[$0];
+                    break;
+                case 41:
+                    this.$ = $$[$0];
+                    break;
+                case 42:
+                    this.$ = yy.preparePath(true, $$[$0], this._$);
+                    break;
+                case 43:
+                    this.$ = yy.preparePath(false, $$[$0], this._$);
+                    break;
+                case 44:
+                    $$[$0 - 2].push({ part: yy.id($$[$0]), original: $$[$0], separator: $$[$0 - 1] });this.$ = $$[$0 - 2];
+                    break;
+                case 45:
+                    this.$ = [{ part: yy.id($$[$0]), original: $$[$0] }];
+                    break;
+                case 46:
+                    this.$ = [];
+                    break;
+                case 47:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 48:
+                    this.$ = [$$[$0]];
+                    break;
+                case 49:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 50:
+                    this.$ = [];
+                    break;
+                case 51:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 58:
+                    this.$ = [];
+                    break;
+                case 59:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 64:
+                    this.$ = [];
+                    break;
+                case 65:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 70:
+                    this.$ = [];
+                    break;
+                case 71:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 78:
+                    this.$ = [];
+                    break;
+                case 79:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 82:
+                    this.$ = [];
+                    break;
+                case 83:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 86:
+                    this.$ = [];
+                    break;
+                case 87:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 90:
+                    this.$ = [];
+                    break;
+                case 91:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 94:
+                    this.$ = [];
+                    break;
+                case 95:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 98:
+                    this.$ = [$$[$0]];
+                    break;
+                case 99:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+                case 100:
+                    this.$ = [$$[$0]];
+                    break;
+                case 101:
+                    $$[$0 - 1].push($$[$0]);
+                    break;
+            }
+        },
+        table: [{ 3: 1, 4: 2, 5: [2, 46], 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 1: [3] }, { 5: [1, 4] }, { 5: [2, 2], 7: 5, 8: 6, 9: 7, 10: 8, 11: 9, 12: 10, 13: 11, 14: [1, 12], 15: [1, 20], 16: 17, 19: [1, 23], 24: 15, 27: 16, 29: [1, 21], 34: [1, 22], 39: [2, 2], 44: [2, 2], 47: [2, 2], 48: [1, 13], 51: [1, 14], 55: [1, 18], 59: 19, 60: [1, 24] }, { 1: [2, 1] }, { 5: [2, 47], 14: [2, 47], 15: [2, 47], 19: [2, 47], 29: [2, 47], 34: [2, 47], 39: [2, 47], 44: [2, 47], 47: [2, 47], 48: [2, 47], 51: [2, 47], 55: [2, 47], 60: [2, 47] }, { 5: [2, 3], 14: [2, 3], 15: [2, 3], 19: [2, 3], 29: [2, 3], 34: [2, 3], 39: [2, 3], 44: [2, 3], 47: [2, 3], 48: [2, 3], 51: [2, 3], 55: [2, 3], 60: [2, 3] }, { 5: [2, 4], 14: [2, 4], 15: [2, 4], 19: [2, 4], 29: [2, 4], 34: [2, 4], 39: [2, 4], 44: [2, 4], 47: [2, 4], 48: [2, 4], 51: [2, 4], 55: [2, 4], 60: [2, 4] }, { 5: [2, 5], 14: [2, 5], 15: [2, 5], 19: [2, 5], 29: [2, 5], 34: [2, 5], 39: [2, 5], 44: [2, 5], 47: [2, 5], 48: [2, 5], 51: [2, 5], 55: [2, 5], 60: [2, 5] }, { 5: [2, 6], 14: [2, 6], 15: [2, 6], 19: [2, 6], 29: [2, 6], 34: [2, 6], 39: [2, 6], 44: [2, 6], 47: [2, 6], 48: [2, 6], 51: [2, 6], 55: [2, 6], 60: [2, 6] }, { 5: [2, 7], 14: [2, 7], 15: [2, 7], 19: [2, 7], 29: [2, 7], 34: [2, 7], 39: [2, 7], 44: [2, 7], 47: [2, 7], 48: [2, 7], 51: [2, 7], 55: [2, 7], 60: [2, 7] }, { 5: [2, 8], 14: [2, 8], 15: [2, 8], 19: [2, 8], 29: [2, 8], 34: [2, 8], 39: [2, 8], 44: [2, 8], 47: [2, 8], 48: [2, 8], 51: [2, 8], 55: [2, 8], 60: [2, 8] }, { 5: [2, 9], 14: [2, 9], 15: [2, 9], 19: [2, 9], 29: [2, 9], 34: [2, 9], 39: [2, 9], 44: [2, 9], 47: [2, 9], 48: [2, 9], 51: [2, 9], 55: [2, 9], 60: [2, 9] }, { 20: 25, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 36, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 4: 37, 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 39: [2, 46], 44: [2, 46], 47: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 4: 38, 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 44: [2, 46], 47: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 13: 40, 15: [1, 20], 17: 39 }, { 20: 42, 56: 41, 64: 43, 65: [1, 44], 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 4: 45, 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 47: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 5: [2, 10], 14: [2, 10], 15: [2, 10], 18: [2, 10], 19: [2, 10], 29: [2, 10], 34: [2, 10], 39: [2, 10], 44: [2, 10], 47: [2, 10], 48: [2, 10], 51: [2, 10], 55: [2, 10], 60: [2, 10] }, { 20: 46, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 47, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 48, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 42, 56: 49, 64: 43, 65: [1, 44], 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 33: [2, 78], 49: 50, 65: [2, 78], 72: [2, 78], 80: [2, 78], 81: [2, 78], 82: [2, 78], 83: [2, 78], 84: [2, 78], 85: [2, 78] }, { 23: [2, 33], 33: [2, 33], 54: [2, 33], 65: [2, 33], 68: [2, 33], 72: [2, 33], 75: [2, 33], 80: [2, 33], 81: [2, 33], 82: [2, 33], 83: [2, 33], 84: [2, 33], 85: [2, 33] }, { 23: [2, 34], 33: [2, 34], 54: [2, 34], 65: [2, 34], 68: [2, 34], 72: [2, 34], 75: [2, 34], 80: [2, 34], 81: [2, 34], 82: [2, 34], 83: [2, 34], 84: [2, 34], 85: [2, 34] }, { 23: [2, 35], 33: [2, 35], 54: [2, 35], 65: [2, 35], 68: [2, 35], 72: [2, 35], 75: [2, 35], 80: [2, 35], 81: [2, 35], 82: [2, 35], 83: [2, 35], 84: [2, 35], 85: [2, 35] }, { 23: [2, 36], 33: [2, 36], 54: [2, 36], 65: [2, 36], 68: [2, 36], 72: [2, 36], 75: [2, 36], 80: [2, 36], 81: [2, 36], 82: [2, 36], 83: [2, 36], 84: [2, 36], 85: [2, 36] }, { 23: [2, 37], 33: [2, 37], 54: [2, 37], 65: [2, 37], 68: [2, 37], 72: [2, 37], 75: [2, 37], 80: [2, 37], 81: [2, 37], 82: [2, 37], 83: [2, 37], 84: [2, 37], 85: [2, 37] }, { 23: [2, 38], 33: [2, 38], 54: [2, 38], 65: [2, 38], 68: [2, 38], 72: [2, 38], 75: [2, 38], 80: [2, 38], 81: [2, 38], 82: [2, 38], 83: [2, 38], 84: [2, 38], 85: [2, 38] }, { 23: [2, 39], 33: [2, 39], 54: [2, 39], 65: [2, 39], 68: [2, 39], 72: [2, 39], 75: [2, 39], 80: [2, 39], 81: [2, 39], 82: [2, 39], 83: [2, 39], 84: [2, 39], 85: [2, 39] }, { 23: [2, 43], 33: [2, 43], 54: [2, 43], 65: [2, 43], 68: [2, 43], 72: [2, 43], 75: [2, 43], 80: [2, 43], 81: [2, 43], 82: [2, 43], 83: [2, 43], 84: [2, 43], 85: [2, 43], 87: [1, 51] }, { 72: [1, 35], 86: 52 }, { 23: [2, 45], 33: [2, 45], 54: [2, 45], 65: [2, 45], 68: [2, 45], 72: [2, 45], 75: [2, 45], 80: [2, 45], 81: [2, 45], 82: [2, 45], 83: [2, 45], 84: [2, 45], 85: [2, 45], 87: [2, 45] }, { 52: 53, 54: [2, 82], 65: [2, 82], 72: [2, 82], 80: [2, 82], 81: [2, 82], 82: [2, 82], 83: [2, 82], 84: [2, 82], 85: [2, 82] }, { 25: 54, 38: 56, 39: [1, 58], 43: 57, 44: [1, 59], 45: 55, 47: [2, 54] }, { 28: 60, 43: 61, 44: [1, 59], 47: [2, 56] }, { 13: 63, 15: [1, 20], 18: [1, 62] }, { 15: [2, 48], 18: [2, 48] }, { 33: [2, 86], 57: 64, 65: [2, 86], 72: [2, 86], 80: [2, 86], 81: [2, 86], 82: [2, 86], 83: [2, 86], 84: [2, 86], 85: [2, 86] }, { 33: [2, 40], 65: [2, 40], 72: [2, 40], 80: [2, 40], 81: [2, 40], 82: [2, 40], 83: [2, 40], 84: [2, 40], 85: [2, 40] }, { 33: [2, 41], 65: [2, 41], 72: [2, 41], 80: [2, 41], 81: [2, 41], 82: [2, 41], 83: [2, 41], 84: [2, 41], 85: [2, 41] }, { 20: 65, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 26: 66, 47: [1, 67] }, { 30: 68, 33: [2, 58], 65: [2, 58], 72: [2, 58], 75: [2, 58], 80: [2, 58], 81: [2, 58], 82: [2, 58], 83: [2, 58], 84: [2, 58], 85: [2, 58] }, { 33: [2, 64], 35: 69, 65: [2, 64], 72: [2, 64], 75: [2, 64], 80: [2, 64], 81: [2, 64], 82: [2, 64], 83: [2, 64], 84: [2, 64], 85: [2, 64] }, { 21: 70, 23: [2, 50], 65: [2, 50], 72: [2, 50], 80: [2, 50], 81: [2, 50], 82: [2, 50], 83: [2, 50], 84: [2, 50], 85: [2, 50] }, { 33: [2, 90], 61: 71, 65: [2, 90], 72: [2, 90], 80: [2, 90], 81: [2, 90], 82: [2, 90], 83: [2, 90], 84: [2, 90], 85: [2, 90] }, { 20: 75, 33: [2, 80], 50: 72, 63: 73, 64: 76, 65: [1, 44], 69: 74, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 72: [1, 80] }, { 23: [2, 42], 33: [2, 42], 54: [2, 42], 65: [2, 42], 68: [2, 42], 72: [2, 42], 75: [2, 42], 80: [2, 42], 81: [2, 42], 82: [2, 42], 83: [2, 42], 84: [2, 42], 85: [2, 42], 87: [1, 51] }, { 20: 75, 53: 81, 54: [2, 84], 63: 82, 64: 76, 65: [1, 44], 69: 83, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 26: 84, 47: [1, 67] }, { 47: [2, 55] }, { 4: 85, 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 39: [2, 46], 44: [2, 46], 47: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 47: [2, 20] }, { 20: 86, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 4: 87, 6: 3, 14: [2, 46], 15: [2, 46], 19: [2, 46], 29: [2, 46], 34: [2, 46], 47: [2, 46], 48: [2, 46], 51: [2, 46], 55: [2, 46], 60: [2, 46] }, { 26: 88, 47: [1, 67] }, { 47: [2, 57] }, { 5: [2, 11], 14: [2, 11], 15: [2, 11], 19: [2, 11], 29: [2, 11], 34: [2, 11], 39: [2, 11], 44: [2, 11], 47: [2, 11], 48: [2, 11], 51: [2, 11], 55: [2, 11], 60: [2, 11] }, { 15: [2, 49], 18: [2, 49] }, { 20: 75, 33: [2, 88], 58: 89, 63: 90, 64: 76, 65: [1, 44], 69: 91, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 65: [2, 94], 66: 92, 68: [2, 94], 72: [2, 94], 80: [2, 94], 81: [2, 94], 82: [2, 94], 83: [2, 94], 84: [2, 94], 85: [2, 94] }, { 5: [2, 25], 14: [2, 25], 15: [2, 25], 19: [2, 25], 29: [2, 25], 34: [2, 25], 39: [2, 25], 44: [2, 25], 47: [2, 25], 48: [2, 25], 51: [2, 25], 55: [2, 25], 60: [2, 25] }, { 20: 93, 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 75, 31: 94, 33: [2, 60], 63: 95, 64: 76, 65: [1, 44], 69: 96, 70: 77, 71: 78, 72: [1, 79], 75: [2, 60], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 75, 33: [2, 66], 36: 97, 63: 98, 64: 76, 65: [1, 44], 69: 99, 70: 77, 71: 78, 72: [1, 79], 75: [2, 66], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 75, 22: 100, 23: [2, 52], 63: 101, 64: 76, 65: [1, 44], 69: 102, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 20: 75, 33: [2, 92], 62: 103, 63: 104, 64: 76, 65: [1, 44], 69: 105, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 33: [1, 106] }, { 33: [2, 79], 65: [2, 79], 72: [2, 79], 80: [2, 79], 81: [2, 79], 82: [2, 79], 83: [2, 79], 84: [2, 79], 85: [2, 79] }, { 33: [2, 81] }, { 23: [2, 27], 33: [2, 27], 54: [2, 27], 65: [2, 27], 68: [2, 27], 72: [2, 27], 75: [2, 27], 80: [2, 27], 81: [2, 27], 82: [2, 27], 83: [2, 27], 84: [2, 27], 85: [2, 27] }, { 23: [2, 28], 33: [2, 28], 54: [2, 28], 65: [2, 28], 68: [2, 28], 72: [2, 28], 75: [2, 28], 80: [2, 28], 81: [2, 28], 82: [2, 28], 83: [2, 28], 84: [2, 28], 85: [2, 28] }, { 23: [2, 30], 33: [2, 30], 54: [2, 30], 68: [2, 30], 71: 107, 72: [1, 108], 75: [2, 30] }, { 23: [2, 98], 33: [2, 98], 54: [2, 98], 68: [2, 98], 72: [2, 98], 75: [2, 98] }, { 23: [2, 45], 33: [2, 45], 54: [2, 45], 65: [2, 45], 68: [2, 45], 72: [2, 45], 73: [1, 109], 75: [2, 45], 80: [2, 45], 81: [2, 45], 82: [2, 45], 83: [2, 45], 84: [2, 45], 85: [2, 45], 87: [2, 45] }, { 23: [2, 44], 33: [2, 44], 54: [2, 44], 65: [2, 44], 68: [2, 44], 72: [2, 44], 75: [2, 44], 80: [2, 44], 81: [2, 44], 82: [2, 44], 83: [2, 44], 84: [2, 44], 85: [2, 44], 87: [2, 44] }, { 54: [1, 110] }, { 54: [2, 83], 65: [2, 83], 72: [2, 83], 80: [2, 83], 81: [2, 83], 82: [2, 83], 83: [2, 83], 84: [2, 83], 85: [2, 83] }, { 54: [2, 85] }, { 5: [2, 13], 14: [2, 13], 15: [2, 13], 19: [2, 13], 29: [2, 13], 34: [2, 13], 39: [2, 13], 44: [2, 13], 47: [2, 13], 48: [2, 13], 51: [2, 13], 55: [2, 13], 60: [2, 13] }, { 38: 56, 39: [1, 58], 43: 57, 44: [1, 59], 45: 112, 46: 111, 47: [2, 76] }, { 33: [2, 70], 40: 113, 65: [2, 70], 72: [2, 70], 75: [2, 70], 80: [2, 70], 81: [2, 70], 82: [2, 70], 83: [2, 70], 84: [2, 70], 85: [2, 70] }, { 47: [2, 18] }, { 5: [2, 14], 14: [2, 14], 15: [2, 14], 19: [2, 14], 29: [2, 14], 34: [2, 14], 39: [2, 14], 44: [2, 14], 47: [2, 14], 48: [2, 14], 51: [2, 14], 55: [2, 14], 60: [2, 14] }, { 33: [1, 114] }, { 33: [2, 87], 65: [2, 87], 72: [2, 87], 80: [2, 87], 81: [2, 87], 82: [2, 87], 83: [2, 87], 84: [2, 87], 85: [2, 87] }, { 33: [2, 89] }, { 20: 75, 63: 116, 64: 76, 65: [1, 44], 67: 115, 68: [2, 96], 69: 117, 70: 77, 71: 78, 72: [1, 79], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 33: [1, 118] }, { 32: 119, 33: [2, 62], 74: 120, 75: [1, 121] }, { 33: [2, 59], 65: [2, 59], 72: [2, 59], 75: [2, 59], 80: [2, 59], 81: [2, 59], 82: [2, 59], 83: [2, 59], 84: [2, 59], 85: [2, 59] }, { 33: [2, 61], 75: [2, 61] }, { 33: [2, 68], 37: 122, 74: 123, 75: [1, 121] }, { 33: [2, 65], 65: [2, 65], 72: [2, 65], 75: [2, 65], 80: [2, 65], 81: [2, 65], 82: [2, 65], 83: [2, 65], 84: [2, 65], 85: [2, 65] }, { 33: [2, 67], 75: [2, 67] }, { 23: [1, 124] }, { 23: [2, 51], 65: [2, 51], 72: [2, 51], 80: [2, 51], 81: [2, 51], 82: [2, 51], 83: [2, 51], 84: [2, 51], 85: [2, 51] }, { 23: [2, 53] }, { 33: [1, 125] }, { 33: [2, 91], 65: [2, 91], 72: [2, 91], 80: [2, 91], 81: [2, 91], 82: [2, 91], 83: [2, 91], 84: [2, 91], 85: [2, 91] }, { 33: [2, 93] }, { 5: [2, 22], 14: [2, 22], 15: [2, 22], 19: [2, 22], 29: [2, 22], 34: [2, 22], 39: [2, 22], 44: [2, 22], 47: [2, 22], 48: [2, 22], 51: [2, 22], 55: [2, 22], 60: [2, 22] }, { 23: [2, 99], 33: [2, 99], 54: [2, 99], 68: [2, 99], 72: [2, 99], 75: [2, 99] }, { 73: [1, 109] }, { 20: 75, 63: 126, 64: 76, 65: [1, 44], 72: [1, 35], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 5: [2, 23], 14: [2, 23], 15: [2, 23], 19: [2, 23], 29: [2, 23], 34: [2, 23], 39: [2, 23], 44: [2, 23], 47: [2, 23], 48: [2, 23], 51: [2, 23], 55: [2, 23], 60: [2, 23] }, { 47: [2, 19] }, { 47: [2, 77] }, { 20: 75, 33: [2, 72], 41: 127, 63: 128, 64: 76, 65: [1, 44], 69: 129, 70: 77, 71: 78, 72: [1, 79], 75: [2, 72], 78: 26, 79: 27, 80: [1, 28], 81: [1, 29], 82: [1, 30], 83: [1, 31], 84: [1, 32], 85: [1, 34], 86: 33 }, { 5: [2, 24], 14: [2, 24], 15: [2, 24], 19: [2, 24], 29: [2, 24], 34: [2, 24], 39: [2, 24], 44: [2, 24], 47: [2, 24], 48: [2, 24], 51: [2, 24], 55: [2, 24], 60: [2, 24] }, { 68: [1, 130] }, { 65: [2, 95], 68: [2, 95], 72: [2, 95], 80: [2, 95], 81: [2, 95], 82: [2, 95], 83: [2, 95], 84: [2, 95], 85: [2, 95] }, { 68: [2, 97] }, { 5: [2, 21], 14: [2, 21], 15: [2, 21], 19: [2, 21], 29: [2, 21], 34: [2, 21], 39: [2, 21], 44: [2, 21], 47: [2, 21], 48: [2, 21], 51: [2, 21], 55: [2, 21], 60: [2, 21] }, { 33: [1, 131] }, { 33: [2, 63] }, { 72: [1, 133], 76: 132 }, { 33: [1, 134] }, { 33: [2, 69] }, { 15: [2, 12] }, { 14: [2, 26], 15: [2, 26], 19: [2, 26], 29: [2, 26], 34: [2, 26], 47: [2, 26], 48: [2, 26], 51: [2, 26], 55: [2, 26], 60: [2, 26] }, { 23: [2, 31], 33: [2, 31], 54: [2, 31], 68: [2, 31], 72: [2, 31], 75: [2, 31] }, { 33: [2, 74], 42: 135, 74: 136, 75: [1, 121] }, { 33: [2, 71], 65: [2, 71], 72: [2, 71], 75: [2, 71], 80: [2, 71], 81: [2, 71], 82: [2, 71], 83: [2, 71], 84: [2, 71], 85: [2, 71] }, { 33: [2, 73], 75: [2, 73] }, { 23: [2, 29], 33: [2, 29], 54: [2, 29], 65: [2, 29], 68: [2, 29], 72: [2, 29], 75: [2, 29], 80: [2, 29], 81: [2, 29], 82: [2, 29], 83: [2, 29], 84: [2, 29], 85: [2, 29] }, { 14: [2, 15], 15: [2, 15], 19: [2, 15], 29: [2, 15], 34: [2, 15], 39: [2, 15], 44: [2, 15], 47: [2, 15], 48: [2, 15], 51: [2, 15], 55: [2, 15], 60: [2, 15] }, { 72: [1, 138], 77: [1, 137] }, { 72: [2, 100], 77: [2, 100] }, { 14: [2, 16], 15: [2, 16], 19: [2, 16], 29: [2, 16], 34: [2, 16], 44: [2, 16], 47: [2, 16], 48: [2, 16], 51: [2, 16], 55: [2, 16], 60: [2, 16] }, { 33: [1, 139] }, { 33: [2, 75] }, { 33: [2, 32] }, { 72: [2, 101], 77: [2, 101] }, { 14: [2, 17], 15: [2, 17], 19: [2, 17], 29: [2, 17], 34: [2, 17], 39: [2, 17], 44: [2, 17], 47: [2, 17], 48: [2, 17], 51: [2, 17], 55: [2, 17], 60: [2, 17] }],
+        defaultActions: { 4: [2, 1], 55: [2, 55], 57: [2, 20], 61: [2, 57], 74: [2, 81], 83: [2, 85], 87: [2, 18], 91: [2, 89], 102: [2, 53], 105: [2, 93], 111: [2, 19], 112: [2, 77], 117: [2, 97], 120: [2, 63], 123: [2, 69], 124: [2, 12], 136: [2, 75], 137: [2, 32] },
+        parseError: function parseError(str, hash) {
+            throw new Error(str);
+        },
+        parse: function parse(input) {
+            var self = this,
+                stack = [0],
+                vstack = [null],
+                lstack = [],
+                table = this.table,
+                yytext = "",
+                yylineno = 0,
+                yyleng = 0,
+                recovering = 0,
+                TERROR = 2,
+                EOF = 1;
+            this.lexer.setInput(input);
+            this.lexer.yy = this.yy;
+            this.yy.lexer = this.lexer;
+            this.yy.parser = this;
+            if (typeof this.lexer.yylloc == "undefined") this.lexer.yylloc = {};
+            var yyloc = this.lexer.yylloc;
+            lstack.push(yyloc);
+            var ranges = this.lexer.options && this.lexer.options.ranges;
+            if (typeof this.yy.parseError === "function") this.parseError = this.yy.parseError;
+            function popStack(n) {
+                stack.length = stack.length - 2 * n;
+                vstack.length = vstack.length - n;
+                lstack.length = lstack.length - n;
+            }
+            function lex() {
+                var token;
+                token = self.lexer.lex() || 1;
+                if (typeof token !== "number") {
+                    token = self.symbols_[token] || token;
+                }
+                return token;
+            }
+            var symbol,
+                preErrorSymbol,
+                state,
+                action,
+                a,
+                r,
+                yyval = {},
+                p,
+                len,
+                newState,
+                expected;
+            while (true) {
+                state = stack[stack.length - 1];
+                if (this.defaultActions[state]) {
+                    action = this.defaultActions[state];
+                } else {
+                    if (symbol === null || typeof symbol == "undefined") {
+                        symbol = lex();
+                    }
+                    action = table[state] && table[state][symbol];
+                }
+                if (typeof action === "undefined" || !action.length || !action[0]) {
+                    var errStr = "";
+                    if (!recovering) {
+                        expected = [];
+                        for (p in table[state]) if (this.terminals_[p] && p > 2) {
+                            expected.push("'" + this.terminals_[p] + "'");
+                        }
+                        if (this.lexer.showPosition) {
+                            errStr = "Parse error on line " + (yylineno + 1) + ":\n" + this.lexer.showPosition() + "\nExpecting " + expected.join(", ") + ", got '" + (this.terminals_[symbol] || symbol) + "'";
+                        } else {
+                            errStr = "Parse error on line " + (yylineno + 1) + ": Unexpected " + (symbol == 1 ? "end of input" : "'" + (this.terminals_[symbol] || symbol) + "'");
+                        }
+                        this.parseError(errStr, { text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected });
+                    }
+                }
+                if (action[0] instanceof Array && action.length > 1) {
+                    throw new Error("Parse Error: multiple actions possible at state: " + state + ", token: " + symbol);
+                }
+                switch (action[0]) {
+                    case 1:
+                        stack.push(symbol);
+                        vstack.push(this.lexer.yytext);
+                        lstack.push(this.lexer.yylloc);
+                        stack.push(action[1]);
+                        symbol = null;
+                        if (!preErrorSymbol) {
+                            yyleng = this.lexer.yyleng;
+                            yytext = this.lexer.yytext;
+                            yylineno = this.lexer.yylineno;
+                            yyloc = this.lexer.yylloc;
+                            if (recovering > 0) recovering--;
+                        } else {
+                            symbol = preErrorSymbol;
+                            preErrorSymbol = null;
+                        }
+                        break;
+                    case 2:
+                        len = this.productions_[action[1]][1];
+                        yyval.$ = vstack[vstack.length - len];
+                        yyval._$ = { first_line: lstack[lstack.length - (len || 1)].first_line, last_line: lstack[lstack.length - 1].last_line, first_column: lstack[lstack.length - (len || 1)].first_column, last_column: lstack[lstack.length - 1].last_column };
+                        if (ranges) {
+                            yyval._$.range = [lstack[lstack.length - (len || 1)].range[0], lstack[lstack.length - 1].range[1]];
+                        }
+                        r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
+                        if (typeof r !== "undefined") {
+                            return r;
+                        }
+                        if (len) {
+                            stack = stack.slice(0, -1 * len * 2);
+                            vstack = vstack.slice(0, -1 * len);
+                            lstack = lstack.slice(0, -1 * len);
+                        }
+                        stack.push(this.productions_[action[1]][0]);
+                        vstack.push(yyval.$);
+                        lstack.push(yyval._$);
+                        newState = table[stack[stack.length - 2]][stack[stack.length - 1]];
+                        stack.push(newState);
+                        break;
+                    case 3:
+                        return true;
+                }
+            }
+            return true;
+        }
+    };
+    /* Jison generated lexer */
+    var lexer = (function () {
+        var lexer = { EOF: 1,
+            parseError: function parseError(str, hash) {
+                if (this.yy.parser) {
+                    this.yy.parser.parseError(str, hash);
+                } else {
+                    throw new Error(str);
+                }
+            },
+            setInput: function setInput(input) {
+                this._input = input;
+                this._more = this._less = this.done = false;
+                this.yylineno = this.yyleng = 0;
+                this.yytext = this.matched = this.match = '';
+                this.conditionStack = ['INITIAL'];
+                this.yylloc = { first_line: 1, first_column: 0, last_line: 1, last_column: 0 };
+                if (this.options.ranges) this.yylloc.range = [0, 0];
+                this.offset = 0;
+                return this;
+            },
+            input: function input() {
+                var ch = this._input[0];
+                this.yytext += ch;
+                this.yyleng++;
+                this.offset++;
+                this.match += ch;
+                this.matched += ch;
+                var lines = ch.match(/(?:\r\n?|\n).*/g);
+                if (lines) {
+                    this.yylineno++;
+                    this.yylloc.last_line++;
+                } else {
+                    this.yylloc.last_column++;
+                }
+                if (this.options.ranges) this.yylloc.range[1]++;
+
+                this._input = this._input.slice(1);
+                return ch;
+            },
+            unput: function unput(ch) {
+                var len = ch.length;
+                var lines = ch.split(/(?:\r\n?|\n)/g);
+
+                this._input = ch + this._input;
+                this.yytext = this.yytext.substr(0, this.yytext.length - len - 1);
+                //this.yyleng -= len;
+                this.offset -= len;
+                var oldLines = this.match.split(/(?:\r\n?|\n)/g);
+                this.match = this.match.substr(0, this.match.length - 1);
+                this.matched = this.matched.substr(0, this.matched.length - 1);
+
+                if (lines.length - 1) this.yylineno -= lines.length - 1;
+                var r = this.yylloc.range;
+
+                this.yylloc = { first_line: this.yylloc.first_line,
+                    last_line: this.yylineno + 1,
+                    first_column: this.yylloc.first_column,
+                    last_column: lines ? (lines.length === oldLines.length ? this.yylloc.first_column : 0) + oldLines[oldLines.length - lines.length].length - lines[0].length : this.yylloc.first_column - len
+                };
+
+                if (this.options.ranges) {
+                    this.yylloc.range = [r[0], r[0] + this.yyleng - len];
+                }
+                return this;
+            },
+            more: function more() {
+                this._more = true;
+                return this;
+            },
+            less: function less(n) {
+                this.unput(this.match.slice(n));
+            },
+            pastInput: function pastInput() {
+                var past = this.matched.substr(0, this.matched.length - this.match.length);
+                return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
+            },
+            upcomingInput: function upcomingInput() {
+                var next = this.match;
+                if (next.length < 20) {
+                    next += this._input.substr(0, 20 - next.length);
+                }
+                return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
+            },
+            showPosition: function showPosition() {
+                var pre = this.pastInput();
+                var c = new Array(pre.length + 1).join("-");
+                return pre + this.upcomingInput() + "\n" + c + "^";
+            },
+            next: function next() {
+                if (this.done) {
+                    return this.EOF;
+                }
+                if (!this._input) this.done = true;
+
+                var token, match, tempMatch, index, col, lines;
+                if (!this._more) {
+                    this.yytext = '';
+                    this.match = '';
+                }
+                var rules = this._currentRules();
+                for (var i = 0; i < rules.length; i++) {
+                    tempMatch = this._input.match(this.rules[rules[i]]);
+                    if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+                        match = tempMatch;
+                        index = i;
+                        if (!this.options.flex) break;
+                    }
+                }
+                if (match) {
+                    lines = match[0].match(/(?:\r\n?|\n).*/g);
+                    if (lines) this.yylineno += lines.length;
+                    this.yylloc = { first_line: this.yylloc.last_line,
+                        last_line: this.yylineno + 1,
+                        first_column: this.yylloc.last_column,
+                        last_column: lines ? lines[lines.length - 1].length - lines[lines.length - 1].match(/\r?\n?/)[0].length : this.yylloc.last_column + match[0].length };
+                    this.yytext += match[0];
+                    this.match += match[0];
+                    this.matches = match;
+                    this.yyleng = this.yytext.length;
+                    if (this.options.ranges) {
+                        this.yylloc.range = [this.offset, this.offset += this.yyleng];
+                    }
+                    this._more = false;
+                    this._input = this._input.slice(match[0].length);
+                    this.matched += match[0];
+                    token = this.performAction.call(this, this.yy, this, rules[index], this.conditionStack[this.conditionStack.length - 1]);
+                    if (this.done && this._input) this.done = false;
+                    if (token) return token;else return;
+                }
+                if (this._input === "") {
+                    return this.EOF;
+                } else {
+                    return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. Unrecognized text.\n' + this.showPosition(), { text: "", token: null, line: this.yylineno });
+                }
+            },
+            lex: function lex() {
+                var r = this.next();
+                if (typeof r !== 'undefined') {
+                    return r;
+                } else {
+                    return this.lex();
+                }
+            },
+            begin: function begin(condition) {
+                this.conditionStack.push(condition);
+            },
+            popState: function popState() {
+                return this.conditionStack.pop();
+            },
+            _currentRules: function _currentRules() {
+                return this.conditions[this.conditionStack[this.conditionStack.length - 1]].rules;
+            },
+            topState: function topState() {
+                return this.conditionStack[this.conditionStack.length - 2];
+            },
+            pushState: function begin(condition) {
+                this.begin(condition);
+            } };
+        lexer.options = {};
+        lexer.performAction = function anonymous(yy, yy_, $avoiding_name_collisions, YY_START
+        /**/) {
+
+            function strip(start, end) {
+                return yy_.yytext = yy_.yytext.substr(start, yy_.yyleng - end);
+            }
+
+            var YYSTATE = YY_START;
+            switch ($avoiding_name_collisions) {
+                case 0:
+                    if (yy_.yytext.slice(-2) === "\\\\") {
+                        strip(0, 1);
+                        this.begin("mu");
+                    } else if (yy_.yytext.slice(-1) === "\\") {
+                        strip(0, 1);
+                        this.begin("emu");
+                    } else {
+                        this.begin("mu");
+                    }
+                    if (yy_.yytext) return 15;
+
+                    break;
+                case 1:
+                    return 15;
+                    break;
+                case 2:
+                    this.popState();
+                    return 15;
+
+                    break;
+                case 3:
+                    this.begin('raw');return 15;
+                    break;
+                case 4:
+                    this.popState();
+                    // Should be using `this.topState()` below, but it currently
+                    // returns the second top instead of the first top. Opened an
+                    // issue about it at https://github.com/zaach/jison/issues/291
+                    if (this.conditionStack[this.conditionStack.length - 1] === 'raw') {
+                        return 15;
+                    } else {
+                        yy_.yytext = yy_.yytext.substr(5, yy_.yyleng - 9);
+                        return 'END_RAW_BLOCK';
+                    }
+
+                    break;
+                case 5:
+                    return 15;
+                    break;
+                case 6:
+                    this.popState();
+                    return 14;
+
+                    break;
+                case 7:
+                    return 65;
+                    break;
+                case 8:
+                    return 68;
+                    break;
+                case 9:
+                    return 19;
+                    break;
+                case 10:
+                    this.popState();
+                    this.begin('raw');
+                    return 23;
+
+                    break;
+                case 11:
+                    return 55;
+                    break;
+                case 12:
+                    return 60;
+                    break;
+                case 13:
+                    return 29;
+                    break;
+                case 14:
+                    return 47;
+                    break;
+                case 15:
+                    this.popState();return 44;
+                    break;
+                case 16:
+                    this.popState();return 44;
+                    break;
+                case 17:
+                    return 34;
+                    break;
+                case 18:
+                    return 39;
+                    break;
+                case 19:
+                    return 51;
+                    break;
+                case 20:
+                    return 48;
+                    break;
+                case 21:
+                    this.unput(yy_.yytext);
+                    this.popState();
+                    this.begin('com');
+
+                    break;
+                case 22:
+                    this.popState();
+                    return 14;
+
+                    break;
+                case 23:
+                    return 48;
+                    break;
+                case 24:
+                    return 73;
+                    break;
+                case 25:
+                    return 72;
+                    break;
+                case 26:
+                    return 72;
+                    break;
+                case 27:
+                    return 87;
+                    break;
+                case 28:
+                    // ignore whitespace
+                    break;
+                case 29:
+                    this.popState();return 54;
+                    break;
+                case 30:
+                    this.popState();return 33;
+                    break;
+                case 31:
+                    yy_.yytext = strip(1, 2).replace(/\\"/g, '"');return 80;
+                    break;
+                case 32:
+                    yy_.yytext = strip(1, 2).replace(/\\'/g, "'");return 80;
+                    break;
+                case 33:
+                    return 85;
+                    break;
+                case 34:
+                    return 82;
+                    break;
+                case 35:
+                    return 82;
+                    break;
+                case 36:
+                    return 83;
+                    break;
+                case 37:
+                    return 84;
+                    break;
+                case 38:
+                    return 81;
+                    break;
+                case 39:
+                    return 75;
+                    break;
+                case 40:
+                    return 77;
+                    break;
+                case 41:
+                    return 72;
+                    break;
+                case 42:
+                    yy_.yytext = yy_.yytext.replace(/\\([\\\]])/g, '$1');return 72;
+                    break;
+                case 43:
+                    return 'INVALID';
+                    break;
+                case 44:
+                    return 5;
+                    break;
+            }
+        };
+        lexer.rules = [/^(?:[^\x00]*?(?=(\{\{)))/, /^(?:[^\x00]+)/, /^(?:[^\x00]{2,}?(?=(\{\{|\\\{\{|\\\\\{\{|$)))/, /^(?:\{\{\{\{(?=[^\/]))/, /^(?:\{\{\{\{\/[^\s!"#%-,\.\/;->@\[-\^`\{-~]+(?=[=}\s\/.])\}\}\}\})/, /^(?:[^\x00]*?(?=(\{\{\{\{)))/, /^(?:[\s\S]*?--(~)?\}\})/, /^(?:\()/, /^(?:\))/, /^(?:\{\{\{\{)/, /^(?:\}\}\}\})/, /^(?:\{\{(~)?>)/, /^(?:\{\{(~)?#>)/, /^(?:\{\{(~)?#\*?)/, /^(?:\{\{(~)?\/)/, /^(?:\{\{(~)?\^\s*(~)?\}\})/, /^(?:\{\{(~)?\s*else\s*(~)?\}\})/, /^(?:\{\{(~)?\^)/, /^(?:\{\{(~)?\s*else\b)/, /^(?:\{\{(~)?\{)/, /^(?:\{\{(~)?&)/, /^(?:\{\{(~)?!--)/, /^(?:\{\{(~)?![\s\S]*?\}\})/, /^(?:\{\{(~)?\*?)/, /^(?:=)/, /^(?:\.\.)/, /^(?:\.(?=([=~}\s\/.)|])))/, /^(?:[\/.])/, /^(?:\s+)/, /^(?:\}(~)?\}\})/, /^(?:(~)?\}\})/, /^(?:"(\\["]|[^"])*")/, /^(?:'(\\[']|[^'])*')/, /^(?:@)/, /^(?:true(?=([~}\s)])))/, /^(?:false(?=([~}\s)])))/, /^(?:undefined(?=([~}\s)])))/, /^(?:null(?=([~}\s)])))/, /^(?:-?[0-9]+(?:\.[0-9]+)?(?=([~}\s)])))/, /^(?:as\s+\|)/, /^(?:\|)/, /^(?:([^\s!"#%-,\.\/;->@\[-\^`\{-~]+(?=([=~}\s\/.)|]))))/, /^(?:\[(\\\]|[^\]])*\])/, /^(?:.)/, /^(?:$)/];
+        lexer.conditions = { "mu": { "rules": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44], "inclusive": false }, "emu": { "rules": [2], "inclusive": false }, "com": { "rules": [6], "inclusive": false }, "raw": { "rules": [3, 4, 5], "inclusive": false }, "INITIAL": { "rules": [0, 1, 44], "inclusive": true } };
+        return lexer;
+    })();
+    parser.lexer = lexer;
+    function Parser() {
+        this.yy = {};
+    }Parser.prototype = parser;parser.Parser = Parser;
+    return new Parser();
+})();exports.__esModule = true;
+exports['default'] = handlebars;
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/printer.js":[function(require,module,exports){
+/* eslint-disable new-cap */
+'use strict';
+
+exports.__esModule = true;
+exports.print = print;
+exports.PrintVisitor = PrintVisitor;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _visitor = require('./visitor');
+
+var _visitor2 = _interopRequireDefault(_visitor);
+
+function print(ast) {
+  return new PrintVisitor().accept(ast);
+}
+
+function PrintVisitor() {
+  this.padding = 0;
+}
+
+PrintVisitor.prototype = new _visitor2['default']();
+
+PrintVisitor.prototype.pad = function (string) {
+  var out = '';
+
+  for (var i = 0, l = this.padding; i < l; i++) {
+    out += '  ';
+  }
+
+  out += string + '\n';
+  return out;
+};
+
+PrintVisitor.prototype.Program = function (program) {
+  var out = '',
+      body = program.body,
+      i = undefined,
+      l = undefined;
+
+  if (program.blockParams) {
+    var blockParams = 'BLOCK PARAMS: [';
+    for (i = 0, l = program.blockParams.length; i < l; i++) {
+      blockParams += ' ' + program.blockParams[i];
+    }
+    blockParams += ' ]';
+    out += this.pad(blockParams);
+  }
+
+  for (i = 0, l = body.length; i < l; i++) {
+    out += this.accept(body[i]);
+  }
+
+  this.padding--;
+
+  return out;
+};
+
+PrintVisitor.prototype.MustacheStatement = function (mustache) {
+  return this.pad('{{ ' + this.SubExpression(mustache) + ' }}');
+};
+PrintVisitor.prototype.Decorator = function (mustache) {
+  return this.pad('{{ DIRECTIVE ' + this.SubExpression(mustache) + ' }}');
+};
+
+PrintVisitor.prototype.BlockStatement = PrintVisitor.prototype.DecoratorBlock = function (block) {
+  var out = '';
+
+  out += this.pad((block.type === 'DecoratorBlock' ? 'DIRECTIVE ' : '') + 'BLOCK:');
+  this.padding++;
+  out += this.pad(this.SubExpression(block));
+  if (block.program) {
+    out += this.pad('PROGRAM:');
+    this.padding++;
+    out += this.accept(block.program);
+    this.padding--;
+  }
+  if (block.inverse) {
+    if (block.program) {
+      this.padding++;
+    }
+    out += this.pad('{{^}}');
+    this.padding++;
+    out += this.accept(block.inverse);
+    this.padding--;
+    if (block.program) {
+      this.padding--;
+    }
+  }
+  this.padding--;
+
+  return out;
+};
+
+PrintVisitor.prototype.PartialStatement = function (partial) {
+  var content = 'PARTIAL:' + partial.name.original;
+  if (partial.params[0]) {
+    content += ' ' + this.accept(partial.params[0]);
+  }
+  if (partial.hash) {
+    content += ' ' + this.accept(partial.hash);
+  }
+  return this.pad('{{> ' + content + ' }}');
+};
+PrintVisitor.prototype.PartialBlockStatement = function (partial) {
+  var content = 'PARTIAL BLOCK:' + partial.name.original;
+  if (partial.params[0]) {
+    content += ' ' + this.accept(partial.params[0]);
+  }
+  if (partial.hash) {
+    content += ' ' + this.accept(partial.hash);
+  }
+
+  content += ' ' + this.pad('PROGRAM:');
+  this.padding++;
+  content += this.accept(partial.program);
+  this.padding--;
+
+  return this.pad('{{> ' + content + ' }}');
+};
+
+PrintVisitor.prototype.ContentStatement = function (content) {
+  return this.pad("CONTENT[ '" + content.value + "' ]");
+};
+
+PrintVisitor.prototype.CommentStatement = function (comment) {
+  return this.pad("{{! '" + comment.value + "' }}");
+};
+
+PrintVisitor.prototype.SubExpression = function (sexpr) {
+  var params = sexpr.params,
+      paramStrings = [],
+      hash = undefined;
+
+  for (var i = 0, l = params.length; i < l; i++) {
+    paramStrings.push(this.accept(params[i]));
+  }
+
+  params = '[' + paramStrings.join(', ') + ']';
+
+  hash = sexpr.hash ? ' ' + this.accept(sexpr.hash) : '';
+
+  return this.accept(sexpr.path) + ' ' + params + hash;
+};
+
+PrintVisitor.prototype.PathExpression = function (id) {
+  var path = id.parts.join('/');
+  return (id.data ? '@' : '') + 'PATH:' + path;
+};
+
+PrintVisitor.prototype.StringLiteral = function (string) {
+  return '"' + string.value + '"';
+};
+
+PrintVisitor.prototype.NumberLiteral = function (number) {
+  return 'NUMBER{' + number.value + '}';
+};
+
+PrintVisitor.prototype.BooleanLiteral = function (bool) {
+  return 'BOOLEAN{' + bool.value + '}';
+};
+
+PrintVisitor.prototype.UndefinedLiteral = function () {
+  return 'UNDEFINED';
+};
+
+PrintVisitor.prototype.NullLiteral = function () {
+  return 'NULL';
+};
+
+PrintVisitor.prototype.Hash = function (hash) {
+  var pairs = hash.pairs,
+      joinedPairs = [];
+
+  for (var i = 0, l = pairs.length; i < l; i++) {
+    joinedPairs.push(this.accept(pairs[i]));
+  }
+
+  return 'HASH{' + joinedPairs.join(', ') + '}';
+};
+PrintVisitor.prototype.HashPair = function (pair) {
+  return pair.key + '=' + this.accept(pair.value);
+};
+/* eslint-enable new-cap */
+
+
+},{"./visitor":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/visitor.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/visitor.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+function Visitor() {
+  this.parents = [];
+}
+
+Visitor.prototype = {
+  constructor: Visitor,
+  mutating: false,
+
+  // Visits a given value. If mutating, will replace the value if necessary.
+  acceptKey: function acceptKey(node, name) {
+    var value = this.accept(node[name]);
+    if (this.mutating) {
+      // Hacky sanity check: This may have a few false positives for type for the helper
+      // methods but will generally do the right thing without a lot of overhead.
+      if (value && !Visitor.prototype[value.type]) {
+        throw new _exception2['default']('Unexpected node type "' + value.type + '" found when accepting ' + name + ' on ' + node.type);
+      }
+      node[name] = value;
+    }
+  },
+
+  // Performs an accept operation with added sanity check to ensure
+  // required keys are not removed.
+  acceptRequired: function acceptRequired(node, name) {
+    this.acceptKey(node, name);
+
+    if (!node[name]) {
+      throw new _exception2['default'](node.type + ' requires ' + name);
+    }
+  },
+
+  // Traverses a given array. If mutating, empty respnses will be removed
+  // for child elements.
+  acceptArray: function acceptArray(array) {
+    for (var i = 0, l = array.length; i < l; i++) {
+      this.acceptKey(array, i);
+
+      if (!array[i]) {
+        array.splice(i, 1);
+        i--;
+        l--;
+      }
+    }
+  },
+
+  accept: function accept(object) {
+    if (!object) {
+      return;
+    }
+
+    /* istanbul ignore next: Sanity code */
+    if (!this[object.type]) {
+      throw new _exception2['default']('Unknown type: ' + object.type, object);
+    }
+
+    if (this.current) {
+      this.parents.unshift(this.current);
+    }
+    this.current = object;
+
+    var ret = this[object.type](object);
+
+    this.current = this.parents.shift();
+
+    if (!this.mutating || ret) {
+      return ret;
+    } else if (ret !== false) {
+      return object;
+    }
+  },
+
+  Program: function Program(program) {
+    this.acceptArray(program.body);
+  },
+
+  MustacheStatement: visitSubExpression,
+  Decorator: visitSubExpression,
+
+  BlockStatement: visitBlock,
+  DecoratorBlock: visitBlock,
+
+  PartialStatement: visitPartial,
+  PartialBlockStatement: function PartialBlockStatement(partial) {
+    visitPartial.call(this, partial);
+
+    this.acceptKey(partial, 'program');
+  },
+
+  ContentStatement: function ContentStatement() /* content */{},
+  CommentStatement: function CommentStatement() /* comment */{},
+
+  SubExpression: visitSubExpression,
+
+  PathExpression: function PathExpression() /* path */{},
+
+  StringLiteral: function StringLiteral() /* string */{},
+  NumberLiteral: function NumberLiteral() /* number */{},
+  BooleanLiteral: function BooleanLiteral() /* bool */{},
+  UndefinedLiteral: function UndefinedLiteral() /* literal */{},
+  NullLiteral: function NullLiteral() /* literal */{},
+
+  Hash: function Hash(hash) {
+    this.acceptArray(hash.pairs);
+  },
+  HashPair: function HashPair(pair) {
+    this.acceptRequired(pair, 'value');
+  }
+};
+
+function visitSubExpression(mustache) {
+  this.acceptRequired(mustache, 'path');
+  this.acceptArray(mustache.params);
+  this.acceptKey(mustache, 'hash');
+}
+function visitBlock(block) {
+  visitSubExpression.call(this, block);
+
+  this.acceptKey(block, 'program');
+  this.acceptKey(block, 'inverse');
+}
+function visitPartial(partial) {
+  this.acceptRequired(partial, 'name');
+  this.acceptArray(partial.params);
+  this.acceptKey(partial, 'hash');
+}
+
+exports['default'] = Visitor;
+module.exports = exports['default'];
+
+
+},{"../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/whitespace-control.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _visitor = require('./visitor');
+
+var _visitor2 = _interopRequireDefault(_visitor);
+
+function WhitespaceControl() {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  this.options = options;
+}
+WhitespaceControl.prototype = new _visitor2['default']();
+
+WhitespaceControl.prototype.Program = function (program) {
+  var doStandalone = !this.options.ignoreStandalone;
+
+  var isRoot = !this.isRootSeen;
+  this.isRootSeen = true;
+
+  var body = program.body;
+  for (var i = 0, l = body.length; i < l; i++) {
+    var current = body[i],
+        strip = this.accept(current);
+
+    if (!strip) {
+      continue;
+    }
+
+    var _isPrevWhitespace = isPrevWhitespace(body, i, isRoot),
+        _isNextWhitespace = isNextWhitespace(body, i, isRoot),
+        openStandalone = strip.openStandalone && _isPrevWhitespace,
+        closeStandalone = strip.closeStandalone && _isNextWhitespace,
+        inlineStandalone = strip.inlineStandalone && _isPrevWhitespace && _isNextWhitespace;
+
+    if (strip.close) {
+      omitRight(body, i, true);
+    }
+    if (strip.open) {
+      omitLeft(body, i, true);
+    }
+
+    if (doStandalone && inlineStandalone) {
+      omitRight(body, i);
+
+      if (omitLeft(body, i)) {
+        // If we are on a standalone node, save the indent info for partials
+        if (current.type === 'PartialStatement') {
+          // Pull out the whitespace from the final line
+          current.indent = /([ \t]+$)/.exec(body[i - 1].original)[1];
+        }
+      }
+    }
+    if (doStandalone && openStandalone) {
+      omitRight((current.program || current.inverse).body);
+
+      // Strip out the previous content node if it's whitespace only
+      omitLeft(body, i);
+    }
+    if (doStandalone && closeStandalone) {
+      // Always strip the next node
+      omitRight(body, i);
+
+      omitLeft((current.inverse || current.program).body);
+    }
+  }
+
+  return program;
+};
+
+WhitespaceControl.prototype.BlockStatement = WhitespaceControl.prototype.DecoratorBlock = WhitespaceControl.prototype.PartialBlockStatement = function (block) {
+  this.accept(block.program);
+  this.accept(block.inverse);
+
+  // Find the inverse program that is involed with whitespace stripping.
+  var program = block.program || block.inverse,
+      inverse = block.program && block.inverse,
+      firstInverse = inverse,
+      lastInverse = inverse;
+
+  if (inverse && inverse.chained) {
+    firstInverse = inverse.body[0].program;
+
+    // Walk the inverse chain to find the last inverse that is actually in the chain.
+    while (lastInverse.chained) {
+      lastInverse = lastInverse.body[lastInverse.body.length - 1].program;
+    }
+  }
+
+  var strip = {
+    open: block.openStrip.open,
+    close: block.closeStrip.close,
+
+    // Determine the standalone candiacy. Basically flag our content as being possibly standalone
+    // so our parent can determine if we actually are standalone
+    openStandalone: isNextWhitespace(program.body),
+    closeStandalone: isPrevWhitespace((firstInverse || program).body)
+  };
+
+  if (block.openStrip.close) {
+    omitRight(program.body, null, true);
+  }
+
+  if (inverse) {
+    var inverseStrip = block.inverseStrip;
+
+    if (inverseStrip.open) {
+      omitLeft(program.body, null, true);
+    }
+
+    if (inverseStrip.close) {
+      omitRight(firstInverse.body, null, true);
+    }
+    if (block.closeStrip.open) {
+      omitLeft(lastInverse.body, null, true);
+    }
+
+    // Find standalone else statments
+    if (!this.options.ignoreStandalone && isPrevWhitespace(program.body) && isNextWhitespace(firstInverse.body)) {
+      omitLeft(program.body);
+      omitRight(firstInverse.body);
+    }
+  } else if (block.closeStrip.open) {
+    omitLeft(program.body, null, true);
+  }
+
+  return strip;
+};
+
+WhitespaceControl.prototype.Decorator = WhitespaceControl.prototype.MustacheStatement = function (mustache) {
+  return mustache.strip;
+};
+
+WhitespaceControl.prototype.PartialStatement = WhitespaceControl.prototype.CommentStatement = function (node) {
+  /* istanbul ignore next */
+  var strip = node.strip || {};
+  return {
+    inlineStandalone: true,
+    open: strip.open,
+    close: strip.close
+  };
+};
+
+function isPrevWhitespace(body, i, isRoot) {
+  if (i === undefined) {
+    i = body.length;
+  }
+
+  // Nodes that end with newlines are considered whitespace (but are special
+  // cased for strip operations)
+  var prev = body[i - 1],
+      sibling = body[i - 2];
+  if (!prev) {
+    return isRoot;
+  }
+
+  if (prev.type === 'ContentStatement') {
+    return (sibling || !isRoot ? /\r?\n\s*?$/ : /(^|\r?\n)\s*?$/).test(prev.original);
+  }
+}
+function isNextWhitespace(body, i, isRoot) {
+  if (i === undefined) {
+    i = -1;
+  }
+
+  var next = body[i + 1],
+      sibling = body[i + 2];
+  if (!next) {
+    return isRoot;
+  }
+
+  if (next.type === 'ContentStatement') {
+    return (sibling || !isRoot ? /^\s*?\r?\n/ : /^\s*?(\r?\n|$)/).test(next.original);
+  }
+}
+
+// Marks the node to the right of the position as omitted.
+// I.e. {{foo}}' ' will mark the ' ' node as omitted.
+//
+// If i is undefined, then the first child will be marked as such.
+//
+// If mulitple is truthy then all whitespace will be stripped out until non-whitespace
+// content is met.
+function omitRight(body, i, multiple) {
+  var current = body[i == null ? 0 : i + 1];
+  if (!current || current.type !== 'ContentStatement' || !multiple && current.rightStripped) {
+    return;
+  }
+
+  var original = current.value;
+  current.value = current.value.replace(multiple ? /^\s+/ : /^[ \t]*\r?\n?/, '');
+  current.rightStripped = current.value !== original;
+}
+
+// Marks the node to the left of the position as omitted.
+// I.e. ' '{{foo}} will mark the ' ' node as omitted.
+//
+// If i is undefined then the last child will be marked as such.
+//
+// If mulitple is truthy then all whitespace will be stripped out until non-whitespace
+// content is met.
+function omitLeft(body, i, multiple) {
+  var current = body[i == null ? body.length - 1 : i - 1];
+  if (!current || current.type !== 'ContentStatement' || !multiple && current.leftStripped) {
+    return;
+  }
+
+  // We omit the last node if it's whitespace only and not preceeded by a non-content node.
+  var original = current.value;
+  current.value = current.value.replace(multiple ? /\s+$/ : /[ \t]+$/, '');
+  current.leftStripped = current.value !== original;
+  return current.leftStripped;
+}
+
+exports['default'] = WhitespaceControl;
+module.exports = exports['default'];
+
+
+},{"./visitor":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/visitor.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/decorators.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.registerDefaultDecorators = registerDefaultDecorators;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _decoratorsInline = require('./decorators/inline');
+
+var _decoratorsInline2 = _interopRequireDefault(_decoratorsInline);
+
+function registerDefaultDecorators(instance) {
+  _decoratorsInline2['default'](instance);
+}
+
+
+},{"./decorators/inline":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/decorators/inline.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/decorators/inline.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('../utils');
+
+exports['default'] = function (instance) {
+  instance.registerDecorator('inline', function (fn, props, container, options) {
+    var ret = fn;
+    if (!props.partials) {
+      props.partials = {};
+      ret = function (context, options) {
+        // Create a new partials stack frame prior to exec.
+        var original = container.partials;
+        container.partials = _utils.extend({}, original, props.partials);
+        var ret = fn(context, options);
+        container.partials = original;
+        return ret;
+      };
+    }
+
+    props.partials[options.args[0]] = options.fn;
+
+    return ret;
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
+
+function Exception(message, node) {
+  var loc = node && node.loc,
+      line = undefined,
+      column = undefined;
+  if (loc) {
+    line = loc.start.line;
+    column = loc.start.column;
+
+    message += ' - ' + line + ':' + column;
+  }
+
+  var tmp = Error.prototype.constructor.call(this, message);
+
+  // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
+  for (var idx = 0; idx < errorProps.length; idx++) {
+    this[errorProps[idx]] = tmp[errorProps[idx]];
+  }
+
+  /* istanbul ignore else */
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, Exception);
+  }
+
+  if (loc) {
+    this.lineNumber = line;
+    this.column = column;
+  }
+}
+
+Exception.prototype = new Error();
+
+exports['default'] = Exception;
+module.exports = exports['default'];
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.registerDefaultHelpers = registerDefaultHelpers;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _helpersBlockHelperMissing = require('./helpers/block-helper-missing');
+
+var _helpersBlockHelperMissing2 = _interopRequireDefault(_helpersBlockHelperMissing);
+
+var _helpersEach = require('./helpers/each');
+
+var _helpersEach2 = _interopRequireDefault(_helpersEach);
+
+var _helpersHelperMissing = require('./helpers/helper-missing');
+
+var _helpersHelperMissing2 = _interopRequireDefault(_helpersHelperMissing);
+
+var _helpersIf = require('./helpers/if');
+
+var _helpersIf2 = _interopRequireDefault(_helpersIf);
+
+var _helpersLog = require('./helpers/log');
+
+var _helpersLog2 = _interopRequireDefault(_helpersLog);
+
+var _helpersLookup = require('./helpers/lookup');
+
+var _helpersLookup2 = _interopRequireDefault(_helpersLookup);
+
+var _helpersWith = require('./helpers/with');
+
+var _helpersWith2 = _interopRequireDefault(_helpersWith);
+
+function registerDefaultHelpers(instance) {
+  _helpersBlockHelperMissing2['default'](instance);
+  _helpersEach2['default'](instance);
+  _helpersHelperMissing2['default'](instance);
+  _helpersIf2['default'](instance);
+  _helpersLog2['default'](instance);
+  _helpersLookup2['default'](instance);
+  _helpersWith2['default'](instance);
+}
+
+
+},{"./helpers/block-helper-missing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/block-helper-missing.js","./helpers/each":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/each.js","./helpers/helper-missing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/helper-missing.js","./helpers/if":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/if.js","./helpers/log":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/log.js","./helpers/lookup":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/lookup.js","./helpers/with":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/with.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/block-helper-missing.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('../utils');
+
+exports['default'] = function (instance) {
+  instance.registerHelper('blockHelperMissing', function (context, options) {
+    var inverse = options.inverse,
+        fn = options.fn;
+
+    if (context === true) {
+      return fn(this);
+    } else if (context === false || context == null) {
+      return inverse(this);
+    } else if (_utils.isArray(context)) {
+      if (context.length > 0) {
+        if (options.ids) {
+          options.ids = [options.name];
+        }
+
+        return instance.helpers.each(context, options);
+      } else {
+        return inverse(this);
+      }
+    } else {
+      if (options.data && options.ids) {
+        var data = _utils.createFrame(options.data);
+        data.contextPath = _utils.appendContextPath(options.data.contextPath, options.name);
+        options = { data: data };
+      }
+
+      return fn(context, options);
+    }
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/each.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _utils = require('../utils');
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+exports['default'] = function (instance) {
+  instance.registerHelper('each', function (context, options) {
+    if (!options) {
+      throw new _exception2['default']('Must pass iterator to #each');
+    }
+
+    var fn = options.fn,
+        inverse = options.inverse,
+        i = 0,
+        ret = '',
+        data = undefined,
+        contextPath = undefined;
+
+    if (options.data && options.ids) {
+      contextPath = _utils.appendContextPath(options.data.contextPath, options.ids[0]) + '.';
+    }
+
+    if (_utils.isFunction(context)) {
+      context = context.call(this);
+    }
+
+    if (options.data) {
+      data = _utils.createFrame(options.data);
+    }
+
+    function execIteration(field, index, last) {
+      if (data) {
+        data.key = field;
+        data.index = index;
+        data.first = index === 0;
+        data.last = !!last;
+
+        if (contextPath) {
+          data.contextPath = contextPath + field;
+        }
+      }
+
+      ret = ret + fn(context[field], {
+        data: data,
+        blockParams: _utils.blockParams([context[field], field], [contextPath + field, null])
+      });
+    }
+
+    if (context && typeof context === 'object') {
+      if (_utils.isArray(context)) {
+        for (var j = context.length; i < j; i++) {
+          if (i in context) {
+            execIteration(i, i, i === context.length - 1);
+          }
+        }
+      } else {
+        var priorKey = undefined;
+
+        for (var key in context) {
+          if (context.hasOwnProperty(key)) {
+            // We're running the iterations one step out of sync so we can detect
+            // the last iteration without have to scan the object twice and create
+            // an itermediate keys array.
+            if (priorKey !== undefined) {
+              execIteration(priorKey, i - 1);
+            }
+            priorKey = key;
+            i++;
+          }
+        }
+        if (priorKey !== undefined) {
+          execIteration(priorKey, i - 1, true);
+        }
+      }
+    }
+
+    if (i === 0) {
+      ret = inverse(this);
+    }
+
+    return ret;
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/helper-missing.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _exception = require('../exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+exports['default'] = function (instance) {
+  instance.registerHelper('helperMissing', function () /* [args, ]options */{
+    if (arguments.length === 1) {
+      // A missing field in a {{foo}} construct.
+      return undefined;
+    } else {
+      // Someone is actually trying to call something, blow up.
+      throw new _exception2['default']('Missing helper: "' + arguments[arguments.length - 1].name + '"');
+    }
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/if.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('../utils');
+
+exports['default'] = function (instance) {
+  instance.registerHelper('if', function (conditional, options) {
+    if (_utils.isFunction(conditional)) {
+      conditional = conditional.call(this);
+    }
+
+    // Default behavior is to render the positive path if the value is truthy and not empty.
+    // The `includeZero` option may be set to treat the condtional as purely not empty based on the
+    // behavior of isEmpty. Effectively this determines if 0 is handled by the positive path or negative.
+    if (!options.hash.includeZero && !conditional || _utils.isEmpty(conditional)) {
+      return options.inverse(this);
+    } else {
+      return options.fn(this);
+    }
+  });
+
+  instance.registerHelper('unless', function (conditional, options) {
+    return instance.helpers['if'].call(this, conditional, { fn: options.inverse, inverse: options.fn, hash: options.hash });
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/log.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+exports['default'] = function (instance) {
+  instance.registerHelper('log', function () /* message, options */{
+    var args = [undefined],
+        options = arguments[arguments.length - 1];
+    for (var i = 0; i < arguments.length - 1; i++) {
+      args.push(arguments[i]);
+    }
+
+    var level = 1;
+    if (options.hash.level != null) {
+      level = options.hash.level;
+    } else if (options.data && options.data.level != null) {
+      level = options.data.level;
+    }
+    args[0] = level;
+
+    instance.log.apply(instance, args);
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/lookup.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+exports['default'] = function (instance) {
+  instance.registerHelper('lookup', function (obj, field) {
+    return obj && obj[field];
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/helpers/with.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('../utils');
+
+exports['default'] = function (instance) {
+  instance.registerHelper('with', function (context, options) {
+    if (_utils.isFunction(context)) {
+      context = context.call(this);
+    }
+
+    var fn = options.fn;
+
+    if (!_utils.isEmpty(context)) {
+      var data = options.data;
+      if (options.data && options.ids) {
+        data = _utils.createFrame(options.data);
+        data.contextPath = _utils.appendContextPath(options.data.contextPath, options.ids[0]);
+      }
+
+      return fn(context, {
+        data: data,
+        blockParams: _utils.blockParams([context], [data && data.contextPath])
+      });
+    } else {
+      return options.inverse(this);
+    }
+  });
+};
+
+module.exports = exports['default'];
+
+
+},{"../utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/logger.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+var _utils = require('./utils');
+
+var logger = {
+  methodMap: ['debug', 'info', 'warn', 'error'],
+  level: 'info',
+
+  // Maps a given level value to the `methodMap` indexes above.
+  lookupLevel: function lookupLevel(level) {
+    if (typeof level === 'string') {
+      var levelMap = _utils.indexOf(logger.methodMap, level.toLowerCase());
+      if (levelMap >= 0) {
+        level = levelMap;
+      } else {
+        level = parseInt(level, 10);
+      }
+    }
+
+    return level;
+  },
+
+  // Can be overridden in the host environment
+  log: function log(level) {
+    level = logger.lookupLevel(level);
+
+    if (typeof console !== 'undefined' && logger.lookupLevel(logger.level) <= level) {
+      var method = logger.methodMap[level];
+      if (!console[method]) {
+        // eslint-disable-line no-console
+        method = 'log';
+      }
+
+      for (var _len = arguments.length, message = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        message[_key - 1] = arguments[_key];
+      }
+
+      console[method].apply(console, message); // eslint-disable-line no-console
+    }
+  }
+};
+
+exports['default'] = logger;
+module.exports = exports['default'];
+
+
+},{"./utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/no-conflict.js":[function(require,module,exports){
+(function (global){
+/* global window */
+'use strict';
+
+exports.__esModule = true;
+
+exports['default'] = function (Handlebars) {
+  /* istanbul ignore next */
+  var root = typeof global !== 'undefined' ? global : window,
+      $Handlebars = root.Handlebars;
+  /* istanbul ignore next */
+  Handlebars.noConflict = function () {
+    if (root.Handlebars === Handlebars) {
+      root.Handlebars = $Handlebars;
+    }
+    return Handlebars;
+  };
+};
+
+module.exports = exports['default'];
+
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/runtime.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.checkRevision = checkRevision;
+exports.template = template;
+exports.wrapProgram = wrapProgram;
+exports.resolvePartial = resolvePartial;
+exports.invokePartial = invokePartial;
+exports.noop = noop;
+// istanbul ignore next
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+// istanbul ignore next
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+var _utils = require('./utils');
+
+var Utils = _interopRequireWildcard(_utils);
+
+var _exception = require('./exception');
+
+var _exception2 = _interopRequireDefault(_exception);
+
+var _base = require('./base');
+
+function checkRevision(compilerInfo) {
+  var compilerRevision = compilerInfo && compilerInfo[0] || 1,
+      currentRevision = _base.COMPILER_REVISION;
+
+  if (compilerRevision !== currentRevision) {
+    if (compilerRevision < currentRevision) {
+      var runtimeVersions = _base.REVISION_CHANGES[currentRevision],
+          compilerVersions = _base.REVISION_CHANGES[compilerRevision];
+      throw new _exception2['default']('Template was precompiled with an older version of Handlebars than the current runtime. ' + 'Please update your precompiler to a newer version (' + runtimeVersions + ') or downgrade your runtime to an older version (' + compilerVersions + ').');
+    } else {
+      // Use the embedded version info since the runtime doesn't know about this revision yet
+      throw new _exception2['default']('Template was precompiled with a newer version of Handlebars than the current runtime. ' + 'Please update your runtime to a newer version (' + compilerInfo[1] + ').');
+    }
+  }
+}
+
+function template(templateSpec, env) {
+  /* istanbul ignore next */
+  if (!env) {
+    throw new _exception2['default']('No environment passed to template');
+  }
+  if (!templateSpec || !templateSpec.main) {
+    throw new _exception2['default']('Unknown template object: ' + typeof templateSpec);
+  }
+
+  templateSpec.main.decorator = templateSpec.main_d;
+
+  // Note: Using env.VM references rather than local var references throughout this section to allow
+  // for external users to override these as psuedo-supported APIs.
+  env.VM.checkRevision(templateSpec.compiler);
+
+  function invokePartialWrapper(partial, context, options) {
+    if (options.hash) {
+      context = Utils.extend({}, context, options.hash);
+      if (options.ids) {
+        options.ids[0] = true;
+      }
+    }
+
+    partial = env.VM.resolvePartial.call(this, partial, context, options);
+    var result = env.VM.invokePartial.call(this, partial, context, options);
+
+    if (result == null && env.compile) {
+      options.partials[options.name] = env.compile(partial, templateSpec.compilerOptions, env);
+      result = options.partials[options.name](context, options);
+    }
+    if (result != null) {
+      if (options.indent) {
+        var lines = result.split('\n');
+        for (var i = 0, l = lines.length; i < l; i++) {
+          if (!lines[i] && i + 1 === l) {
+            break;
+          }
+
+          lines[i] = options.indent + lines[i];
+        }
+        result = lines.join('\n');
+      }
+      return result;
+    } else {
+      throw new _exception2['default']('The partial ' + options.name + ' could not be compiled when running in runtime-only mode');
+    }
+  }
+
+  // Just add water
+  var container = {
+    strict: function strict(obj, name) {
+      if (!(name in obj)) {
+        throw new _exception2['default']('"' + name + '" not defined in ' + obj);
+      }
+      return obj[name];
+    },
+    lookup: function lookup(depths, name) {
+      var len = depths.length;
+      for (var i = 0; i < len; i++) {
+        if (depths[i] && depths[i][name] != null) {
+          return depths[i][name];
+        }
+      }
+    },
+    lambda: function lambda(current, context) {
+      return typeof current === 'function' ? current.call(context) : current;
+    },
+
+    escapeExpression: Utils.escapeExpression,
+    invokePartial: invokePartialWrapper,
+
+    fn: function fn(i) {
+      var ret = templateSpec[i];
+      ret.decorator = templateSpec[i + '_d'];
+      return ret;
+    },
+
+    programs: [],
+    program: function program(i, data, declaredBlockParams, blockParams, depths) {
+      var programWrapper = this.programs[i],
+          fn = this.fn(i);
+      if (data || depths || blockParams || declaredBlockParams) {
+        programWrapper = wrapProgram(this, i, fn, data, declaredBlockParams, blockParams, depths);
+      } else if (!programWrapper) {
+        programWrapper = this.programs[i] = wrapProgram(this, i, fn);
+      }
+      return programWrapper;
+    },
+
+    data: function data(value, depth) {
+      while (value && depth--) {
+        value = value._parent;
+      }
+      return value;
+    },
+    merge: function merge(param, common) {
+      var obj = param || common;
+
+      if (param && common && param !== common) {
+        obj = Utils.extend({}, common, param);
+      }
+
+      return obj;
+    },
+
+    noop: env.VM.noop,
+    compilerInfo: templateSpec.compiler
+  };
+
+  function ret(context) {
+    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    var data = options.data;
+
+    ret._setup(options);
+    if (!options.partial && templateSpec.useData) {
+      data = initData(context, data);
+    }
+    var depths = undefined,
+        blockParams = templateSpec.useBlockParams ? [] : undefined;
+    if (templateSpec.useDepths) {
+      if (options.depths) {
+        depths = context !== options.depths[0] ? [context].concat(options.depths) : options.depths;
+      } else {
+        depths = [context];
+      }
+    }
+
+    function main(context /*, options*/) {
+      return '' + templateSpec.main(container, context, container.helpers, container.partials, data, blockParams, depths);
+    }
+    main = executeDecorators(templateSpec.main, main, container, options.depths || [], data, blockParams);
+    return main(context, options);
+  }
+  ret.isTop = true;
+
+  ret._setup = function (options) {
+    if (!options.partial) {
+      container.helpers = container.merge(options.helpers, env.helpers);
+
+      if (templateSpec.usePartial) {
+        container.partials = container.merge(options.partials, env.partials);
+      }
+      if (templateSpec.usePartial || templateSpec.useDecorators) {
+        container.decorators = container.merge(options.decorators, env.decorators);
+      }
+    } else {
+      container.helpers = options.helpers;
+      container.partials = options.partials;
+      container.decorators = options.decorators;
+    }
+  };
+
+  ret._child = function (i, data, blockParams, depths) {
+    if (templateSpec.useBlockParams && !blockParams) {
+      throw new _exception2['default']('must pass block params');
+    }
+    if (templateSpec.useDepths && !depths) {
+      throw new _exception2['default']('must pass parent depths');
+    }
+
+    return wrapProgram(container, i, templateSpec[i], data, 0, blockParams, depths);
+  };
+  return ret;
+}
+
+function wrapProgram(container, i, fn, data, declaredBlockParams, blockParams, depths) {
+  function prog(context) {
+    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    var currentDepths = depths;
+    if (depths && context !== depths[0]) {
+      currentDepths = [context].concat(depths);
+    }
+
+    return fn(container, context, container.helpers, container.partials, options.data || data, blockParams && [options.blockParams].concat(blockParams), currentDepths);
+  }
+
+  prog = executeDecorators(fn, prog, container, depths, data, blockParams);
+
+  prog.program = i;
+  prog.depth = depths ? depths.length : 0;
+  prog.blockParams = declaredBlockParams || 0;
+  return prog;
+}
+
+function resolvePartial(partial, context, options) {
+  if (!partial) {
+    if (options.name === '@partial-block') {
+      partial = options.data['partial-block'];
+    } else {
+      partial = options.partials[options.name];
+    }
+  } else if (!partial.call && !options.name) {
+    // This is a dynamic partial that returned a string
+    options.name = partial;
+    partial = options.partials[partial];
+  }
+  return partial;
+}
+
+function invokePartial(partial, context, options) {
+  options.partial = true;
+  if (options.ids) {
+    options.data.contextPath = options.ids[0] || options.data.contextPath;
+  }
+
+  var partialBlock = undefined;
+  if (options.fn && options.fn !== noop) {
+    options.data = _base.createFrame(options.data);
+    partialBlock = options.data['partial-block'] = options.fn;
+
+    if (partialBlock.partials) {
+      options.partials = Utils.extend({}, options.partials, partialBlock.partials);
+    }
+  }
+
+  if (partial === undefined && partialBlock) {
+    partial = partialBlock;
+  }
+
+  if (partial === undefined) {
+    throw new _exception2['default']('The partial ' + options.name + ' could not be found');
+  } else if (partial instanceof Function) {
+    return partial(context, options);
+  }
+}
+
+function noop() {
+  return '';
+}
+
+function initData(context, data) {
+  if (!data || !('root' in data)) {
+    data = data ? _base.createFrame(data) : {};
+    data.root = context;
+  }
+  return data;
+}
+
+function executeDecorators(fn, prog, container, depths, data, blockParams) {
+  if (fn.decorator) {
+    var props = {};
+    prog = fn.decorator(prog, props, container, depths && depths[0], data, blockParams, depths);
+    Utils.extend(prog, props);
+  }
+  return prog;
+}
+
+
+},{"./base":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/base.js","./exception":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/exception.js","./utils":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/safe-string.js":[function(require,module,exports){
+// Build out our basic SafeString type
+'use strict';
+
+exports.__esModule = true;
+function SafeString(string) {
+  this.string = string;
+}
+
+SafeString.prototype.toString = SafeString.prototype.toHTML = function () {
+  return '' + this.string;
+};
+
+exports['default'] = SafeString;
+module.exports = exports['default'];
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/utils.js":[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports.extend = extend;
+exports.indexOf = indexOf;
+exports.escapeExpression = escapeExpression;
+exports.isEmpty = isEmpty;
+exports.createFrame = createFrame;
+exports.blockParams = blockParams;
+exports.appendContextPath = appendContextPath;
+var escape = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+var badChars = /[&<>"'`=]/g,
+    possible = /[&<>"'`=]/;
+
+function escapeChar(chr) {
+  return escape[chr];
+}
+
+function extend(obj /* , ...source */) {
+  for (var i = 1; i < arguments.length; i++) {
+    for (var key in arguments[i]) {
+      if (Object.prototype.hasOwnProperty.call(arguments[i], key)) {
+        obj[key] = arguments[i][key];
+      }
+    }
+  }
+
+  return obj;
+}
+
+var toString = Object.prototype.toString;
+
+exports.toString = toString;
+// Sourced from lodash
+// https://github.com/bestiejs/lodash/blob/master/LICENSE.txt
+/* eslint-disable func-style */
+var isFunction = function isFunction(value) {
+  return typeof value === 'function';
+};
+// fallback for older versions of Chrome and Safari
+/* istanbul ignore next */
+if (isFunction(/x/)) {
+  exports.isFunction = isFunction = function (value) {
+    return typeof value === 'function' && toString.call(value) === '[object Function]';
+  };
+}
+exports.isFunction = isFunction;
+
+/* eslint-enable func-style */
+
+/* istanbul ignore next */
+var isArray = Array.isArray || function (value) {
+  return value && typeof value === 'object' ? toString.call(value) === '[object Array]' : false;
+};
+
+exports.isArray = isArray;
+// Older IE versions do not directly support indexOf so we must implement our own, sadly.
+
+function indexOf(array, value) {
+  for (var i = 0, len = array.length; i < len; i++) {
+    if (array[i] === value) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function escapeExpression(string) {
+  if (typeof string !== 'string') {
+    // don't escape SafeStrings, since they're already safe
+    if (string && string.toHTML) {
+      return string.toHTML();
+    } else if (string == null) {
+      return '';
+    } else if (!string) {
+      return string + '';
+    }
+
+    // Force a string conversion as this will be done by the append regardless and
+    // the regex test will do this transparently behind the scenes, causing issues if
+    // an object's to string has escaped characters in it.
+    string = '' + string;
+  }
+
+  if (!possible.test(string)) {
+    return string;
+  }
+  return string.replace(badChars, escapeChar);
+}
+
+function isEmpty(value) {
+  if (!value && value !== 0) {
+    return true;
+  } else if (isArray(value) && value.length === 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function createFrame(object) {
+  var frame = extend({}, object);
+  frame._parent = object;
+  return frame;
+}
+
+function blockParams(params, ids) {
+  params.path = ids;
+  return params;
+}
+
+function appendContextPath(contextPath, id) {
+  return (contextPath ? contextPath + '.' : '') + id;
+}
+
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/lib/index.js":[function(require,module,exports){
+arguments[4]["/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"][0].apply(exports,arguments)
+},{"../dist/cjs/handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars.js","../dist/cjs/handlebars/compiler/printer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/dist/cjs/handlebars/compiler/printer.js","fs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/browserify/lib/_empty.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-draw/dist/leaflet.draw.js":[function(require,module,exports){
 /*
 	Leaflet.draw, a plugin that adds drawing and editing tools to Leaflet powered maps.
 	(c) 2012-2013, Jacob Toye, Smartrak
@@ -29654,6 +33660,10116 @@ L.Map.include({
 */
 !function(t,e){L.drawVersion="0.2.4-dev",L.drawLocal={draw:{toolbar:{actions:{title:"Cancel drawing",text:"Cancel"},undo:{title:"Delete last point drawn",text:"Delete last point"},buttons:{polyline:"Draw a polyline",polygon:"Draw a polygon",rectangle:"Draw a rectangle",circle:"Draw a circle",marker:"Draw a marker"}},handlers:{circle:{tooltip:{start:"Click and drag to draw circle."}},marker:{tooltip:{start:"Click map to place marker."}},polygon:{tooltip:{start:"Click to start drawing shape.",cont:"Click to continue drawing shape.",end:"Click first point to close this shape."}},polyline:{error:"<strong>Error:</strong> shape edges cannot cross!",tooltip:{start:"Click to start drawing line.",cont:"Click to continue drawing line.",end:"Click last point to finish line."}},rectangle:{tooltip:{start:"Click and drag to draw rectangle."}},simpleshape:{tooltip:{end:"Release mouse to finish drawing."}}}},edit:{toolbar:{actions:{save:{title:"Save changes.",text:"Save"},cancel:{title:"Cancel editing, discards all changes.",text:"Cancel"}},buttons:{edit:"Edit layers.",editDisabled:"No layers to edit.",remove:"Delete layers.",removeDisabled:"No layers to delete."}},handlers:{edit:{tooltip:{text:"Drag handles, or marker to edit feature.",subtext:"Click cancel to undo changes."}},remove:{tooltip:{text:"Click on a feature to remove"}}}}},L.Draw={},L.Draw.Feature=L.Handler.extend({includes:L.Mixin.Events,initialize:function(t,e){this._map=t,this._container=t._container,this._overlayPane=t._panes.overlayPane,this._popupPane=t._panes.popupPane,e&&e.shapeOptions&&(e.shapeOptions=L.Util.extend({},this.options.shapeOptions,e.shapeOptions)),L.setOptions(this,e)},enable:function(){this._enabled||(this.fire("enabled",{handler:this.type}),this._map.fire("draw:drawstart",{layerType:this.type}),L.Handler.prototype.enable.call(this))},disable:function(){this._enabled&&(L.Handler.prototype.disable.call(this),this._map.fire("draw:drawstop",{layerType:this.type}),this.fire("disabled",{handler:this.type}))},addHooks:function(){var t=this._map;t&&(L.DomUtil.disableTextSelection(),t.getContainer().focus(),this._tooltip=new L.Tooltip(this._map),L.DomEvent.on(this._container,"keyup",this._cancelDrawing,this))},removeHooks:function(){this._map&&(L.DomUtil.enableTextSelection(),this._tooltip.dispose(),this._tooltip=null,L.DomEvent.off(this._container,"keyup",this._cancelDrawing,this))},setOptions:function(t){L.setOptions(this,t)},_fireCreatedEvent:function(t){this._map.fire("draw:created",{layer:t,layerType:this.type})},_cancelDrawing:function(t){27===t.keyCode&&this.disable()}}),L.Draw.Polyline=L.Draw.Feature.extend({statics:{TYPE:"polyline"},Poly:L.Polyline,options:{allowIntersection:!0,repeatMode:!1,drawError:{color:"#b00b00",timeout:2500},icon:new L.DivIcon({iconSize:new L.Point(8,8),className:"leaflet-div-icon leaflet-editing-icon"}),guidelineDistance:20,maxGuideLineLength:4e3,shapeOptions:{stroke:!0,color:"#f06eaa",weight:4,opacity:.5,fill:!1,clickable:!0},metric:!0,showLength:!0,zIndexOffset:2e3},initialize:function(t,e){this.options.drawError.message=L.drawLocal.draw.handlers.polyline.error,e&&e.drawError&&(e.drawError=L.Util.extend({},this.options.drawError,e.drawError)),this.type=L.Draw.Polyline.TYPE,L.Draw.Feature.prototype.initialize.call(this,t,e)},addHooks:function(){L.Draw.Feature.prototype.addHooks.call(this),this._map&&(this._markers=[],this._markerGroup=new L.LayerGroup,this._map.addLayer(this._markerGroup),this._poly=new L.Polyline([],this.options.shapeOptions),this._tooltip.updateContent(this._getTooltipText()),this._mouseMarker||(this._mouseMarker=L.marker(this._map.getCenter(),{icon:L.divIcon({className:"leaflet-mouse-marker",iconAnchor:[20,20],iconSize:[40,40]}),opacity:0,zIndexOffset:this.options.zIndexOffset})),this._mouseMarker.on("mousedown",this._onMouseDown,this).addTo(this._map),this._map.on("mousemove",this._onMouseMove,this).on("mouseup",this._onMouseUp,this).on("zoomend",this._onZoomEnd,this))},removeHooks:function(){L.Draw.Feature.prototype.removeHooks.call(this),this._clearHideErrorTimeout(),this._cleanUpShape(),this._map.removeLayer(this._markerGroup),delete this._markerGroup,delete this._markers,this._map.removeLayer(this._poly),delete this._poly,this._mouseMarker.off("mousedown",this._onMouseDown,this).off("mouseup",this._onMouseUp,this),this._map.removeLayer(this._mouseMarker),delete this._mouseMarker,this._clearGuides(),this._map.off("mousemove",this._onMouseMove,this).off("zoomend",this._onZoomEnd,this)},deleteLastVertex:function(){if(!(this._markers.length<=1)){var t=this._markers.pop(),e=this._poly,i=this._poly.spliceLatLngs(e.getLatLngs().length-1,1)[0];this._markerGroup.removeLayer(t),e.getLatLngs().length<2&&this._map.removeLayer(e),this._vertexChanged(i,!1)}},addVertex:function(t){var e=this._markers.length;return e>0&&!this.options.allowIntersection&&this._poly.newLatLngIntersects(t)?(this._showErrorTooltip(),void 0):(this._errorShown&&this._hideErrorTooltip(),this._markers.push(this._createMarker(t)),this._poly.addLatLng(t),2===this._poly.getLatLngs().length&&this._map.addLayer(this._poly),this._vertexChanged(t,!0),void 0)},_finishShape:function(){var t=this._poly.newLatLngIntersects(this._poly.getLatLngs()[0],!0);return!this.options.allowIntersection&&t||!this._shapeIsValid()?(this._showErrorTooltip(),void 0):(this._fireCreatedEvent(),this.disable(),this.options.repeatMode&&this.enable(),void 0)},_shapeIsValid:function(){return!0},_onZoomEnd:function(){this._updateGuide()},_onMouseMove:function(t){var e=t.layerPoint,i=t.latlng;this._currentLatLng=i,this._updateTooltip(i),this._updateGuide(e),this._mouseMarker.setLatLng(i),L.DomEvent.preventDefault(t.originalEvent)},_vertexChanged:function(t,e){this._updateFinishHandler(),this._updateRunningMeasure(t,e),this._clearGuides(),this._updateTooltip()},_onMouseDown:function(t){var e=t.originalEvent;this._mouseDownOrigin=L.point(e.clientX,e.clientY)},_onMouseUp:function(e){if(this._mouseDownOrigin){var i=L.point(e.originalEvent.clientX,e.originalEvent.clientY).distanceTo(this._mouseDownOrigin);Math.abs(i)<9*(t.devicePixelRatio||1)&&this.addVertex(e.latlng)}this._mouseDownOrigin=null},_updateFinishHandler:function(){var t=this._markers.length;t>1&&this._markers[t-1].on("click",this._finishShape,this),t>2&&this._markers[t-2].off("click",this._finishShape,this)},_createMarker:function(t){var e=new L.Marker(t,{icon:this.options.icon,zIndexOffset:2*this.options.zIndexOffset});return this._markerGroup.addLayer(e),e},_updateGuide:function(t){var e=this._markers.length;e>0&&(t=t||this._map.latLngToLayerPoint(this._currentLatLng),this._clearGuides(),this._drawGuide(this._map.latLngToLayerPoint(this._markers[e-1].getLatLng()),t))},_updateTooltip:function(t){var e=this._getTooltipText();t&&this._tooltip.updatePosition(t),this._errorShown||this._tooltip.updateContent(e)},_drawGuide:function(t,e){var i,o,a,s=Math.floor(Math.sqrt(Math.pow(e.x-t.x,2)+Math.pow(e.y-t.y,2))),r=this.options.guidelineDistance,n=this.options.maxGuideLineLength,l=s>n?s-n:r;for(this._guidesContainer||(this._guidesContainer=L.DomUtil.create("div","leaflet-draw-guides",this._overlayPane));s>l;l+=this.options.guidelineDistance)i=l/s,o={x:Math.floor(t.x*(1-i)+i*e.x),y:Math.floor(t.y*(1-i)+i*e.y)},a=L.DomUtil.create("div","leaflet-draw-guide-dash",this._guidesContainer),a.style.backgroundColor=this._errorShown?this.options.drawError.color:this.options.shapeOptions.color,L.DomUtil.setPosition(a,o)},_updateGuideColor:function(t){if(this._guidesContainer)for(var e=0,i=this._guidesContainer.childNodes.length;i>e;e++)this._guidesContainer.childNodes[e].style.backgroundColor=t},_clearGuides:function(){if(this._guidesContainer)for(;this._guidesContainer.firstChild;)this._guidesContainer.removeChild(this._guidesContainer.firstChild)},_getTooltipText:function(){var t,e,i=this.options.showLength;return 0===this._markers.length?t={text:L.drawLocal.draw.handlers.polyline.tooltip.start}:(e=i?this._getMeasurementString():"",t=1===this._markers.length?{text:L.drawLocal.draw.handlers.polyline.tooltip.cont,subtext:e}:{text:L.drawLocal.draw.handlers.polyline.tooltip.end,subtext:e}),t},_updateRunningMeasure:function(t,e){var i,o,a=this._markers.length;1===this._markers.length?this._measurementRunningTotal=0:(i=a-(e?2:1),o=t.distanceTo(this._markers[i].getLatLng()),this._measurementRunningTotal+=o*(e?1:-1))},_getMeasurementString:function(){var t,e=this._currentLatLng,i=this._markers[this._markers.length-1].getLatLng();return t=this._measurementRunningTotal+e.distanceTo(i),L.GeometryUtil.readableDistance(t,this.options.metric)},_showErrorTooltip:function(){this._errorShown=!0,this._tooltip.showAsError().updateContent({text:this.options.drawError.message}),this._updateGuideColor(this.options.drawError.color),this._poly.setStyle({color:this.options.drawError.color}),this._clearHideErrorTimeout(),this._hideErrorTimeout=setTimeout(L.Util.bind(this._hideErrorTooltip,this),this.options.drawError.timeout)},_hideErrorTooltip:function(){this._errorShown=!1,this._clearHideErrorTimeout(),this._tooltip.removeError().updateContent(this._getTooltipText()),this._updateGuideColor(this.options.shapeOptions.color),this._poly.setStyle({color:this.options.shapeOptions.color})},_clearHideErrorTimeout:function(){this._hideErrorTimeout&&(clearTimeout(this._hideErrorTimeout),this._hideErrorTimeout=null)},_cleanUpShape:function(){this._markers.length>1&&this._markers[this._markers.length-1].off("click",this._finishShape,this)},_fireCreatedEvent:function(){var t=new this.Poly(this._poly.getLatLngs(),this.options.shapeOptions);L.Draw.Feature.prototype._fireCreatedEvent.call(this,t)}}),L.Draw.Polygon=L.Draw.Polyline.extend({statics:{TYPE:"polygon"},Poly:L.Polygon,options:{showArea:!1,shapeOptions:{stroke:!0,color:"#f06eaa",weight:4,opacity:.5,fill:!0,fillColor:null,fillOpacity:.2,clickable:!0}},initialize:function(t,e){L.Draw.Polyline.prototype.initialize.call(this,t,e),this.type=L.Draw.Polygon.TYPE},_updateFinishHandler:function(){var t=this._markers.length;1===t&&this._markers[0].on("click",this._finishShape,this),t>2&&(this._markers[t-1].on("dblclick",this._finishShape,this),t>3&&this._markers[t-2].off("dblclick",this._finishShape,this))},_getTooltipText:function(){var t,e;return 0===this._markers.length?t=L.drawLocal.draw.handlers.polygon.tooltip.start:this._markers.length<3?t=L.drawLocal.draw.handlers.polygon.tooltip.cont:(t=L.drawLocal.draw.handlers.polygon.tooltip.end,e=this._getMeasurementString()),{text:t,subtext:e}},_getMeasurementString:function(){var t=this._area;return t?L.GeometryUtil.readableArea(t,this.options.metric):null},_shapeIsValid:function(){return this._markers.length>=3},_vertexChanged:function(t,e){var i;!this.options.allowIntersection&&this.options.showArea&&(i=this._poly.getLatLngs(),this._area=L.GeometryUtil.geodesicArea(i)),L.Draw.Polyline.prototype._vertexChanged.call(this,t,e)},_cleanUpShape:function(){var t=this._markers.length;t>0&&(this._markers[0].off("click",this._finishShape,this),t>2&&this._markers[t-1].off("dblclick",this._finishShape,this))}}),L.SimpleShape={},L.Draw.SimpleShape=L.Draw.Feature.extend({options:{repeatMode:!1},initialize:function(t,e){this._endLabelText=L.drawLocal.draw.handlers.simpleshape.tooltip.end,L.Draw.Feature.prototype.initialize.call(this,t,e)},addHooks:function(){L.Draw.Feature.prototype.addHooks.call(this),this._map&&(this._mapDraggable=this._map.dragging.enabled(),this._mapDraggable&&this._map.dragging.disable(),this._container.style.cursor="crosshair",this._tooltip.updateContent({text:this._initialLabelText}),this._map.on("mousedown",this._onMouseDown,this).on("mousemove",this._onMouseMove,this))},removeHooks:function(){L.Draw.Feature.prototype.removeHooks.call(this),this._map&&(this._mapDraggable&&this._map.dragging.enable(),this._container.style.cursor="",this._map.off("mousedown",this._onMouseDown,this).off("mousemove",this._onMouseMove,this),L.DomEvent.off(e,"mouseup",this._onMouseUp,this),this._shape&&(this._map.removeLayer(this._shape),delete this._shape)),this._isDrawing=!1},_onMouseDown:function(t){this._isDrawing=!0,this._startLatLng=t.latlng,L.DomEvent.on(e,"mouseup",this._onMouseUp,this).preventDefault(t.originalEvent)},_onMouseMove:function(t){var e=t.latlng;this._tooltip.updatePosition(e),this._isDrawing&&(this._tooltip.updateContent({text:this._endLabelText}),this._drawShape(e))},_onMouseUp:function(){this._shape&&this._fireCreatedEvent(),this.disable(),this.options.repeatMode&&this.enable()}}),L.Draw.Rectangle=L.Draw.SimpleShape.extend({statics:{TYPE:"rectangle"},options:{shapeOptions:{stroke:!0,color:"#f06eaa",weight:4,opacity:.5,fill:!0,fillColor:null,fillOpacity:.2,clickable:!0}},initialize:function(t,e){this.type=L.Draw.Rectangle.TYPE,this._initialLabelText=L.drawLocal.draw.handlers.rectangle.tooltip.start,L.Draw.SimpleShape.prototype.initialize.call(this,t,e)},_drawShape:function(t){this._shape?this._shape.setBounds(new L.LatLngBounds(this._startLatLng,t)):(this._shape=new L.Rectangle(new L.LatLngBounds(this._startLatLng,t),this.options.shapeOptions),this._map.addLayer(this._shape))},_fireCreatedEvent:function(){var t=new L.Rectangle(this._shape.getBounds(),this.options.shapeOptions);L.Draw.SimpleShape.prototype._fireCreatedEvent.call(this,t)}}),L.Draw.Circle=L.Draw.SimpleShape.extend({statics:{TYPE:"circle"},options:{shapeOptions:{stroke:!0,color:"#f06eaa",weight:4,opacity:.5,fill:!0,fillColor:null,fillOpacity:.2,clickable:!0},showRadius:!0,metric:!0},initialize:function(t,e){this.type=L.Draw.Circle.TYPE,this._initialLabelText=L.drawLocal.draw.handlers.circle.tooltip.start,L.Draw.SimpleShape.prototype.initialize.call(this,t,e)},_drawShape:function(t){this._shape?this._shape.setRadius(this._startLatLng.distanceTo(t)):(this._shape=new L.Circle(this._startLatLng,this._startLatLng.distanceTo(t),this.options.shapeOptions),this._map.addLayer(this._shape))},_fireCreatedEvent:function(){var t=new L.Circle(this._startLatLng,this._shape.getRadius(),this.options.shapeOptions);L.Draw.SimpleShape.prototype._fireCreatedEvent.call(this,t)},_onMouseMove:function(t){var e,i=t.latlng,o=this.options.showRadius,a=this.options.metric;this._tooltip.updatePosition(i),this._isDrawing&&(this._drawShape(i),e=this._shape.getRadius().toFixed(1),this._tooltip.updateContent({text:this._endLabelText,subtext:o?"Radius: "+L.GeometryUtil.readableDistance(e,a):""}))}}),L.Draw.Marker=L.Draw.Feature.extend({statics:{TYPE:"marker"},options:{icon:new L.Icon.Default,repeatMode:!1,zIndexOffset:2e3},initialize:function(t,e){this.type=L.Draw.Marker.TYPE,L.Draw.Feature.prototype.initialize.call(this,t,e)},addHooks:function(){L.Draw.Feature.prototype.addHooks.call(this),this._map&&(this._tooltip.updateContent({text:L.drawLocal.draw.handlers.marker.tooltip.start}),this._mouseMarker||(this._mouseMarker=L.marker(this._map.getCenter(),{icon:L.divIcon({className:"leaflet-mouse-marker",iconAnchor:[20,20],iconSize:[40,40]}),opacity:0,zIndexOffset:this.options.zIndexOffset})),this._mouseMarker.on("click",this._onClick,this).addTo(this._map),this._map.on("mousemove",this._onMouseMove,this))},removeHooks:function(){L.Draw.Feature.prototype.removeHooks.call(this),this._map&&(this._marker&&(this._marker.off("click",this._onClick,this),this._map.off("click",this._onClick,this).removeLayer(this._marker),delete this._marker),this._mouseMarker.off("click",this._onClick,this),this._map.removeLayer(this._mouseMarker),delete this._mouseMarker,this._map.off("mousemove",this._onMouseMove,this))},_onMouseMove:function(t){var e=t.latlng;this._tooltip.updatePosition(e),this._mouseMarker.setLatLng(e),this._marker?(e=this._mouseMarker.getLatLng(),this._marker.setLatLng(e)):(this._marker=new L.Marker(e,{icon:this.options.icon,zIndexOffset:this.options.zIndexOffset}),this._marker.on("click",this._onClick,this),this._map.on("click",this._onClick,this).addLayer(this._marker))},_onClick:function(){this._fireCreatedEvent(),this.disable(),this.options.repeatMode&&this.enable()},_fireCreatedEvent:function(){var t=new L.Marker(this._marker.getLatLng(),{icon:this.options.icon});L.Draw.Feature.prototype._fireCreatedEvent.call(this,t)}}),L.Edit=L.Edit||{},L.Edit.Poly=L.Handler.extend({options:{icon:new L.DivIcon({iconSize:new L.Point(8,8),className:"leaflet-div-icon leaflet-editing-icon"})},initialize:function(t,e){this._poly=t,L.setOptions(this,e)},addHooks:function(){this._poly._map&&(this._markerGroup||this._initMarkers(),this._poly._map.addLayer(this._markerGroup))},removeHooks:function(){this._poly._map&&(this._poly._map.removeLayer(this._markerGroup),delete this._markerGroup,delete this._markers)},updateMarkers:function(){this._markerGroup.clearLayers(),this._initMarkers()},_initMarkers:function(){this._markerGroup||(this._markerGroup=new L.LayerGroup),this._markers=[];var t,e,i,o,a=this._poly._latlngs;for(t=0,i=a.length;i>t;t++)o=this._createMarker(a[t],t),o.on("click",this._onMarkerClick,this),this._markers.push(o);var s,r;for(t=0,e=i-1;i>t;e=t++)(0!==t||L.Polygon&&this._poly instanceof L.Polygon)&&(s=this._markers[e],r=this._markers[t],this._createMiddleMarker(s,r),this._updatePrevNext(s,r))},_createMarker:function(t,e){var i=new L.Marker(t,{draggable:!0,icon:this.options.icon});return i._origLatLng=t,i._index=e,i.on("drag",this._onMarkerDrag,this),i.on("dragend",this._fireEdit,this),this._markerGroup.addLayer(i),i},_removeMarker:function(t){var e=t._index;this._markerGroup.removeLayer(t),this._markers.splice(e,1),this._poly.spliceLatLngs(e,1),this._updateIndexes(e,-1),t.off("drag",this._onMarkerDrag,this).off("dragend",this._fireEdit,this).off("click",this._onMarkerClick,this)},_fireEdit:function(){this._poly.edited=!0,this._poly.fire("edit")},_onMarkerDrag:function(t){var e=t.target;L.extend(e._origLatLng,e._latlng),e._middleLeft&&e._middleLeft.setLatLng(this._getMiddleLatLng(e._prev,e)),e._middleRight&&e._middleRight.setLatLng(this._getMiddleLatLng(e,e._next)),this._poly.redraw()},_onMarkerClick:function(t){var e=L.Polygon&&this._poly instanceof L.Polygon?4:3,i=t.target;this._poly._latlngs.length<e||(this._removeMarker(i),this._updatePrevNext(i._prev,i._next),i._middleLeft&&this._markerGroup.removeLayer(i._middleLeft),i._middleRight&&this._markerGroup.removeLayer(i._middleRight),i._prev&&i._next?this._createMiddleMarker(i._prev,i._next):i._prev?i._next||(i._prev._middleRight=null):i._next._middleLeft=null,this._fireEdit())},_updateIndexes:function(t,e){this._markerGroup.eachLayer(function(i){i._index>t&&(i._index+=e)})},_createMiddleMarker:function(t,e){var i,o,a,s=this._getMiddleLatLng(t,e),r=this._createMarker(s);r.setOpacity(.6),t._middleRight=e._middleLeft=r,o=function(){var o=e._index;r._index=o,r.off("click",i,this).on("click",this._onMarkerClick,this),s.lat=r.getLatLng().lat,s.lng=r.getLatLng().lng,this._poly.spliceLatLngs(o,0,s),this._markers.splice(o,0,r),r.setOpacity(1),this._updateIndexes(o,1),e._index++,this._updatePrevNext(t,r),this._updatePrevNext(r,e),this._poly.fire("editstart")},a=function(){r.off("dragstart",o,this),r.off("dragend",a,this),this._createMiddleMarker(t,r),this._createMiddleMarker(r,e)},i=function(){o.call(this),a.call(this),this._fireEdit()},r.on("click",i,this).on("dragstart",o,this).on("dragend",a,this),this._markerGroup.addLayer(r)},_updatePrevNext:function(t,e){t&&(t._next=e),e&&(e._prev=t)},_getMiddleLatLng:function(t,e){var i=this._poly._map,o=i.project(t.getLatLng()),a=i.project(e.getLatLng());return i.unproject(o._add(a)._divideBy(2))}}),L.Polyline.addInitHook(function(){this.editing||(L.Edit.Poly&&(this.editing=new L.Edit.Poly(this),this.options.editable&&this.editing.enable()),this.on("add",function(){this.editing&&this.editing.enabled()&&this.editing.addHooks()}),this.on("remove",function(){this.editing&&this.editing.enabled()&&this.editing.removeHooks()}))}),L.Edit=L.Edit||{},L.Edit.SimpleShape=L.Handler.extend({options:{moveIcon:new L.DivIcon({iconSize:new L.Point(8,8),className:"leaflet-div-icon leaflet-editing-icon leaflet-edit-move"}),resizeIcon:new L.DivIcon({iconSize:new L.Point(8,8),className:"leaflet-div-icon leaflet-editing-icon leaflet-edit-resize"})},initialize:function(t,e){this._shape=t,L.Util.setOptions(this,e)},addHooks:function(){this._shape._map&&(this._map=this._shape._map,this._markerGroup||this._initMarkers(),this._map.addLayer(this._markerGroup))},removeHooks:function(){if(this._shape._map){this._unbindMarker(this._moveMarker);for(var t=0,e=this._resizeMarkers.length;e>t;t++)this._unbindMarker(this._resizeMarkers[t]);this._resizeMarkers=null,this._map.removeLayer(this._markerGroup),delete this._markerGroup}this._map=null},updateMarkers:function(){this._markerGroup.clearLayers(),this._initMarkers()},_initMarkers:function(){this._markerGroup||(this._markerGroup=new L.LayerGroup),this._createMoveMarker(),this._createResizeMarker()},_createMoveMarker:function(){},_createResizeMarker:function(){},_createMarker:function(t,e){var i=new L.Marker(t,{draggable:!0,icon:e,zIndexOffset:10});return this._bindMarker(i),this._markerGroup.addLayer(i),i},_bindMarker:function(t){t.on("dragstart",this._onMarkerDragStart,this).on("drag",this._onMarkerDrag,this).on("dragend",this._onMarkerDragEnd,this)},_unbindMarker:function(t){t.off("dragstart",this._onMarkerDragStart,this).off("drag",this._onMarkerDrag,this).off("dragend",this._onMarkerDragEnd,this)},_onMarkerDragStart:function(t){var e=t.target;e.setOpacity(0),this._shape.fire("editstart")},_fireEdit:function(){this._shape.edited=!0,this._shape.fire("edit")},_onMarkerDrag:function(t){var e=t.target,i=e.getLatLng();e===this._moveMarker?this._move(i):this._resize(i),this._shape.redraw()},_onMarkerDragEnd:function(t){var e=t.target;e.setOpacity(1),this._fireEdit()},_move:function(){},_resize:function(){}}),L.Edit=L.Edit||{},L.Edit.Rectangle=L.Edit.SimpleShape.extend({_createMoveMarker:function(){var t=this._shape.getBounds(),e=t.getCenter();this._moveMarker=this._createMarker(e,this.options.moveIcon)},_createResizeMarker:function(){var t=this._getCorners();this._resizeMarkers=[];for(var e=0,i=t.length;i>e;e++)this._resizeMarkers.push(this._createMarker(t[e],this.options.resizeIcon)),this._resizeMarkers[e]._cornerIndex=e},_onMarkerDragStart:function(t){L.Edit.SimpleShape.prototype._onMarkerDragStart.call(this,t);var e=this._getCorners(),i=t.target,o=i._cornerIndex;this._oppositeCorner=e[(o+2)%4],this._toggleCornerMarkers(0,o)},_onMarkerDragEnd:function(t){var e,i,o=t.target;o===this._moveMarker&&(e=this._shape.getBounds(),i=e.getCenter(),o.setLatLng(i)),this._toggleCornerMarkers(1),this._repositionCornerMarkers(),L.Edit.SimpleShape.prototype._onMarkerDragEnd.call(this,t)},_move:function(t){for(var e,i=this._shape.getLatLngs(),o=this._shape.getBounds(),a=o.getCenter(),s=[],r=0,n=i.length;n>r;r++)e=[i[r].lat-a.lat,i[r].lng-a.lng],s.push([t.lat+e[0],t.lng+e[1]]);this._shape.setLatLngs(s),this._repositionCornerMarkers()},_resize:function(t){var e;this._shape.setBounds(L.latLngBounds(t,this._oppositeCorner)),e=this._shape.getBounds(),this._moveMarker.setLatLng(e.getCenter())},_getCorners:function(){var t=this._shape.getBounds(),e=t.getNorthWest(),i=t.getNorthEast(),o=t.getSouthEast(),a=t.getSouthWest();return[e,i,o,a]},_toggleCornerMarkers:function(t){for(var e=0,i=this._resizeMarkers.length;i>e;e++)this._resizeMarkers[e].setOpacity(t)},_repositionCornerMarkers:function(){for(var t=this._getCorners(),e=0,i=this._resizeMarkers.length;i>e;e++)this._resizeMarkers[e].setLatLng(t[e])}}),L.Rectangle.addInitHook(function(){L.Edit.Rectangle&&(this.editing=new L.Edit.Rectangle(this),this.options.editable&&this.editing.enable())}),L.Edit=L.Edit||{},L.Edit.Circle=L.Edit.SimpleShape.extend({_createMoveMarker:function(){var t=this._shape.getLatLng();this._moveMarker=this._createMarker(t,this.options.moveIcon)},_createResizeMarker:function(){var t=this._shape.getLatLng(),e=this._getResizeMarkerPoint(t);this._resizeMarkers=[],this._resizeMarkers.push(this._createMarker(e,this.options.resizeIcon))},_getResizeMarkerPoint:function(t){var e=this._shape._radius*Math.cos(Math.PI/4),i=this._map.project(t);return this._map.unproject([i.x+e,i.y-e])},_move:function(t){var e=this._getResizeMarkerPoint(t);this._resizeMarkers[0].setLatLng(e),this._shape.setLatLng(t)},_resize:function(t){var e=this._moveMarker.getLatLng(),i=e.distanceTo(t);this._shape.setRadius(i)}}),L.Circle.addInitHook(function(){L.Edit.Circle&&(this.editing=new L.Edit.Circle(this),this.options.editable&&this.editing.enable()),this.on("add",function(){this.editing&&this.editing.enabled()&&this.editing.addHooks()}),this.on("remove",function(){this.editing&&this.editing.enabled()&&this.editing.removeHooks()})}),L.LatLngUtil={cloneLatLngs:function(t){for(var e=[],i=0,o=t.length;o>i;i++)e.push(this.cloneLatLng(t[i]));return e},cloneLatLng:function(t){return L.latLng(t.lat,t.lng)}},L.GeometryUtil=L.extend(L.GeometryUtil||{},{geodesicArea:function(t){var e,i,o=t.length,a=0,s=L.LatLng.DEG_TO_RAD;if(o>2){for(var r=0;o>r;r++)e=t[r],i=t[(r+1)%o],a+=(i.lng-e.lng)*s*(2+Math.sin(e.lat*s)+Math.sin(i.lat*s));a=6378137*a*6378137/2}return Math.abs(a)},readableArea:function(t,e){var i;return e?i=t>=1e4?(1e-4*t).toFixed(2)+" ha":t.toFixed(2)+" m&sup2;":(t*=.836127,i=t>=3097600?(t/3097600).toFixed(2)+" mi&sup2;":t>=4840?(t/4840).toFixed(2)+" acres":Math.ceil(t)+" yd&sup2;"),i},readableDistance:function(t,e){var i;return e?i=t>1e3?(t/1e3).toFixed(2)+" km":Math.ceil(t)+" m":(t*=1.09361,i=t>1760?(t/1760).toFixed(2)+" miles":Math.ceil(t)+" yd"),i}}),L.Util.extend(L.LineUtil,{segmentsIntersect:function(t,e,i,o){return this._checkCounterclockwise(t,i,o)!==this._checkCounterclockwise(e,i,o)&&this._checkCounterclockwise(t,e,i)!==this._checkCounterclockwise(t,e,o)},_checkCounterclockwise:function(t,e,i){return(i.y-t.y)*(e.x-t.x)>(e.y-t.y)*(i.x-t.x)}}),L.Polyline.include({intersects:function(){var t,e,i,o=this._originalPoints,a=o?o.length:0;if(this._tooFewPointsForIntersection())return!1;for(t=a-1;t>=3;t--)if(e=o[t-1],i=o[t],this._lineSegmentsIntersectsRange(e,i,t-2))return!0;return!1},newLatLngIntersects:function(t,e){return this._map?this.newPointIntersects(this._map.latLngToLayerPoint(t),e):!1},newPointIntersects:function(t,e){var i=this._originalPoints,o=i?i.length:0,a=i?i[o-1]:null,s=o-2;return this._tooFewPointsForIntersection(1)?!1:this._lineSegmentsIntersectsRange(a,t,s,e?1:0)},_tooFewPointsForIntersection:function(t){var e=this._originalPoints,i=e?e.length:0;return i+=t||0,!this._originalPoints||3>=i},_lineSegmentsIntersectsRange:function(t,e,i,o){var a,s,r=this._originalPoints;o=o||0;for(var n=i;n>o;n--)if(a=r[n-1],s=r[n],L.LineUtil.segmentsIntersect(t,e,a,s))return!0;return!1}}),L.Polygon.include({intersects:function(){var t,e,i,o,a,s=this._originalPoints;return this._tooFewPointsForIntersection()?!1:(t=L.Polyline.prototype.intersects.call(this))?!0:(e=s.length,i=s[0],o=s[e-1],a=e-2,this._lineSegmentsIntersectsRange(o,i,a,1))}}),L.Control.Draw=L.Control.extend({options:{position:"topleft",draw:{},edit:!1},initialize:function(t){if(L.version<"0.7")throw new Error("Leaflet.draw 0.2.3+ requires Leaflet 0.7.0+. Download latest from https://github.com/Leaflet/Leaflet/");L.Control.prototype.initialize.call(this,t);var e,i;this._toolbars={},L.DrawToolbar&&this.options.draw&&(i=new L.DrawToolbar(this.options.draw),e=L.stamp(i),this._toolbars[e]=i,this._toolbars[e].on("enable",this._toolbarEnabled,this)),L.EditToolbar&&this.options.edit&&(i=new L.EditToolbar(this.options.edit),e=L.stamp(i),this._toolbars[e]=i,this._toolbars[e].on("enable",this._toolbarEnabled,this))},onAdd:function(t){var e,i=L.DomUtil.create("div","leaflet-draw"),o=!1,a="leaflet-draw-toolbar-top";for(var s in this._toolbars)this._toolbars.hasOwnProperty(s)&&(e=this._toolbars[s].addToolbar(t),e&&(o||(L.DomUtil.hasClass(e,a)||L.DomUtil.addClass(e.childNodes[0],a),o=!0),i.appendChild(e)));return i},onRemove:function(){for(var t in this._toolbars)this._toolbars.hasOwnProperty(t)&&this._toolbars[t].removeToolbar()},setDrawingOptions:function(t){for(var e in this._toolbars)this._toolbars[e]instanceof L.DrawToolbar&&this._toolbars[e].setOptions(t)},_toolbarEnabled:function(t){var e=""+L.stamp(t.target);for(var i in this._toolbars)this._toolbars.hasOwnProperty(i)&&i!==e&&this._toolbars[i].disable()}}),L.Map.mergeOptions({drawControlTooltips:!0,drawControl:!1}),L.Map.addInitHook(function(){this.options.drawControl&&(this.drawControl=new L.Control.Draw,this.addControl(this.drawControl))}),L.Toolbar=L.Class.extend({includes:[L.Mixin.Events],initialize:function(t){L.setOptions(this,t),this._modes={},this._actionButtons=[],this._activeMode=null},enabled:function(){return null!==this._activeMode},disable:function(){this.enabled()&&this._activeMode.handler.disable()},addToolbar:function(t){var e,i=L.DomUtil.create("div","leaflet-draw-section"),o=0,a=this._toolbarClass||"",s=this.getModeHandlers(t);for(this._toolbarContainer=L.DomUtil.create("div","leaflet-draw-toolbar leaflet-bar"),this._map=t,e=0;e<s.length;e++)s[e].enabled&&this._initModeHandler(s[e].handler,this._toolbarContainer,o++,a,s[e].title);return o?(this._lastButtonIndex=--o,this._actionsContainer=L.DomUtil.create("ul","leaflet-draw-actions"),i.appendChild(this._toolbarContainer),i.appendChild(this._actionsContainer),i):void 0},removeToolbar:function(){for(var t in this._modes)this._modes.hasOwnProperty(t)&&(this._disposeButton(this._modes[t].button,this._modes[t].handler.enable,this._modes[t].handler),this._modes[t].handler.disable(),this._modes[t].handler.off("enabled",this._handlerActivated,this).off("disabled",this._handlerDeactivated,this));this._modes={};for(var e=0,i=this._actionButtons.length;i>e;e++)this._disposeButton(this._actionButtons[e].button,this._actionButtons[e].callback,this);this._actionButtons=[],this._actionsContainer=null},_initModeHandler:function(t,e,i,o,a){var s=t.type;this._modes[s]={},this._modes[s].handler=t,this._modes[s].button=this._createButton({title:a,className:o+"-"+s,container:e,callback:this._modes[s].handler.enable,context:this._modes[s].handler}),this._modes[s].buttonIndex=i,this._modes[s].handler.on("enabled",this._handlerActivated,this).on("disabled",this._handlerDeactivated,this)},_createButton:function(t){var e=L.DomUtil.create("a",t.className||"",t.container);return e.href="#",t.text&&(e.innerHTML=t.text),t.title&&(e.title=t.title),L.DomEvent.on(e,"click",L.DomEvent.stopPropagation).on(e,"mousedown",L.DomEvent.stopPropagation).on(e,"dblclick",L.DomEvent.stopPropagation).on(e,"click",L.DomEvent.preventDefault).on(e,"click",t.callback,t.context),e},_disposeButton:function(t,e){L.DomEvent.off(t,"click",L.DomEvent.stopPropagation).off(t,"mousedown",L.DomEvent.stopPropagation).off(t,"dblclick",L.DomEvent.stopPropagation).off(t,"click",L.DomEvent.preventDefault).off(t,"click",e)},_handlerActivated:function(t){this.disable(),this._activeMode=this._modes[t.handler],L.DomUtil.addClass(this._activeMode.button,"leaflet-draw-toolbar-button-enabled"),this._showActionsToolbar(),this.fire("enable")},_handlerDeactivated:function(){this._hideActionsToolbar(),L.DomUtil.removeClass(this._activeMode.button,"leaflet-draw-toolbar-button-enabled"),this._activeMode=null,this.fire("disable")},_createActions:function(t){var e,i,o,a,s=this._actionsContainer,r=this.getActions(t),n=r.length;for(i=0,o=this._actionButtons.length;o>i;i++)this._disposeButton(this._actionButtons[i].button,this._actionButtons[i].callback);for(this._actionButtons=[];s.firstChild;)s.removeChild(s.firstChild);for(var l=0;n>l;l++)"enabled"in r[l]&&!r[l].enabled||(e=L.DomUtil.create("li","",s),a=this._createButton({title:r[l].title,text:r[l].text,container:e,callback:r[l].callback,context:r[l].context}),this._actionButtons.push({button:a,callback:r[l].callback}))},_showActionsToolbar:function(){var t=this._activeMode.buttonIndex,e=this._lastButtonIndex,i=this._activeMode.button.offsetTop-1;this._createActions(this._activeMode.handler),this._actionsContainer.style.top=i+"px",0===t&&(L.DomUtil.addClass(this._toolbarContainer,"leaflet-draw-toolbar-notop"),L.DomUtil.addClass(this._actionsContainer,"leaflet-draw-actions-top")),t===e&&(L.DomUtil.addClass(this._toolbarContainer,"leaflet-draw-toolbar-nobottom"),L.DomUtil.addClass(this._actionsContainer,"leaflet-draw-actions-bottom")),this._actionsContainer.style.display="block"
 },_hideActionsToolbar:function(){this._actionsContainer.style.display="none",L.DomUtil.removeClass(this._toolbarContainer,"leaflet-draw-toolbar-notop"),L.DomUtil.removeClass(this._toolbarContainer,"leaflet-draw-toolbar-nobottom"),L.DomUtil.removeClass(this._actionsContainer,"leaflet-draw-actions-top"),L.DomUtil.removeClass(this._actionsContainer,"leaflet-draw-actions-bottom")}}),L.Tooltip=L.Class.extend({initialize:function(t){this._map=t,this._popupPane=t._panes.popupPane,this._container=t.options.drawControlTooltips?L.DomUtil.create("div","leaflet-draw-tooltip",this._popupPane):null,this._singleLineLabel=!1},dispose:function(){this._container&&(this._popupPane.removeChild(this._container),this._container=null)},updateContent:function(t){return this._container?(t.subtext=t.subtext||"",0!==t.subtext.length||this._singleLineLabel?t.subtext.length>0&&this._singleLineLabel&&(L.DomUtil.removeClass(this._container,"leaflet-draw-tooltip-single"),this._singleLineLabel=!1):(L.DomUtil.addClass(this._container,"leaflet-draw-tooltip-single"),this._singleLineLabel=!0),this._container.innerHTML=(t.subtext.length>0?'<span class="leaflet-draw-tooltip-subtext">'+t.subtext+"</span><br />":"")+"<span>"+t.text+"</span>",this):this},updatePosition:function(t){var e=this._map.latLngToLayerPoint(t),i=this._container;return this._container&&(i.style.visibility="inherit",L.DomUtil.setPosition(i,e)),this},showAsError:function(){return this._container&&L.DomUtil.addClass(this._container,"leaflet-error-draw-tooltip"),this},removeError:function(){return this._container&&L.DomUtil.removeClass(this._container,"leaflet-error-draw-tooltip"),this}}),L.DrawToolbar=L.Toolbar.extend({options:{polyline:{},polygon:{},rectangle:{},circle:{},marker:{}},initialize:function(t){for(var e in this.options)this.options.hasOwnProperty(e)&&t[e]&&(t[e]=L.extend({},this.options[e],t[e]));this._toolbarClass="leaflet-draw-draw",L.Toolbar.prototype.initialize.call(this,t)},getModeHandlers:function(t){return[{enabled:this.options.polyline,handler:new L.Draw.Polyline(t,this.options.polyline),title:L.drawLocal.draw.toolbar.buttons.polyline},{enabled:this.options.polygon,handler:new L.Draw.Polygon(t,this.options.polygon),title:L.drawLocal.draw.toolbar.buttons.polygon},{enabled:this.options.rectangle,handler:new L.Draw.Rectangle(t,this.options.rectangle),title:L.drawLocal.draw.toolbar.buttons.rectangle},{enabled:this.options.circle,handler:new L.Draw.Circle(t,this.options.circle),title:L.drawLocal.draw.toolbar.buttons.circle},{enabled:this.options.marker,handler:new L.Draw.Marker(t,this.options.marker),title:L.drawLocal.draw.toolbar.buttons.marker}]},getActions:function(t){return[{enabled:t.deleteLastVertex,title:L.drawLocal.draw.toolbar.undo.title,text:L.drawLocal.draw.toolbar.undo.text,callback:t.deleteLastVertex,context:t},{title:L.drawLocal.draw.toolbar.actions.title,text:L.drawLocal.draw.toolbar.actions.text,callback:this.disable,context:this}]},setOptions:function(t){L.setOptions(this,t);for(var e in this._modes)this._modes.hasOwnProperty(e)&&t.hasOwnProperty(e)&&this._modes[e].handler.setOptions(t[e])}}),L.EditToolbar=L.Toolbar.extend({options:{edit:{selectedPathOptions:{color:"#fe57a1",opacity:.6,dashArray:"10, 10",fill:!0,fillColor:"#fe57a1",fillOpacity:.1}},remove:{},featureGroup:null},initialize:function(t){t.edit&&("undefined"==typeof t.edit.selectedPathOptions&&(t.edit.selectedPathOptions=this.options.edit.selectedPathOptions),t.edit=L.extend({},this.options.edit,t.edit)),t.remove&&(t.remove=L.extend({},this.options.remove,t.remove)),this._toolbarClass="leaflet-draw-edit",L.Toolbar.prototype.initialize.call(this,t),this._selectedFeatureCount=0},getModeHandlers:function(t){var e=this.options.featureGroup;return[{enabled:this.options.edit,handler:new L.EditToolbar.Edit(t,{featureGroup:e,selectedPathOptions:this.options.edit.selectedPathOptions}),title:L.drawLocal.edit.toolbar.buttons.edit},{enabled:this.options.remove,handler:new L.EditToolbar.Delete(t,{featureGroup:e}),title:L.drawLocal.edit.toolbar.buttons.remove}]},getActions:function(){return[{title:L.drawLocal.edit.toolbar.actions.save.title,text:L.drawLocal.edit.toolbar.actions.save.text,callback:this._save,context:this},{title:L.drawLocal.edit.toolbar.actions.cancel.title,text:L.drawLocal.edit.toolbar.actions.cancel.text,callback:this.disable,context:this}]},addToolbar:function(t){var e=L.Toolbar.prototype.addToolbar.call(this,t);return this._checkDisabled(),this.options.featureGroup.on("layeradd layerremove",this._checkDisabled,this),e},removeToolbar:function(){this.options.featureGroup.off("layeradd layerremove",this._checkDisabled,this),L.Toolbar.prototype.removeToolbar.call(this)},disable:function(){this.enabled()&&(this._activeMode.handler.revertLayers(),L.Toolbar.prototype.disable.call(this))},_save:function(){this._activeMode.handler.save(),this._activeMode.handler.disable()},_checkDisabled:function(){var t,e=this.options.featureGroup,i=0!==e.getLayers().length;this.options.edit&&(t=this._modes[L.EditToolbar.Edit.TYPE].button,i?L.DomUtil.removeClass(t,"leaflet-disabled"):L.DomUtil.addClass(t,"leaflet-disabled"),t.setAttribute("title",i?L.drawLocal.edit.toolbar.buttons.edit:L.drawLocal.edit.toolbar.buttons.editDisabled)),this.options.remove&&(t=this._modes[L.EditToolbar.Delete.TYPE].button,i?L.DomUtil.removeClass(t,"leaflet-disabled"):L.DomUtil.addClass(t,"leaflet-disabled"),t.setAttribute("title",i?L.drawLocal.edit.toolbar.buttons.remove:L.drawLocal.edit.toolbar.buttons.removeDisabled))}}),L.EditToolbar.Edit=L.Handler.extend({statics:{TYPE:"edit"},includes:L.Mixin.Events,initialize:function(t,e){if(L.Handler.prototype.initialize.call(this,t),this._selectedPathOptions=e.selectedPathOptions,this._featureGroup=e.featureGroup,!(this._featureGroup instanceof L.FeatureGroup))throw new Error("options.featureGroup must be a L.FeatureGroup");this._uneditedLayerProps={},this.type=L.EditToolbar.Edit.TYPE},enable:function(){!this._enabled&&this._hasAvailableLayers()&&(this.fire("enabled",{handler:this.type}),this._map.fire("draw:editstart",{handler:this.type}),L.Handler.prototype.enable.call(this),this._featureGroup.on("layeradd",this._enableLayerEdit,this).on("layerremove",this._disableLayerEdit,this))},disable:function(){this._enabled&&(this._featureGroup.off("layeradd",this._enableLayerEdit,this).off("layerremove",this._disableLayerEdit,this),L.Handler.prototype.disable.call(this),this._map.fire("draw:editstop",{handler:this.type}),this.fire("disabled",{handler:this.type}))},addHooks:function(){var t=this._map;t&&(t.getContainer().focus(),this._featureGroup.eachLayer(this._enableLayerEdit,this),this._tooltip=new L.Tooltip(this._map),this._tooltip.updateContent({text:L.drawLocal.edit.handlers.edit.tooltip.text,subtext:L.drawLocal.edit.handlers.edit.tooltip.subtext}),this._map.on("mousemove",this._onMouseMove,this))},removeHooks:function(){this._map&&(this._featureGroup.eachLayer(this._disableLayerEdit,this),this._uneditedLayerProps={},this._tooltip.dispose(),this._tooltip=null,this._map.off("mousemove",this._onMouseMove,this))},revertLayers:function(){this._featureGroup.eachLayer(function(t){this._revertLayer(t)},this)},save:function(){var t=new L.LayerGroup;this._featureGroup.eachLayer(function(e){e.edited&&(t.addLayer(e),e.edited=!1)}),this._map.fire("draw:edited",{layers:t})},_backupLayer:function(t){var e=L.Util.stamp(t);this._uneditedLayerProps[e]||(t instanceof L.Polyline||t instanceof L.Polygon||t instanceof L.Rectangle?this._uneditedLayerProps[e]={latlngs:L.LatLngUtil.cloneLatLngs(t.getLatLngs())}:t instanceof L.Circle?this._uneditedLayerProps[e]={latlng:L.LatLngUtil.cloneLatLng(t.getLatLng()),radius:t.getRadius()}:t instanceof L.Marker&&(this._uneditedLayerProps[e]={latlng:L.LatLngUtil.cloneLatLng(t.getLatLng())}))},_revertLayer:function(t){var e=L.Util.stamp(t);t.edited=!1,this._uneditedLayerProps.hasOwnProperty(e)&&(t instanceof L.Polyline||t instanceof L.Polygon||t instanceof L.Rectangle?t.setLatLngs(this._uneditedLayerProps[e].latlngs):t instanceof L.Circle?(t.setLatLng(this._uneditedLayerProps[e].latlng),t.setRadius(this._uneditedLayerProps[e].radius)):t instanceof L.Marker&&t.setLatLng(this._uneditedLayerProps[e].latlng))},_toggleMarkerHighlight:function(t){if(t._icon){var e=t._icon;e.style.display="none",L.DomUtil.hasClass(e,"leaflet-edit-marker-selected")?(L.DomUtil.removeClass(e,"leaflet-edit-marker-selected"),this._offsetMarker(e,-4)):(L.DomUtil.addClass(e,"leaflet-edit-marker-selected"),this._offsetMarker(e,4)),e.style.display=""}},_offsetMarker:function(t,e){var i=parseInt(t.style.marginTop,10)-e,o=parseInt(t.style.marginLeft,10)-e;t.style.marginTop=i+"px",t.style.marginLeft=o+"px"},_enableLayerEdit:function(t){var e,i=t.layer||t.target||t,o=i instanceof L.Marker;(!o||i._icon)&&(this._backupLayer(i),this._selectedPathOptions&&(e=L.Util.extend({},this._selectedPathOptions),o?this._toggleMarkerHighlight(i):(i.options.previousOptions=L.Util.extend({dashArray:null},i.options),i instanceof L.Circle||i instanceof L.Polygon||i instanceof L.Rectangle||(e.fill=!1),i.setStyle(e))),o?(i.dragging.enable(),i.on("dragend",this._onMarkerDragEnd)):i.editing.enable())},_disableLayerEdit:function(t){var e=t.layer||t.target||t;e.edited=!1,this._selectedPathOptions&&(e instanceof L.Marker?this._toggleMarkerHighlight(e):(e.setStyle(e.options.previousOptions),delete e.options.previousOptions)),e instanceof L.Marker?(e.dragging.disable(),e.off("dragend",this._onMarkerDragEnd,this)):e.editing.disable()},_onMarkerDragEnd:function(t){var e=t.target;e.edited=!0},_onMouseMove:function(t){this._tooltip.updatePosition(t.latlng)},_hasAvailableLayers:function(){return 0!==this._featureGroup.getLayers().length}}),L.EditToolbar.Delete=L.Handler.extend({statics:{TYPE:"remove"},includes:L.Mixin.Events,initialize:function(t,e){if(L.Handler.prototype.initialize.call(this,t),L.Util.setOptions(this,e),this._deletableLayers=this.options.featureGroup,!(this._deletableLayers instanceof L.FeatureGroup))throw new Error("options.featureGroup must be a L.FeatureGroup");this.type=L.EditToolbar.Delete.TYPE},enable:function(){!this._enabled&&this._hasAvailableLayers()&&(this.fire("enabled",{handler:this.type}),this._map.fire("draw:deletestart",{handler:this.type}),L.Handler.prototype.enable.call(this),this._deletableLayers.on("layeradd",this._enableLayerDelete,this).on("layerremove",this._disableLayerDelete,this))},disable:function(){this._enabled&&(this._deletableLayers.off("layeradd",this._enableLayerDelete,this).off("layerremove",this._disableLayerDelete,this),L.Handler.prototype.disable.call(this),this._map.fire("draw:deletestop",{handler:this.type}),this.fire("disabled",{handler:this.type}))},addHooks:function(){var t=this._map;t&&(t.getContainer().focus(),this._deletableLayers.eachLayer(this._enableLayerDelete,this),this._deletedLayers=new L.layerGroup,this._tooltip=new L.Tooltip(this._map),this._tooltip.updateContent({text:L.drawLocal.edit.handlers.remove.tooltip.text}),this._map.on("mousemove",this._onMouseMove,this))},removeHooks:function(){this._map&&(this._deletableLayers.eachLayer(this._disableLayerDelete,this),this._deletedLayers=null,this._tooltip.dispose(),this._tooltip=null,this._map.off("mousemove",this._onMouseMove,this))},revertLayers:function(){this._deletedLayers.eachLayer(function(t){this._deletableLayers.addLayer(t)},this)},save:function(){this._map.fire("draw:deleted",{layers:this._deletedLayers})},_enableLayerDelete:function(t){var e=t.layer||t.target||t;e.on("click",this._removeLayer,this)},_disableLayerDelete:function(t){var e=t.layer||t.target||t;e.off("click",this._removeLayer,this),this._deletedLayers.removeLayer(e)},_removeLayer:function(t){var e=t.layer||t.target||t;this._deletableLayers.removeLayer(e),this._deletedLayers.addLayer(e)},_onMouseMove:function(t){this._tooltip.updatePosition(t.latlng)},_hasAvailableLayers:function(){return 0!==this._deletableLayers.getLayers().length}})}(window,document);
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/AbstractWorker.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.AbstractWorker = L.Class.extend({
+    initialize: function () {
+    },
+
+    onAdd: function (map) {
+    },
+
+    onRemove: function (map) {
+    },
+
+    process: function(tile, callback) {
+        callback(tile);
+    },
+    
+    abort: function(tile) {
+    },
+    
+    clear: function() {
+    }
+});
+
+// dummy worker (= no worker) when used directly
+L.noWorker = function () {
+    return new L.AbstractWorker();
+};
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/CatilineWorker.js":[function(require,module,exports){
+var catiline = require('catiline');
+var L = require('leaflet');
+
+L.CatilineWorker = L.AbstractWorker.extend({
+
+    statics: {
+        // number of web workers, not using web workers when falsy
+        NUM_WORKERS: 2
+    },
+
+    initialize: function (workerFunc) {
+        this.workerFunc = workerFunc;
+    },
+
+    onAdd: function (map) {
+        this._workers = L.CatilineWorker.createWorkers(this.workerFunc);
+    },
+
+    onRemove: function (map) {
+        if (this._workers) {
+            // TODO do not close when other layers are still using the static instance
+            //this._workers.close();
+        }
+    },
+
+    process: function(tile, callback) {
+        if (this._workers){ 
+            tile._worker = this._workers.data(tile.datum).then(function(parsed) {
+                if (tile._worker) {
+                    tile._worker = null;
+                    tile.parsed = parsed;
+                    tile.datum = null;
+                    callback(tile);
+                } else {
+                    // tile has been unloaded, don't continue with adding
+                    //console.log('worker aborted ' + tile.key);
+                }
+            });
+        } else {
+            callback(tile);
+        }
+    },
+    
+    abort: function(tile) {
+        if (tile._worker) {
+            // TODO abort worker, would need to recreate after close
+            //tile._worker.close();
+            tile._worker = null;
+        }
+    }
+});
+
+L.catilineWorker = function (workerFunc) {
+    return new L.CatilineWorker(workerFunc);
+};
+
+L.extend(L.CatilineWorker, {
+    createWorkers: function(workerFunc) {
+        if ( L.CatilineWorker.NUM_WORKERS && typeof Worker === "function" && typeof catiline === "function"
+                && !("workers" in L.CatilineWorker)) {
+            L.CatilineWorker.workers = catiline({
+                //data : L.TileLayer.Vector.parseData
+                data : workerFunc
+            }, L.CatilineWorker.NUM_WORKERS);
+        }
+        return L.CatilineWorker.workers;
+    }
+});
+
+},{"catiline":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/catiline/dist/catiline.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/Leaflet.label-patch.js":[function(require,module,exports){
+
+// patch Leaflet.label plugin to avoid null error on viewreset when label has
+// already been removed (v0.5.1), also see comment in L.TileLayer.Vector.onAdd
+if (L.Label) {
+    var orig = L.Label.prototype._updatePosition;
+    L.Label.prototype._updatePosition = function() {
+        if (this._map) {
+            orig.apply(this, arguments);
+        }
+    };
+}
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileCache.js":[function(require,module,exports){
+/**
+ * Simple tile cache to keep tiles while zooming with overzoom
+ */
+var L = require('leaflet');
+
+L.TileCache = function() {
+};
+
+L.TileCache.prototype = {
+    // cache key: tile (String: Object)
+    _cache: {},
+
+    // flag to determine switch between tile unloading (put) and loading (get) phase
+    _unloading: false,
+
+    // flag to only cache tiles when zooming, not when moving
+    _zooming: false,
+
+    onAdd: function(map) {
+        this._map = map;
+        
+        map.on('zoomstart', this._onZoomStart, this);
+        map.on('zoomend', this._onZoomEnd, this);
+    },
+
+    onRemove: function(map) {
+        this._map = null;
+
+        map.off('zoomstart', this._onZoomStart, this);
+        map.off('zoomend', this._onZoomEnd, this);
+    },
+
+    _onZoomStart: function(evt) {
+        this._zooming = true;
+    },
+
+    _onZoomEnd: function(evt) {
+        this._zooming = false;
+    },
+
+    get: function(key, urlZoom) {
+        var ckey = this._getCacheKey(key, urlZoom);
+        var tile = this._cache[ckey];
+        this._unloading = false;
+        //console.log('cache ' + (tile ? 'hit ' : 'miss') + ': ' + ckey);
+        return tile;
+    },
+    
+    put: function(tile) {
+        if (!this._zooming) return;
+
+        if (!this._unloading) {
+            // clear old entries before adding newly removed tiles after zoom or move
+            this.clear();
+            this._unloading = true;
+        }
+
+        var ckey = this._getCacheKeyFromTile(tile);
+        if (!(ckey in this._cache)) {
+            // vector layer is recreated because of feature filter
+            delete tile.layer;
+            this._cache[ckey] = tile;
+            //console.log('cache put : ' + ckey + ' (' + Object.keys(this._cache).length + ')');
+        }
+    },
+    
+    clear: function() {
+        //console.log('cache clear');
+        this._cache = {};
+    },
+
+    _getCacheKeyFromTile: function(tile) {
+        return this._getCacheKey(tile.key, tile.urlZoom);
+    },
+
+    _getCacheKey: function(key, urlZoom) {
+        return urlZoom + ':' + key
+    }
+};
+
+L.tileCache = function() {
+    return new L.TileCache();
+};
+
+// dummy impl. to turn caching off
+L.tileCacheNone = function() {
+    return {
+        onAdd: function(map) {},
+        onRemove: function(map) {},
+        get: function(key, urlZoom) {},
+        put: function(tile) {},
+        clear: function() {}
+    };
+};
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.BBox.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.TileLayer.Vector.include({
+
+    getTileUrl: function (coords) {
+        var x = coords.x,
+            y = coords.y,
+            z = this._getZoomForUrl(),
+            bounds = this.getTileBBox(x, y, z),
+            url = this._url;
+        if (url.indexOf('?') < 0) {
+            url += '?';
+        }
+        if (this.options.getTileQueryString) {
+            url += this.options.getTileQueryString.apply(this);
+        }
+        return url + '&bbox=' + bounds.toBBoxString();
+    },
+
+    getTileBBox: function (x, y, z) {
+        var west = this.getTileLng(x, z),
+            north = this.getTileLat(y, z),
+            east = this.getTileLng(x + 1, z),
+            south = this.getTileLat(y + 1, z),
+            bounds = L.latLngBounds([[south, west], [north, east]]);
+        return bounds;
+    },
+
+    getTileLng: function (x, z) {
+        return (x / Math.pow(2, z) * 360 - 180);
+    },
+
+    getTileLat: function (y, z) {
+        var n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
+        return (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))));
+    }
+
+});
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Div.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.TileLayer.Div = L.TileLayer.extend({
+
+    initialize: function (options) {
+        L.TileLayer.prototype.initialize.call(this, null, options);
+    },
+
+    _createTile: function () {
+        var tile = L.DomUtil.create('div', 'leaflet-tile leaflet-tile-loaded');
+        var tileSize = this._getTileSize();
+        tile.style.width = tileSize + 'px';
+        tile.style.height = tileSize + 'px';
+        tile.onselectstart = tile.onmousemove = L.Util.falseFn;
+        return tile;        
+    },
+
+    _loadTile: function (tile, tilePoint) {
+        tile._layer = this;
+        tile._tilePoint = tilePoint;
+        this._adjustTilePoint(tilePoint);
+        
+        this.drawTile(tile, tilePoint);
+        
+        this._tileLoaded();
+    },
+    
+    drawTile: function (tile, tilePoint) {
+        // override with rendering code
+    }
+});
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.GeoJSON.js":[function(require,module,exports){
+// Load data tiles using the JQuery ajax function
+var L = require('leaflet');
+
+L.TileLayer.Ajax = L.TileLayer.extend({
+    options: {
+        // use L.tileCacheNone to turn caching off
+        tileCacheFactory: L.tileCache
+    },
+
+    _tileCache: null,
+
+    initialize: function (url, options) {
+        L.TileLayer.prototype.initialize.call(this, url, options);
+        
+        this._tileCache = this.options.tileCacheFactory();
+    },
+
+    onAdd: function (map) {
+        L.TileLayer.prototype.onAdd.call(this, map);
+        this.on('tileunload', this._unloadTile);
+    },
+
+    onRemove: function (map) {
+        L.TileLayer.prototype.onRemove.call(this, map);
+        this.off('tileunload', this._unloadTile);
+    },
+
+    _addTile: function(tilePoint, container) {
+        var cached = null;
+        var key = tilePoint.x + ':' + tilePoint.y;
+        var urlZoom = this._getZoomForUrl();
+        var tile = cached = this._tileCache.get(key, urlZoom);
+        if (!tile) {
+            tile = { key: key, urlZoom: urlZoom, datum: null, loading: true };
+        } else {
+            tile.loading = true;
+        }
+
+        this._tiles[key] = tile;
+        this.fire('tileloadstart', {tile: tile});
+
+        if (cached) {
+            this._addTileData(tile);
+        } else {
+            this._loadTile(tile, tilePoint);
+        }
+    },
+
+    _addTileData: function(tile) {
+        // override in subclass
+    },
+
+    // XMLHttpRequest handler; closure over the XHR object, the layer, and the tile
+    _xhrHandler: function (req, layer, tile) {
+        return function() {
+            if (req.readyState != 4) {
+                return;
+            }
+            var s = req.status;
+
+            // Fire dataload for Leaflet.loading
+            layer._map.fire('dataload');
+
+            if ((s >= 200 && s < 300) || s == 304) {
+                // check if request is about to be aborted, avoid rare error when aborted while parsing
+                if (tile._request) {
+                    tile._request = null;
+                    layer.fire('tileresponse', {tile: tile, request: req});
+                    tile.datum = req.responseText;
+                    layer._addTileData(tile);
+                }
+            } else {
+                tile.loading = false;
+                tile._request = null;
+                layer.fire('tileerror', {tile: tile, request: req});
+                layer._tileLoaded();
+            }
+        }
+    },
+
+    // Load the requested tile via AJAX
+    _loadTile: function (tile, tilePoint) {
+        this._adjustTilePoint(tilePoint);
+        var layer = this;
+
+        // File dataloading for Leaflet.loading
+        layer._map.fire('dataloading');
+
+        var req = new XMLHttpRequest();
+        tile._request = req;
+        req.onreadystatechange = this._xhrHandler(req, layer, tile);
+        this.fire('tilerequest', {tile: tile, request: req});
+        req.open('GET', this.getTileUrl(tilePoint), true);
+        req.send();
+    },
+
+    _unloadTile: function(evt) {
+        var tile = evt.tile,
+            req = tile._request;
+        if (req) {
+            tile._request = null;
+            req.abort();
+            this.fire('tilerequestabort', {tile: tile, request: req});
+        }
+    }
+});
+
+
+L.TileLayer.Vector = L.TileLayer.Ajax.extend({
+    options: {
+        // factory function to create the vector tile layers (defaults to L.GeoJSON)
+        layerFactory: L.geoJson,
+        // factory function to create a web worker for parsing/preparing tile data
+        workerFactory: L.catilineWorker
+        //workerFactory: L.noWorker
+    },
+
+    initialize: function (url, options, vectorOptions) {
+        L.TileLayer.Ajax.prototype.initialize.call(this, url, options);
+        this.vectorOptions = vectorOptions || {};
+        this._worker = this.options.workerFactory(L.TileLayer.Vector.parseData);
+        this._addQueue = new L.TileQueue(L.bind(this._addTileDataInternal, this));
+    },
+
+    onAdd: function (map) {
+        this._map = map;
+        
+        L.TileLayer.Ajax.prototype.onAdd.call(this, map);
+
+        // root vector layer, contains tile vector layers as children 
+        this.vectorLayer = this._createVectorLayer(); 
+        map.addLayer(this.vectorLayer);
+
+        this._worker.onAdd(map);
+        this._tileCache.onAdd(map);
+    },
+
+    onRemove: function (map) {
+        // unload tiles (L.TileLayer only calls _reset in onAdd)
+        this._reset();
+        map.removeLayer(this.vectorLayer);
+
+        L.TileLayer.Ajax.prototype.onRemove.call(this, map);
+
+        this._worker.onRemove(map);
+        this._tileCache.onRemove(map);
+
+        this.vectorLayer = null;
+        this._map = null;
+    },
+
+    _createVectorLayer: function() {
+        return this.options.layerFactory(null, this.vectorOptions);
+    },
+
+    _createTileLayer: function() {
+        return this._createVectorLayer();
+    },
+
+    _addTileData: function(tile) {
+        if (!tile.parsed) {
+            this._worker.process(tile, L.bind(function(tile) {
+                this._addQueue.add(tile);
+            },this));
+        } else {
+            // from cache
+            this._addQueue.add(tile);
+        }
+    },
+
+    _addTileDataInternal: function(tile) {
+        var tileLayer = this._createTileLayer();
+        if (!tile.parsed) {
+            // when no worker for parsing
+            tile.parsed = L.TileLayer.Vector.parseData(tile.datum);
+            tile.datum = null;
+        }
+        tileLayer.addData(tile.parsed);
+        tile.layer = tileLayer;
+        this.vectorLayer.addLayer(tileLayer);
+
+        tile.loading = false;
+        this.fire('tileload', {tile: tile});
+        this._tileLoaded();
+    },
+
+    _unloadTile: function(evt) {
+        L.TileLayer.Ajax.prototype._unloadTile.apply(this, arguments);
+
+        var tile = evt.tile,
+            tileLayer = tile.layer;
+        if (tile.loading) {
+            this._addQueue.remove(tile);
+            // not from cache or not loaded and parsed yet
+            if (!tile.parsed) {
+                this._worker.abort(tile);
+            }
+            this.fire('tileabort', {tile: tile});
+            this._tileLoaded();
+        }
+        if (tileLayer && this.vectorLayer.hasLayer(tileLayer)) {
+            if (this._shouldRemoveLayersAtZoom(this._map.getZoom())) {
+                this.vectorLayer.removeLayer(tileLayer);
+            }
+        }
+
+        if (tile.parsed) {
+            this._tileCache.put(tile);
+        }
+    },
+
+    _shouldRemoveLayersAtZoom: function(zoom) {
+        return true;
+    },
+
+    _retainTiles: function() {
+        return {};
+    },
+
+    _reset: function(e) {
+        var tilesToRetain = this._retainTiles();
+
+        L.TileLayer.Ajax.prototype._reset.apply(this, arguments);
+
+        // Restore useful tiles
+        L.extend(this._tiles, tilesToRetain);
+
+        this._addQueue.clear();
+        this._worker.clear();
+    }
+});
+
+
+L.extend(L.TileLayer.Vector, {
+    parseData: function(data) {
+        return JSON.parse(data);
+    }
+});
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Overzoom.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.TileLayer.Overzoom = {
+    
+    overzoomOptions: {
+        // List of available server zoom levels in ascending order. Empty means all  
+        // client zooms are available (default). Allows to only request tiles at certain
+        // zooms and resizes tiles on the other zooms.
+        serverZooms: [],
+        // workaround: wrapping loads tiles multiple times when zoom < serverZooms[0]
+        noWrap: true
+    },
+
+    // override _getTileSize to add serverZooms (when maxNativeZoom is not defined)
+    _getTileSize: function() {
+        var map = this._map,
+            options = this.options,
+            zoom = map.getZoom() + options.zoomOffset,
+            zoomN = options.maxNativeZoom || this._getServerZoom(zoom);
+
+        // increase tile size when overscaling
+        //return zoomN && zoom > zoomN ?
+        var tileSize = zoomN && zoom !== zoomN ?
+            Math.round(map.getZoomScale(zoom) / map.getZoomScale(zoomN) * options.tileSize) :
+            options.tileSize;
+
+        //console.log('tileSize = ' + tileSize + ', zoomOffset = ' + this.options.zoomOffset + ', serverZoom = ' + zoomN + ', zoom = ' + zoom);
+        return tileSize;
+    },
+
+    _getZoomForUrl: function () {
+        var zoom = L.TileLayer.prototype._getZoomForUrl.call(this);
+        var result = this._getServerZoom(zoom);
+        //console.log('zoomForUrl = ' + result);
+        return result;
+    },
+
+    // Returns the appropriate server zoom to request tiles for the current zoom level.
+    // Next lower or equal server zoom to current zoom, or minimum server zoom if no lower 
+    // (should be restricted by setting minZoom to avoid loading too many tiles).
+    _getServerZoom: function(zoom) {
+        var serverZooms = this.options.serverZooms || [],
+            result = zoom;
+        // expects serverZooms to be sorted ascending
+        for (var i = 0, len = serverZooms.length; i < len; i++) {
+            if (serverZooms[i] <= zoom) {
+                result = serverZooms[i];
+            } else {
+                if (i === 0) {
+                    // zoom < smallest serverZoom
+                    result = serverZooms[0];
+                }
+                break;
+            }
+        }
+        return result;
+    },
+
+    _shouldRemoveLayersAtZoom: function(zoom) {
+        if (this.options.serverZooms) {
+            if (this._map.getZoom() in this.options.serverZooms) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    // Only keep the tiles that are going to be useful on the map's current zoom
+    _retainTiles: function() {
+        var tiles = L.extend({}, this._tiles),
+            zoom = this._getServerZoom(this._map.getZoom());
+
+        for (var key in tiles) {
+            // Do not retain tiles that won't be used at this zoom
+            if (tiles[key].urlZoom !== zoom) {
+                delete tiles[key];
+            }
+
+            // Do not retain tiles that don't have a layer. They might
+            // have been interrupted from loading that layer because the
+            // user zoomed in or out very quickly, for example.
+            if (!tiles[key] || !tiles[key].layer) {
+                delete tiles[key];
+            }
+        }
+        return tiles;
+    }
+};
+
+if (typeof L.TileLayer.Vector !== 'undefined') {
+    L.TileLayer.Vector.include(L.TileLayer.Overzoom);
+    L.TileLayer.Vector.mergeOptions(L.TileLayer.Overzoom.overzoomOptions);
+}
+
+if (typeof L.TileLayer.Div !== 'undefined') {
+    L.TileLayer.Div.include(L.TileLayer.Overzoom);
+    L.TileLayer.Div.mergeOptions(L.TileLayer.Overzoom.overzoomOptions);
+}
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Progress.js":[function(require,module,exports){
+/*
+ * Loading progress info layer for L.TileLayer.Vector
+ */
+var L = require('leaflet');
+
+L.TileLayer.Progress = L.TileLayer.Div.extend({
+    _adding: false,
+
+    /* key hash of vector tiles currently loading {String: true} */
+    _loadingTiles: {},
+    
+    initialize: function (vectorLayer) {
+        L.TileLayer.Div.prototype.initialize.call(this, vectorLayer.options);
+
+        this.vectorLayer = vectorLayer;
+    },
+
+    onAdd: function (map) {
+        this._adding = true;
+        map.on('layerremove', this._onVecRemove, this);
+        this.vectorLayer.on('tileloadstart', this._onTileLoading, this);
+        this.vectorLayer.on('tileload', this._onTileLoad, this);
+        this.vectorLayer.on('tileerror', this._onTileError, this);
+        this.vectorLayer.on('tileunload', this._onTileLoad, this);
+        L.TileLayer.Div.prototype.onAdd.apply(this, arguments);
+        this._adding = false;
+    },
+
+    onRemove: function (map) {
+        L.TileLayer.Div.prototype.onRemove.apply(this, arguments);
+        this._loadingTiles = {};
+        this.vectorLayer.off('tileloadstart', this._onTileLoading, this);
+        this.vectorLayer.off('tileload', this._onTileLoad, this);
+        this.vectorLayer.off('tileerror', this._onTileError, this);
+        this.vectorLayer.off('tileunload', this._onTileLoad, this);
+    },
+
+    drawTile: function (tile, tilePoint) {
+        var vecTile, 
+            loading, 
+            key = tilePoint.x + ':' + tilePoint.y;
+
+        tile.style.backgroundColor = 'rgba(128, 128, 128, 0.3)';
+        tile.style.border = '1px solid rgba(128, 128, 128, 0.8)';
+        tile.style.boxSizing = 'border-box';
+
+        if (!this._loadingTiles[key]) {
+            this._hide(tile);
+        }
+
+        // check for already loading tiles, because initial tileloadstart
+        // events might have been missed when layer is added
+        if (this._adding) {
+            vecTile = this.vectorLayer._tiles[key];
+            loading = vecTile && vecTile.loading;
+            if (loading) {
+                this._show(tile);
+            }
+        }
+    },
+
+    _onVecRemove: function(evt) {
+        if (evt.layer === this.vectorLayer) {
+            this._hideAll();
+        }
+    },
+
+    _hideAll: function() {
+        for (var key in this._tiles) {
+            var tile = this._tiles[key];
+            this._hide(tile);
+        }
+    },
+
+    _onTileLoading: function(evt) {
+        var key = evt.tile.key,
+            tile = this._tiles[key];
+        if (tile) {
+            this._show(tile);
+        } else {
+            this._loadingTiles[key] = true;
+        }
+    },
+
+    _onTileLoad: function(evt) {
+        var key = evt.tile.key,
+            tile = this._tiles[key];
+        this._hide(tile);
+        delete this._loadingTiles[key];
+    },
+
+    _onTileError: function(evt) {
+        var key = evt.tile.key,
+            tile = this._tiles[key];
+        if (tile) {
+            tile.style.backgroundColor = 'rgba(128, 128, 128, 0.7)';
+            tile.style.border = 'none';
+        }
+        delete this._loadingTiles[key];
+    },
+    
+    _show: function(tile) {
+        if (tile) {
+            tile.classList.add('leaflet-tile-loaded');
+        }
+    },
+    
+    _hide: function(tile) {
+        if (tile) {
+            tile.classList.remove('leaflet-tile-loaded');
+        }
+    }
+});
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Vector.Unclipped.js":[function(require,module,exports){
+/*
+ * Tile layer for unclipped vector tiles where features spanning multiple tiles are contained with
+ * their full geometry in each tile (as opposed to clipping geometries at tile boundary).
+ * 
+ * This layer loads such duplicated features only once by using a 'unique' function given in the options
+ * to identify identical features and to keep track of the tiles that are referencing the same feature.
+ * 
+ * Uses a filter to remove duplicates, so a vector layer set with options.layerFactory must support 
+ * feature filtering like in L.GeoJSON.
+ */
+var L = require('leaflet');
+
+L.TileLayer.Vector.Unclipped = L.TileLayer.Vector.extend({
+    // hash: unique featureKey -> number of tiles referencing the feature
+    featureRefCounts: {},
+    // hash: unique featureKey -> feature layer
+    commonFeatures: {},
+
+    initialize: function (url, options, vectorOptions) {
+        L.TileLayer.Vector.prototype.initialize.apply(this, arguments);
+
+        if (!options || !options.unique) {
+            console.warn('"unique" function missing in options, deduplicating disabled');
+        }
+    },
+
+    _createTileLayer: function() {
+        var tileLayer = L.TileLayer.Vector.prototype._createTileLayer.apply(this, arguments);
+        if (this.options.unique) {
+            if (tileLayer.options.filter) {
+                tileLayer.options.filter = this._andFilter(tileLayer.options.filter, L.bind(this._filterDuplicates, tileLayer));
+            } else {
+                tileLayer.options.filter = L.bind(this._filterDuplicates, tileLayer);
+            }
+            tileLayer._tilingLayer = this;
+            // common features this tile is referencing (array of unique feature keys)
+            tileLayer._featureRefs = [];
+        }
+        return tileLayer;
+    },
+
+    // filter out duplicate features that are contained in multiple tiles
+    // (true keeps, false discards feature)
+    _filterDuplicates: function(feature) {
+        var featureKey = this._tilingLayer.options.unique(feature);
+        var refs = this._tilingLayer.featureRefCounts[featureKey];
+
+        if (refs && refs > 0) {
+            refs++;
+            this._featureRefs.push(featureKey);
+        } else {
+            refs = 1;
+        }
+        this._tilingLayer.featureRefCounts[featureKey] = refs;
+
+        return refs <= 1;
+    },
+    
+    _andFilter: function(filterA, filterB) {
+        return function(feature) {
+            return filterA(feature) && filterB(feature);
+        };
+    },
+    
+    _unloadTile: function(evt) {
+        var tileLayer = evt.tile.layer;
+        if (tileLayer) {
+            if (this.options.unique) {
+                this._clearFeatureLayers(tileLayer);
+                this._clearCommonFeatureLayers(tileLayer);
+            }
+        }        
+        L.TileLayer.Vector.prototype._unloadTile.apply(this, arguments);
+    },
+    
+    // Remove feature layers from the given tile layer and
+    // decrease reference counter for all features of the tile. 
+    _clearFeatureLayers: function(tileLayer) {
+        tileLayer.eachLayer(function (layer) {
+            if (layer.feature) {
+                var featureKey = this.options.unique(layer.feature);
+                var refs = this._decreaseFeatureRefCount(featureKey);
+                if (refs > 0) {
+                    // referenced by other tiles, keep feature (move to root vector layer)
+                    this.vectorLayer.addLayer(layer);
+                    this.commonFeatures[featureKey] = layer;
+
+                    // from removeLayer: remove layer from tileLayer but not from map (not sure if necessary)
+                    var id = L.stamp(layer);
+                    delete tileLayer._layers[id];
+                } else {
+                    tileLayer.removeLayer(layer);
+                }
+            }
+        }, this);
+    },
+
+    // Remove common features that are only referenced by the given tile
+    _clearCommonFeatureLayers: function(tileLayer) {
+        var featureRefs = tileLayer._featureRefs;
+        for (i = 0, len = featureRefs.length; i < len; i++) {
+            var featureKey = featureRefs[i];
+            var refs = this._decreaseFeatureRefCount(featureKey);
+            if (refs <= 0) {
+                var layer = this.commonFeatures[featureKey];
+                if (layer) {
+                    this.vectorLayer.removeLayer(layer);
+                }
+            }
+        }
+    },
+
+    _decreaseFeatureRefCount: function(featureKey) {
+        var refs = --this.featureRefCounts[featureKey];
+        if (refs <= 0) {
+            delete this.featureRefCounts[featureKey];
+        }
+        return refs;
+    }
+});
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileQueue.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.TileQueue = function(callback) {
+    this.callback = callback;
+};
+
+L.TileQueue.prototype = {
+
+    _queue: [],
+    _queueTimeout: null,
+    
+    add: function(aTile) {
+        this._queue.push(aTile);
+        if (!this._queueTimeout) {
+            this._queueTimeout = setTimeout(L.bind(function(){
+                var time, timeout, start = +new Date, tile;
+
+                // handle empty elements, see remove
+                do { 
+                    tile = this._queue.shift();
+                }
+                while (!tile && this._queue.length > 0);
+
+                if (tile) {
+                    //console.log('adding ' + tile.key + ' ...');
+
+                    this.callback(tile);
+
+                    // pause a percentage of adding time to keep UI responsive
+                    time = +new Date - start;
+                    timeout = Math.floor(time * 0.3);
+                    //console.log('added  ' + tile.key + ' (' + time + 'ms > ' + timeout + 'ms)');
+                    this._queueTimeout = setTimeout(L.bind(arguments.callee, this), timeout);
+                } else {
+                    this._queueTimeout = null;
+                }
+            }, this), 0);
+        }
+    },
+
+    remove: function(tile) {
+        var key = tile.key, 
+            val;
+        for (var i = 0, len = this._queue.length; i < len; i++) {
+            val = this._queue[i];
+            if (val && val.key === key) {
+                //console.log('##### delete ' + key);
+                // set entry to undefined only for better performance (?) - 
+                // queue consumer needs to handle empty entries!
+                delete this._queue[i];
+            }
+        }
+    },
+
+    clear: function() {
+        if (this._queueTimeout) {
+            clearTimeout(this._queueTimeout);
+            this._queueTimeout = null;
+        }
+        this._queue = [];
+    }
+};
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/index.js":[function(require,module,exports){
+// Index for npm/browserify
+//
+// No explicit exports, as classes add themselves to the global Leaflet package
+// structure.
+require('./AbstractWorker.js');
+require('./CatilineWorker.js');
+require('./TileCache.js');
+require('./TileQueue.js');
+require('./TileLayer.GeoJSON.js');
+require('./TileLayer.BBox.js');
+require('./TileLayer.Vector.Unclipped.js');
+require('./TileLayer.Div.js');
+require('./TileLayer.Progress.js');
+require('./TileLayer.Overzoom.js');
+require('./Leaflet.label-patch.js');
+
+},{"./AbstractWorker.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/AbstractWorker.js","./CatilineWorker.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/CatilineWorker.js","./Leaflet.label-patch.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/Leaflet.label-patch.js","./TileCache.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileCache.js","./TileLayer.BBox.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.BBox.js","./TileLayer.Div.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Div.js","./TileLayer.GeoJSON.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.GeoJSON.js","./TileLayer.Overzoom.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Overzoom.js","./TileLayer.Progress.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Progress.js","./TileLayer.Vector.Unclipped.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileLayer.Vector.Unclipped.js","./TileQueue.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/TileQueue.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js":[function(require,module,exports){
+/*
+ Leaflet, a JavaScript library for mobile-friendly interactive maps. http://leafletjs.com
+ (c) 2010-2013, Vladimir Agafonkin
+ (c) 2010-2011, CloudMade
+*/
+(function (window, document, undefined) {
+var oldL = window.L,
+    L = {};
+
+L.version = '0.7.7';
+
+// define Leaflet for Node module pattern loaders, including Browserify
+if (typeof module === 'object' && typeof module.exports === 'object') {
+	module.exports = L;
+
+// define Leaflet as an AMD module
+} else if (typeof define === 'function' && define.amd) {
+	define(L);
+}
+
+// define Leaflet as a global L variable, saving the original L to restore later if needed
+
+L.noConflict = function () {
+	window.L = oldL;
+	return this;
+};
+
+window.L = L;
+
+
+/*
+ * L.Util contains various utility functions used throughout Leaflet code.
+ */
+
+L.Util = {
+	extend: function (dest) { // (Object[, Object, ...]) ->
+		var sources = Array.prototype.slice.call(arguments, 1),
+		    i, j, len, src;
+
+		for (j = 0, len = sources.length; j < len; j++) {
+			src = sources[j] || {};
+			for (i in src) {
+				if (src.hasOwnProperty(i)) {
+					dest[i] = src[i];
+				}
+			}
+		}
+		return dest;
+	},
+
+	bind: function (fn, obj) { // (Function, Object) -> Function
+		var args = arguments.length > 2 ? Array.prototype.slice.call(arguments, 2) : null;
+		return function () {
+			return fn.apply(obj, args || arguments);
+		};
+	},
+
+	stamp: (function () {
+		var lastId = 0,
+		    key = '_leaflet_id';
+		return function (obj) {
+			obj[key] = obj[key] || ++lastId;
+			return obj[key];
+		};
+	}()),
+
+	invokeEach: function (obj, method, context) {
+		var i, args;
+
+		if (typeof obj === 'object') {
+			args = Array.prototype.slice.call(arguments, 3);
+
+			for (i in obj) {
+				method.apply(context, [i, obj[i]].concat(args));
+			}
+			return true;
+		}
+
+		return false;
+	},
+
+	limitExecByInterval: function (fn, time, context) {
+		var lock, execOnUnlock;
+
+		return function wrapperFn() {
+			var args = arguments;
+
+			if (lock) {
+				execOnUnlock = true;
+				return;
+			}
+
+			lock = true;
+
+			setTimeout(function () {
+				lock = false;
+
+				if (execOnUnlock) {
+					wrapperFn.apply(context, args);
+					execOnUnlock = false;
+				}
+			}, time);
+
+			fn.apply(context, args);
+		};
+	},
+
+	falseFn: function () {
+		return false;
+	},
+
+	formatNum: function (num, digits) {
+		var pow = Math.pow(10, digits || 5);
+		return Math.round(num * pow) / pow;
+	},
+
+	trim: function (str) {
+		return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
+	},
+
+	splitWords: function (str) {
+		return L.Util.trim(str).split(/\s+/);
+	},
+
+	setOptions: function (obj, options) {
+		obj.options = L.extend({}, obj.options, options);
+		return obj.options;
+	},
+
+	getParamString: function (obj, existingUrl, uppercase) {
+		var params = [];
+		for (var i in obj) {
+			params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
+		}
+		return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');
+	},
+	template: function (str, data) {
+		return str.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
+			var value = data[key];
+			if (value === undefined) {
+				throw new Error('No value provided for variable ' + str);
+			} else if (typeof value === 'function') {
+				value = value(data);
+			}
+			return value;
+		});
+	},
+
+	isArray: Array.isArray || function (obj) {
+		return (Object.prototype.toString.call(obj) === '[object Array]');
+	},
+
+	emptyImageUrl: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
+};
+
+(function () {
+
+	// inspired by http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+
+	function getPrefixed(name) {
+		var i, fn,
+		    prefixes = ['webkit', 'moz', 'o', 'ms'];
+
+		for (i = 0; i < prefixes.length && !fn; i++) {
+			fn = window[prefixes[i] + name];
+		}
+
+		return fn;
+	}
+
+	var lastTime = 0;
+
+	function timeoutDefer(fn) {
+		var time = +new Date(),
+		    timeToCall = Math.max(0, 16 - (time - lastTime));
+
+		lastTime = time + timeToCall;
+		return window.setTimeout(fn, timeToCall);
+	}
+
+	var requestFn = window.requestAnimationFrame ||
+	        getPrefixed('RequestAnimationFrame') || timeoutDefer;
+
+	var cancelFn = window.cancelAnimationFrame ||
+	        getPrefixed('CancelAnimationFrame') ||
+	        getPrefixed('CancelRequestAnimationFrame') ||
+	        function (id) { window.clearTimeout(id); };
+
+
+	L.Util.requestAnimFrame = function (fn, context, immediate, element) {
+		fn = L.bind(fn, context);
+
+		if (immediate && requestFn === timeoutDefer) {
+			fn();
+		} else {
+			return requestFn.call(window, fn, element);
+		}
+	};
+
+	L.Util.cancelAnimFrame = function (id) {
+		if (id) {
+			cancelFn.call(window, id);
+		}
+	};
+
+}());
+
+// shortcuts for most used utility functions
+L.extend = L.Util.extend;
+L.bind = L.Util.bind;
+L.stamp = L.Util.stamp;
+L.setOptions = L.Util.setOptions;
+
+
+/*
+ * L.Class powers the OOP facilities of the library.
+ * Thanks to John Resig and Dean Edwards for inspiration!
+ */
+
+L.Class = function () {};
+
+L.Class.extend = function (props) {
+
+	// extended class with the new prototype
+	var NewClass = function () {
+
+		// call the constructor
+		if (this.initialize) {
+			this.initialize.apply(this, arguments);
+		}
+
+		// call all constructor hooks
+		if (this._initHooks) {
+			this.callInitHooks();
+		}
+	};
+
+	// instantiate class without calling constructor
+	var F = function () {};
+	F.prototype = this.prototype;
+
+	var proto = new F();
+	proto.constructor = NewClass;
+
+	NewClass.prototype = proto;
+
+	//inherit parent's statics
+	for (var i in this) {
+		if (this.hasOwnProperty(i) && i !== 'prototype') {
+			NewClass[i] = this[i];
+		}
+	}
+
+	// mix static properties into the class
+	if (props.statics) {
+		L.extend(NewClass, props.statics);
+		delete props.statics;
+	}
+
+	// mix includes into the prototype
+	if (props.includes) {
+		L.Util.extend.apply(null, [proto].concat(props.includes));
+		delete props.includes;
+	}
+
+	// merge options
+	if (props.options && proto.options) {
+		props.options = L.extend({}, proto.options, props.options);
+	}
+
+	// mix given properties into the prototype
+	L.extend(proto, props);
+
+	proto._initHooks = [];
+
+	var parent = this;
+	// jshint camelcase: false
+	NewClass.__super__ = parent.prototype;
+
+	// add method for calling all hooks
+	proto.callInitHooks = function () {
+
+		if (this._initHooksCalled) { return; }
+
+		if (parent.prototype.callInitHooks) {
+			parent.prototype.callInitHooks.call(this);
+		}
+
+		this._initHooksCalled = true;
+
+		for (var i = 0, len = proto._initHooks.length; i < len; i++) {
+			proto._initHooks[i].call(this);
+		}
+	};
+
+	return NewClass;
+};
+
+
+// method for adding properties to prototype
+L.Class.include = function (props) {
+	L.extend(this.prototype, props);
+};
+
+// merge new default options to the Class
+L.Class.mergeOptions = function (options) {
+	L.extend(this.prototype.options, options);
+};
+
+// add a constructor hook
+L.Class.addInitHook = function (fn) { // (Function) || (String, args...)
+	var args = Array.prototype.slice.call(arguments, 1);
+
+	var init = typeof fn === 'function' ? fn : function () {
+		this[fn].apply(this, args);
+	};
+
+	this.prototype._initHooks = this.prototype._initHooks || [];
+	this.prototype._initHooks.push(init);
+};
+
+
+/*
+ * L.Mixin.Events is used to add custom events functionality to Leaflet classes.
+ */
+
+var eventsKey = '_leaflet_events';
+
+L.Mixin = {};
+
+L.Mixin.Events = {
+
+	addEventListener: function (types, fn, context) { // (String, Function[, Object]) or (Object[, Object])
+
+		// types can be a map of types/handlers
+		if (L.Util.invokeEach(types, this.addEventListener, this, fn, context)) { return this; }
+
+		var events = this[eventsKey] = this[eventsKey] || {},
+		    contextId = context && context !== this && L.stamp(context),
+		    i, len, event, type, indexKey, indexLenKey, typeIndex;
+
+		// types can be a string of space-separated words
+		types = L.Util.splitWords(types);
+
+		for (i = 0, len = types.length; i < len; i++) {
+			event = {
+				action: fn,
+				context: context || this
+			};
+			type = types[i];
+
+			if (contextId) {
+				// store listeners of a particular context in a separate hash (if it has an id)
+				// gives a major performance boost when removing thousands of map layers
+
+				indexKey = type + '_idx';
+				indexLenKey = indexKey + '_len';
+
+				typeIndex = events[indexKey] = events[indexKey] || {};
+
+				if (!typeIndex[contextId]) {
+					typeIndex[contextId] = [];
+
+					// keep track of the number of keys in the index to quickly check if it's empty
+					events[indexLenKey] = (events[indexLenKey] || 0) + 1;
+				}
+
+				typeIndex[contextId].push(event);
+
+
+			} else {
+				events[type] = events[type] || [];
+				events[type].push(event);
+			}
+		}
+
+		return this;
+	},
+
+	hasEventListeners: function (type) { // (String) -> Boolean
+		var events = this[eventsKey];
+		return !!events && ((type in events && events[type].length > 0) ||
+		                    (type + '_idx' in events && events[type + '_idx_len'] > 0));
+	},
+
+	removeEventListener: function (types, fn, context) { // ([String, Function, Object]) or (Object[, Object])
+
+		if (!this[eventsKey]) {
+			return this;
+		}
+
+		if (!types) {
+			return this.clearAllEventListeners();
+		}
+
+		if (L.Util.invokeEach(types, this.removeEventListener, this, fn, context)) { return this; }
+
+		var events = this[eventsKey],
+		    contextId = context && context !== this && L.stamp(context),
+		    i, len, type, listeners, j, indexKey, indexLenKey, typeIndex, removed;
+
+		types = L.Util.splitWords(types);
+
+		for (i = 0, len = types.length; i < len; i++) {
+			type = types[i];
+			indexKey = type + '_idx';
+			indexLenKey = indexKey + '_len';
+
+			typeIndex = events[indexKey];
+
+			if (!fn) {
+				// clear all listeners for a type if function isn't specified
+				delete events[type];
+				delete events[indexKey];
+				delete events[indexLenKey];
+
+			} else {
+				listeners = contextId && typeIndex ? typeIndex[contextId] : events[type];
+
+				if (listeners) {
+					for (j = listeners.length - 1; j >= 0; j--) {
+						if ((listeners[j].action === fn) && (!context || (listeners[j].context === context))) {
+							removed = listeners.splice(j, 1);
+							// set the old action to a no-op, because it is possible
+							// that the listener is being iterated over as part of a dispatch
+							removed[0].action = L.Util.falseFn;
+						}
+					}
+
+					if (context && typeIndex && (listeners.length === 0)) {
+						delete typeIndex[contextId];
+						events[indexLenKey]--;
+					}
+				}
+			}
+		}
+
+		return this;
+	},
+
+	clearAllEventListeners: function () {
+		delete this[eventsKey];
+		return this;
+	},
+
+	fireEvent: function (type, data) { // (String[, Object])
+		if (!this.hasEventListeners(type)) {
+			return this;
+		}
+
+		var event = L.Util.extend({}, data, { type: type, target: this });
+
+		var events = this[eventsKey],
+		    listeners, i, len, typeIndex, contextId;
+
+		if (events[type]) {
+			// make sure adding/removing listeners inside other listeners won't cause infinite loop
+			listeners = events[type].slice();
+
+			for (i = 0, len = listeners.length; i < len; i++) {
+				listeners[i].action.call(listeners[i].context, event);
+			}
+		}
+
+		// fire event for the context-indexed listeners as well
+		typeIndex = events[type + '_idx'];
+
+		for (contextId in typeIndex) {
+			listeners = typeIndex[contextId].slice();
+
+			if (listeners) {
+				for (i = 0, len = listeners.length; i < len; i++) {
+					listeners[i].action.call(listeners[i].context, event);
+				}
+			}
+		}
+
+		return this;
+	},
+
+	addOneTimeEventListener: function (types, fn, context) {
+
+		if (L.Util.invokeEach(types, this.addOneTimeEventListener, this, fn, context)) { return this; }
+
+		var handler = L.bind(function () {
+			this
+			    .removeEventListener(types, fn, context)
+			    .removeEventListener(types, handler, context);
+		}, this);
+
+		return this
+		    .addEventListener(types, fn, context)
+		    .addEventListener(types, handler, context);
+	}
+};
+
+L.Mixin.Events.on = L.Mixin.Events.addEventListener;
+L.Mixin.Events.off = L.Mixin.Events.removeEventListener;
+L.Mixin.Events.once = L.Mixin.Events.addOneTimeEventListener;
+L.Mixin.Events.fire = L.Mixin.Events.fireEvent;
+
+
+/*
+ * L.Browser handles different browser and feature detections for internal Leaflet use.
+ */
+
+(function () {
+
+	var ie = 'ActiveXObject' in window,
+		ielt9 = ie && !document.addEventListener,
+
+	    // terrible browser detection to work around Safari / iOS / Android browser bugs
+	    ua = navigator.userAgent.toLowerCase(),
+	    webkit = ua.indexOf('webkit') !== -1,
+	    chrome = ua.indexOf('chrome') !== -1,
+	    phantomjs = ua.indexOf('phantom') !== -1,
+	    android = ua.indexOf('android') !== -1,
+	    android23 = ua.search('android [23]') !== -1,
+		gecko = ua.indexOf('gecko') !== -1,
+
+	    mobile = typeof orientation !== undefined + '',
+	    msPointer = !window.PointerEvent && window.MSPointerEvent,
+		pointer = (window.PointerEvent && window.navigator.pointerEnabled) ||
+				  msPointer,
+	    retina = ('devicePixelRatio' in window && window.devicePixelRatio > 1) ||
+	             ('matchMedia' in window && window.matchMedia('(min-resolution:144dpi)') &&
+	              window.matchMedia('(min-resolution:144dpi)').matches),
+
+	    doc = document.documentElement,
+	    ie3d = ie && ('transition' in doc.style),
+	    webkit3d = ('WebKitCSSMatrix' in window) && ('m11' in new window.WebKitCSSMatrix()) && !android23,
+	    gecko3d = 'MozPerspective' in doc.style,
+	    opera3d = 'OTransition' in doc.style,
+	    any3d = !window.L_DISABLE_3D && (ie3d || webkit3d || gecko3d || opera3d) && !phantomjs;
+
+	var touch = !window.L_NO_TOUCH && !phantomjs && (pointer || 'ontouchstart' in window ||
+		(window.DocumentTouch && document instanceof window.DocumentTouch));
+
+	L.Browser = {
+		ie: ie,
+		ielt9: ielt9,
+		webkit: webkit,
+		gecko: gecko && !webkit && !window.opera && !ie,
+
+		android: android,
+		android23: android23,
+
+		chrome: chrome,
+
+		ie3d: ie3d,
+		webkit3d: webkit3d,
+		gecko3d: gecko3d,
+		opera3d: opera3d,
+		any3d: any3d,
+
+		mobile: mobile,
+		mobileWebkit: mobile && webkit,
+		mobileWebkit3d: mobile && webkit3d,
+		mobileOpera: mobile && window.opera,
+
+		touch: touch,
+		msPointer: msPointer,
+		pointer: pointer,
+
+		retina: retina
+	};
+
+}());
+
+
+/*
+ * L.Point represents a point with x and y coordinates.
+ */
+
+L.Point = function (/*Number*/ x, /*Number*/ y, /*Boolean*/ round) {
+	this.x = (round ? Math.round(x) : x);
+	this.y = (round ? Math.round(y) : y);
+};
+
+L.Point.prototype = {
+
+	clone: function () {
+		return new L.Point(this.x, this.y);
+	},
+
+	// non-destructive, returns a new point
+	add: function (point) {
+		return this.clone()._add(L.point(point));
+	},
+
+	// destructive, used directly for performance in situations where it's safe to modify existing point
+	_add: function (point) {
+		this.x += point.x;
+		this.y += point.y;
+		return this;
+	},
+
+	subtract: function (point) {
+		return this.clone()._subtract(L.point(point));
+	},
+
+	_subtract: function (point) {
+		this.x -= point.x;
+		this.y -= point.y;
+		return this;
+	},
+
+	divideBy: function (num) {
+		return this.clone()._divideBy(num);
+	},
+
+	_divideBy: function (num) {
+		this.x /= num;
+		this.y /= num;
+		return this;
+	},
+
+	multiplyBy: function (num) {
+		return this.clone()._multiplyBy(num);
+	},
+
+	_multiplyBy: function (num) {
+		this.x *= num;
+		this.y *= num;
+		return this;
+	},
+
+	round: function () {
+		return this.clone()._round();
+	},
+
+	_round: function () {
+		this.x = Math.round(this.x);
+		this.y = Math.round(this.y);
+		return this;
+	},
+
+	floor: function () {
+		return this.clone()._floor();
+	},
+
+	_floor: function () {
+		this.x = Math.floor(this.x);
+		this.y = Math.floor(this.y);
+		return this;
+	},
+
+	distanceTo: function (point) {
+		point = L.point(point);
+
+		var x = point.x - this.x,
+		    y = point.y - this.y;
+
+		return Math.sqrt(x * x + y * y);
+	},
+
+	equals: function (point) {
+		point = L.point(point);
+
+		return point.x === this.x &&
+		       point.y === this.y;
+	},
+
+	contains: function (point) {
+		point = L.point(point);
+
+		return Math.abs(point.x) <= Math.abs(this.x) &&
+		       Math.abs(point.y) <= Math.abs(this.y);
+	},
+
+	toString: function () {
+		return 'Point(' +
+		        L.Util.formatNum(this.x) + ', ' +
+		        L.Util.formatNum(this.y) + ')';
+	}
+};
+
+L.point = function (x, y, round) {
+	if (x instanceof L.Point) {
+		return x;
+	}
+	if (L.Util.isArray(x)) {
+		return new L.Point(x[0], x[1]);
+	}
+	if (x === undefined || x === null) {
+		return x;
+	}
+	return new L.Point(x, y, round);
+};
+
+
+/*
+ * L.Bounds represents a rectangular area on the screen in pixel coordinates.
+ */
+
+L.Bounds = function (a, b) { //(Point, Point) or Point[]
+	if (!a) { return; }
+
+	var points = b ? [a, b] : a;
+
+	for (var i = 0, len = points.length; i < len; i++) {
+		this.extend(points[i]);
+	}
+};
+
+L.Bounds.prototype = {
+	// extend the bounds to contain the given point
+	extend: function (point) { // (Point)
+		point = L.point(point);
+
+		if (!this.min && !this.max) {
+			this.min = point.clone();
+			this.max = point.clone();
+		} else {
+			this.min.x = Math.min(point.x, this.min.x);
+			this.max.x = Math.max(point.x, this.max.x);
+			this.min.y = Math.min(point.y, this.min.y);
+			this.max.y = Math.max(point.y, this.max.y);
+		}
+		return this;
+	},
+
+	getCenter: function (round) { // (Boolean) -> Point
+		return new L.Point(
+		        (this.min.x + this.max.x) / 2,
+		        (this.min.y + this.max.y) / 2, round);
+	},
+
+	getBottomLeft: function () { // -> Point
+		return new L.Point(this.min.x, this.max.y);
+	},
+
+	getTopRight: function () { // -> Point
+		return new L.Point(this.max.x, this.min.y);
+	},
+
+	getSize: function () {
+		return this.max.subtract(this.min);
+	},
+
+	contains: function (obj) { // (Bounds) or (Point) -> Boolean
+		var min, max;
+
+		if (typeof obj[0] === 'number' || obj instanceof L.Point) {
+			obj = L.point(obj);
+		} else {
+			obj = L.bounds(obj);
+		}
+
+		if (obj instanceof L.Bounds) {
+			min = obj.min;
+			max = obj.max;
+		} else {
+			min = max = obj;
+		}
+
+		return (min.x >= this.min.x) &&
+		       (max.x <= this.max.x) &&
+		       (min.y >= this.min.y) &&
+		       (max.y <= this.max.y);
+	},
+
+	intersects: function (bounds) { // (Bounds) -> Boolean
+		bounds = L.bounds(bounds);
+
+		var min = this.min,
+		    max = this.max,
+		    min2 = bounds.min,
+		    max2 = bounds.max,
+		    xIntersects = (max2.x >= min.x) && (min2.x <= max.x),
+		    yIntersects = (max2.y >= min.y) && (min2.y <= max.y);
+
+		return xIntersects && yIntersects;
+	},
+
+	isValid: function () {
+		return !!(this.min && this.max);
+	}
+};
+
+L.bounds = function (a, b) { // (Bounds) or (Point, Point) or (Point[])
+	if (!a || a instanceof L.Bounds) {
+		return a;
+	}
+	return new L.Bounds(a, b);
+};
+
+
+/*
+ * L.Transformation is an utility class to perform simple point transformations through a 2d-matrix.
+ */
+
+L.Transformation = function (a, b, c, d) {
+	this._a = a;
+	this._b = b;
+	this._c = c;
+	this._d = d;
+};
+
+L.Transformation.prototype = {
+	transform: function (point, scale) { // (Point, Number) -> Point
+		return this._transform(point.clone(), scale);
+	},
+
+	// destructive transform (faster)
+	_transform: function (point, scale) {
+		scale = scale || 1;
+		point.x = scale * (this._a * point.x + this._b);
+		point.y = scale * (this._c * point.y + this._d);
+		return point;
+	},
+
+	untransform: function (point, scale) {
+		scale = scale || 1;
+		return new L.Point(
+		        (point.x / scale - this._b) / this._a,
+		        (point.y / scale - this._d) / this._c);
+	}
+};
+
+
+/*
+ * L.DomUtil contains various utility functions for working with DOM.
+ */
+
+L.DomUtil = {
+	get: function (id) {
+		return (typeof id === 'string' ? document.getElementById(id) : id);
+	},
+
+	getStyle: function (el, style) {
+
+		var value = el.style[style];
+
+		if (!value && el.currentStyle) {
+			value = el.currentStyle[style];
+		}
+
+		if ((!value || value === 'auto') && document.defaultView) {
+			var css = document.defaultView.getComputedStyle(el, null);
+			value = css ? css[style] : null;
+		}
+
+		return value === 'auto' ? null : value;
+	},
+
+	getViewportOffset: function (element) {
+
+		var top = 0,
+		    left = 0,
+		    el = element,
+		    docBody = document.body,
+		    docEl = document.documentElement,
+		    pos;
+
+		do {
+			top  += el.offsetTop  || 0;
+			left += el.offsetLeft || 0;
+
+			//add borders
+			top += parseInt(L.DomUtil.getStyle(el, 'borderTopWidth'), 10) || 0;
+			left += parseInt(L.DomUtil.getStyle(el, 'borderLeftWidth'), 10) || 0;
+
+			pos = L.DomUtil.getStyle(el, 'position');
+
+			if (el.offsetParent === docBody && pos === 'absolute') { break; }
+
+			if (pos === 'fixed') {
+				top  += docBody.scrollTop  || docEl.scrollTop  || 0;
+				left += docBody.scrollLeft || docEl.scrollLeft || 0;
+				break;
+			}
+
+			if (pos === 'relative' && !el.offsetLeft) {
+				var width = L.DomUtil.getStyle(el, 'width'),
+				    maxWidth = L.DomUtil.getStyle(el, 'max-width'),
+				    r = el.getBoundingClientRect();
+
+				if (width !== 'none' || maxWidth !== 'none') {
+					left += r.left + el.clientLeft;
+				}
+
+				//calculate full y offset since we're breaking out of the loop
+				top += r.top + (docBody.scrollTop  || docEl.scrollTop  || 0);
+
+				break;
+			}
+
+			el = el.offsetParent;
+
+		} while (el);
+
+		el = element;
+
+		do {
+			if (el === docBody) { break; }
+
+			top  -= el.scrollTop  || 0;
+			left -= el.scrollLeft || 0;
+
+			el = el.parentNode;
+		} while (el);
+
+		return new L.Point(left, top);
+	},
+
+	documentIsLtr: function () {
+		if (!L.DomUtil._docIsLtrCached) {
+			L.DomUtil._docIsLtrCached = true;
+			L.DomUtil._docIsLtr = L.DomUtil.getStyle(document.body, 'direction') === 'ltr';
+		}
+		return L.DomUtil._docIsLtr;
+	},
+
+	create: function (tagName, className, container) {
+
+		var el = document.createElement(tagName);
+		el.className = className;
+
+		if (container) {
+			container.appendChild(el);
+		}
+
+		return el;
+	},
+
+	hasClass: function (el, name) {
+		if (el.classList !== undefined) {
+			return el.classList.contains(name);
+		}
+		var className = L.DomUtil._getClass(el);
+		return className.length > 0 && new RegExp('(^|\\s)' + name + '(\\s|$)').test(className);
+	},
+
+	addClass: function (el, name) {
+		if (el.classList !== undefined) {
+			var classes = L.Util.splitWords(name);
+			for (var i = 0, len = classes.length; i < len; i++) {
+				el.classList.add(classes[i]);
+			}
+		} else if (!L.DomUtil.hasClass(el, name)) {
+			var className = L.DomUtil._getClass(el);
+			L.DomUtil._setClass(el, (className ? className + ' ' : '') + name);
+		}
+	},
+
+	removeClass: function (el, name) {
+		if (el.classList !== undefined) {
+			el.classList.remove(name);
+		} else {
+			L.DomUtil._setClass(el, L.Util.trim((' ' + L.DomUtil._getClass(el) + ' ').replace(' ' + name + ' ', ' ')));
+		}
+	},
+
+	_setClass: function (el, name) {
+		if (el.className.baseVal === undefined) {
+			el.className = name;
+		} else {
+			// in case of SVG element
+			el.className.baseVal = name;
+		}
+	},
+
+	_getClass: function (el) {
+		return el.className.baseVal === undefined ? el.className : el.className.baseVal;
+	},
+
+	setOpacity: function (el, value) {
+
+		if ('opacity' in el.style) {
+			el.style.opacity = value;
+
+		} else if ('filter' in el.style) {
+
+			var filter = false,
+			    filterName = 'DXImageTransform.Microsoft.Alpha';
+
+			// filters collection throws an error if we try to retrieve a filter that doesn't exist
+			try {
+				filter = el.filters.item(filterName);
+			} catch (e) {
+				// don't set opacity to 1 if we haven't already set an opacity,
+				// it isn't needed and breaks transparent pngs.
+				if (value === 1) { return; }
+			}
+
+			value = Math.round(value * 100);
+
+			if (filter) {
+				filter.Enabled = (value !== 100);
+				filter.Opacity = value;
+			} else {
+				el.style.filter += ' progid:' + filterName + '(opacity=' + value + ')';
+			}
+		}
+	},
+
+	testProp: function (props) {
+
+		var style = document.documentElement.style;
+
+		for (var i = 0; i < props.length; i++) {
+			if (props[i] in style) {
+				return props[i];
+			}
+		}
+		return false;
+	},
+
+	getTranslateString: function (point) {
+		// on WebKit browsers (Chrome/Safari/iOS Safari/Android) using translate3d instead of translate
+		// makes animation smoother as it ensures HW accel is used. Firefox 13 doesn't care
+		// (same speed either way), Opera 12 doesn't support translate3d
+
+		var is3d = L.Browser.webkit3d,
+		    open = 'translate' + (is3d ? '3d' : '') + '(',
+		    close = (is3d ? ',0' : '') + ')';
+
+		return open + point.x + 'px,' + point.y + 'px' + close;
+	},
+
+	getScaleString: function (scale, origin) {
+
+		var preTranslateStr = L.DomUtil.getTranslateString(origin.add(origin.multiplyBy(-1 * scale))),
+		    scaleStr = ' scale(' + scale + ') ';
+
+		return preTranslateStr + scaleStr;
+	},
+
+	setPosition: function (el, point, disable3D) { // (HTMLElement, Point[, Boolean])
+
+		// jshint camelcase: false
+		el._leaflet_pos = point;
+
+		if (!disable3D && L.Browser.any3d) {
+			el.style[L.DomUtil.TRANSFORM] =  L.DomUtil.getTranslateString(point);
+		} else {
+			el.style.left = point.x + 'px';
+			el.style.top = point.y + 'px';
+		}
+	},
+
+	getPosition: function (el) {
+		// this method is only used for elements previously positioned using setPosition,
+		// so it's safe to cache the position for performance
+
+		// jshint camelcase: false
+		return el._leaflet_pos;
+	}
+};
+
+
+// prefix style property names
+
+L.DomUtil.TRANSFORM = L.DomUtil.testProp(
+        ['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+
+// webkitTransition comes first because some browser versions that drop vendor prefix don't do
+// the same for the transitionend event, in particular the Android 4.1 stock browser
+
+L.DomUtil.TRANSITION = L.DomUtil.testProp(
+        ['webkitTransition', 'transition', 'OTransition', 'MozTransition', 'msTransition']);
+
+L.DomUtil.TRANSITION_END =
+        L.DomUtil.TRANSITION === 'webkitTransition' || L.DomUtil.TRANSITION === 'OTransition' ?
+        L.DomUtil.TRANSITION + 'End' : 'transitionend';
+
+(function () {
+    if ('onselectstart' in document) {
+        L.extend(L.DomUtil, {
+            disableTextSelection: function () {
+                L.DomEvent.on(window, 'selectstart', L.DomEvent.preventDefault);
+            },
+
+            enableTextSelection: function () {
+                L.DomEvent.off(window, 'selectstart', L.DomEvent.preventDefault);
+            }
+        });
+    } else {
+        var userSelectProperty = L.DomUtil.testProp(
+            ['userSelect', 'WebkitUserSelect', 'OUserSelect', 'MozUserSelect', 'msUserSelect']);
+
+        L.extend(L.DomUtil, {
+            disableTextSelection: function () {
+                if (userSelectProperty) {
+                    var style = document.documentElement.style;
+                    this._userSelect = style[userSelectProperty];
+                    style[userSelectProperty] = 'none';
+                }
+            },
+
+            enableTextSelection: function () {
+                if (userSelectProperty) {
+                    document.documentElement.style[userSelectProperty] = this._userSelect;
+                    delete this._userSelect;
+                }
+            }
+        });
+    }
+
+	L.extend(L.DomUtil, {
+		disableImageDrag: function () {
+			L.DomEvent.on(window, 'dragstart', L.DomEvent.preventDefault);
+		},
+
+		enableImageDrag: function () {
+			L.DomEvent.off(window, 'dragstart', L.DomEvent.preventDefault);
+		}
+	});
+})();
+
+
+/*
+ * L.LatLng represents a geographical point with latitude and longitude coordinates.
+ */
+
+L.LatLng = function (lat, lng, alt) { // (Number, Number, Number)
+	lat = parseFloat(lat);
+	lng = parseFloat(lng);
+
+	if (isNaN(lat) || isNaN(lng)) {
+		throw new Error('Invalid LatLng object: (' + lat + ', ' + lng + ')');
+	}
+
+	this.lat = lat;
+	this.lng = lng;
+
+	if (alt !== undefined) {
+		this.alt = parseFloat(alt);
+	}
+};
+
+L.extend(L.LatLng, {
+	DEG_TO_RAD: Math.PI / 180,
+	RAD_TO_DEG: 180 / Math.PI,
+	MAX_MARGIN: 1.0E-9 // max margin of error for the "equals" check
+});
+
+L.LatLng.prototype = {
+	equals: function (obj) { // (LatLng) -> Boolean
+		if (!obj) { return false; }
+
+		obj = L.latLng(obj);
+
+		var margin = Math.max(
+		        Math.abs(this.lat - obj.lat),
+		        Math.abs(this.lng - obj.lng));
+
+		return margin <= L.LatLng.MAX_MARGIN;
+	},
+
+	toString: function (precision) { // (Number) -> String
+		return 'LatLng(' +
+		        L.Util.formatNum(this.lat, precision) + ', ' +
+		        L.Util.formatNum(this.lng, precision) + ')';
+	},
+
+	// Haversine distance formula, see http://en.wikipedia.org/wiki/Haversine_formula
+	// TODO move to projection code, LatLng shouldn't know about Earth
+	distanceTo: function (other) { // (LatLng) -> Number
+		other = L.latLng(other);
+
+		var R = 6378137, // earth radius in meters
+		    d2r = L.LatLng.DEG_TO_RAD,
+		    dLat = (other.lat - this.lat) * d2r,
+		    dLon = (other.lng - this.lng) * d2r,
+		    lat1 = this.lat * d2r,
+		    lat2 = other.lat * d2r,
+		    sin1 = Math.sin(dLat / 2),
+		    sin2 = Math.sin(dLon / 2);
+
+		var a = sin1 * sin1 + sin2 * sin2 * Math.cos(lat1) * Math.cos(lat2);
+
+		return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	},
+
+	wrap: function (a, b) { // (Number, Number) -> LatLng
+		var lng = this.lng;
+
+		a = a || -180;
+		b = b ||  180;
+
+		lng = (lng + b) % (b - a) + (lng < a || lng === b ? b : a);
+
+		return new L.LatLng(this.lat, lng);
+	}
+};
+
+L.latLng = function (a, b) { // (LatLng) or ([Number, Number]) or (Number, Number)
+	if (a instanceof L.LatLng) {
+		return a;
+	}
+	if (L.Util.isArray(a)) {
+		if (typeof a[0] === 'number' || typeof a[0] === 'string') {
+			return new L.LatLng(a[0], a[1], a[2]);
+		} else {
+			return null;
+		}
+	}
+	if (a === undefined || a === null) {
+		return a;
+	}
+	if (typeof a === 'object' && 'lat' in a) {
+		return new L.LatLng(a.lat, 'lng' in a ? a.lng : a.lon);
+	}
+	if (b === undefined) {
+		return null;
+	}
+	return new L.LatLng(a, b);
+};
+
+
+
+/*
+ * L.LatLngBounds represents a rectangular area on the map in geographical coordinates.
+ */
+
+L.LatLngBounds = function (southWest, northEast) { // (LatLng, LatLng) or (LatLng[])
+	if (!southWest) { return; }
+
+	var latlngs = northEast ? [southWest, northEast] : southWest;
+
+	for (var i = 0, len = latlngs.length; i < len; i++) {
+		this.extend(latlngs[i]);
+	}
+};
+
+L.LatLngBounds.prototype = {
+	// extend the bounds to contain the given point or bounds
+	extend: function (obj) { // (LatLng) or (LatLngBounds)
+		if (!obj) { return this; }
+
+		var latLng = L.latLng(obj);
+		if (latLng !== null) {
+			obj = latLng;
+		} else {
+			obj = L.latLngBounds(obj);
+		}
+
+		if (obj instanceof L.LatLng) {
+			if (!this._southWest && !this._northEast) {
+				this._southWest = new L.LatLng(obj.lat, obj.lng);
+				this._northEast = new L.LatLng(obj.lat, obj.lng);
+			} else {
+				this._southWest.lat = Math.min(obj.lat, this._southWest.lat);
+				this._southWest.lng = Math.min(obj.lng, this._southWest.lng);
+
+				this._northEast.lat = Math.max(obj.lat, this._northEast.lat);
+				this._northEast.lng = Math.max(obj.lng, this._northEast.lng);
+			}
+		} else if (obj instanceof L.LatLngBounds) {
+			this.extend(obj._southWest);
+			this.extend(obj._northEast);
+		}
+		return this;
+	},
+
+	// extend the bounds by a percentage
+	pad: function (bufferRatio) { // (Number) -> LatLngBounds
+		var sw = this._southWest,
+		    ne = this._northEast,
+		    heightBuffer = Math.abs(sw.lat - ne.lat) * bufferRatio,
+		    widthBuffer = Math.abs(sw.lng - ne.lng) * bufferRatio;
+
+		return new L.LatLngBounds(
+		        new L.LatLng(sw.lat - heightBuffer, sw.lng - widthBuffer),
+		        new L.LatLng(ne.lat + heightBuffer, ne.lng + widthBuffer));
+	},
+
+	getCenter: function () { // -> LatLng
+		return new L.LatLng(
+		        (this._southWest.lat + this._northEast.lat) / 2,
+		        (this._southWest.lng + this._northEast.lng) / 2);
+	},
+
+	getSouthWest: function () {
+		return this._southWest;
+	},
+
+	getNorthEast: function () {
+		return this._northEast;
+	},
+
+	getNorthWest: function () {
+		return new L.LatLng(this.getNorth(), this.getWest());
+	},
+
+	getSouthEast: function () {
+		return new L.LatLng(this.getSouth(), this.getEast());
+	},
+
+	getWest: function () {
+		return this._southWest.lng;
+	},
+
+	getSouth: function () {
+		return this._southWest.lat;
+	},
+
+	getEast: function () {
+		return this._northEast.lng;
+	},
+
+	getNorth: function () {
+		return this._northEast.lat;
+	},
+
+	contains: function (obj) { // (LatLngBounds) or (LatLng) -> Boolean
+		if (typeof obj[0] === 'number' || obj instanceof L.LatLng) {
+			obj = L.latLng(obj);
+		} else {
+			obj = L.latLngBounds(obj);
+		}
+
+		var sw = this._southWest,
+		    ne = this._northEast,
+		    sw2, ne2;
+
+		if (obj instanceof L.LatLngBounds) {
+			sw2 = obj.getSouthWest();
+			ne2 = obj.getNorthEast();
+		} else {
+			sw2 = ne2 = obj;
+		}
+
+		return (sw2.lat >= sw.lat) && (ne2.lat <= ne.lat) &&
+		       (sw2.lng >= sw.lng) && (ne2.lng <= ne.lng);
+	},
+
+	intersects: function (bounds) { // (LatLngBounds)
+		bounds = L.latLngBounds(bounds);
+
+		var sw = this._southWest,
+		    ne = this._northEast,
+		    sw2 = bounds.getSouthWest(),
+		    ne2 = bounds.getNorthEast(),
+
+		    latIntersects = (ne2.lat >= sw.lat) && (sw2.lat <= ne.lat),
+		    lngIntersects = (ne2.lng >= sw.lng) && (sw2.lng <= ne.lng);
+
+		return latIntersects && lngIntersects;
+	},
+
+	toBBoxString: function () {
+		return [this.getWest(), this.getSouth(), this.getEast(), this.getNorth()].join(',');
+	},
+
+	equals: function (bounds) { // (LatLngBounds)
+		if (!bounds) { return false; }
+
+		bounds = L.latLngBounds(bounds);
+
+		return this._southWest.equals(bounds.getSouthWest()) &&
+		       this._northEast.equals(bounds.getNorthEast());
+	},
+
+	isValid: function () {
+		return !!(this._southWest && this._northEast);
+	}
+};
+
+//TODO International date line?
+
+L.latLngBounds = function (a, b) { // (LatLngBounds) or (LatLng, LatLng)
+	if (!a || a instanceof L.LatLngBounds) {
+		return a;
+	}
+	return new L.LatLngBounds(a, b);
+};
+
+
+/*
+ * L.Projection contains various geographical projections used by CRS classes.
+ */
+
+L.Projection = {};
+
+
+/*
+ * Spherical Mercator is the most popular map projection, used by EPSG:3857 CRS used by default.
+ */
+
+L.Projection.SphericalMercator = {
+	MAX_LATITUDE: 85.0511287798,
+
+	project: function (latlng) { // (LatLng) -> Point
+		var d = L.LatLng.DEG_TO_RAD,
+		    max = this.MAX_LATITUDE,
+		    lat = Math.max(Math.min(max, latlng.lat), -max),
+		    x = latlng.lng * d,
+		    y = lat * d;
+
+		y = Math.log(Math.tan((Math.PI / 4) + (y / 2)));
+
+		return new L.Point(x, y);
+	},
+
+	unproject: function (point) { // (Point, Boolean) -> LatLng
+		var d = L.LatLng.RAD_TO_DEG,
+		    lng = point.x * d,
+		    lat = (2 * Math.atan(Math.exp(point.y)) - (Math.PI / 2)) * d;
+
+		return new L.LatLng(lat, lng);
+	}
+};
+
+
+/*
+ * Simple equirectangular (Plate Carree) projection, used by CRS like EPSG:4326 and Simple.
+ */
+
+L.Projection.LonLat = {
+	project: function (latlng) {
+		return new L.Point(latlng.lng, latlng.lat);
+	},
+
+	unproject: function (point) {
+		return new L.LatLng(point.y, point.x);
+	}
+};
+
+
+/*
+ * L.CRS is a base object for all defined CRS (Coordinate Reference Systems) in Leaflet.
+ */
+
+L.CRS = {
+	latLngToPoint: function (latlng, zoom) { // (LatLng, Number) -> Point
+		var projectedPoint = this.projection.project(latlng),
+		    scale = this.scale(zoom);
+
+		return this.transformation._transform(projectedPoint, scale);
+	},
+
+	pointToLatLng: function (point, zoom) { // (Point, Number[, Boolean]) -> LatLng
+		var scale = this.scale(zoom),
+		    untransformedPoint = this.transformation.untransform(point, scale);
+
+		return this.projection.unproject(untransformedPoint);
+	},
+
+	project: function (latlng) {
+		return this.projection.project(latlng);
+	},
+
+	scale: function (zoom) {
+		return 256 * Math.pow(2, zoom);
+	},
+
+	getSize: function (zoom) {
+		var s = this.scale(zoom);
+		return L.point(s, s);
+	}
+};
+
+
+/*
+ * A simple CRS that can be used for flat non-Earth maps like panoramas or game maps.
+ */
+
+L.CRS.Simple = L.extend({}, L.CRS, {
+	projection: L.Projection.LonLat,
+	transformation: new L.Transformation(1, 0, -1, 0),
+
+	scale: function (zoom) {
+		return Math.pow(2, zoom);
+	}
+});
+
+
+/*
+ * L.CRS.EPSG3857 (Spherical Mercator) is the most common CRS for web mapping
+ * and is used by Leaflet by default.
+ */
+
+L.CRS.EPSG3857 = L.extend({}, L.CRS, {
+	code: 'EPSG:3857',
+
+	projection: L.Projection.SphericalMercator,
+	transformation: new L.Transformation(0.5 / Math.PI, 0.5, -0.5 / Math.PI, 0.5),
+
+	project: function (latlng) { // (LatLng) -> Point
+		var projectedPoint = this.projection.project(latlng),
+		    earthRadius = 6378137;
+		return projectedPoint.multiplyBy(earthRadius);
+	}
+});
+
+L.CRS.EPSG900913 = L.extend({}, L.CRS.EPSG3857, {
+	code: 'EPSG:900913'
+});
+
+
+/*
+ * L.CRS.EPSG4326 is a CRS popular among advanced GIS specialists.
+ */
+
+L.CRS.EPSG4326 = L.extend({}, L.CRS, {
+	code: 'EPSG:4326',
+
+	projection: L.Projection.LonLat,
+	transformation: new L.Transformation(1 / 360, 0.5, -1 / 360, 0.5)
+});
+
+
+/*
+ * L.Map is the central class of the API - it is used to create a map.
+ */
+
+L.Map = L.Class.extend({
+
+	includes: L.Mixin.Events,
+
+	options: {
+		crs: L.CRS.EPSG3857,
+
+		/*
+		center: LatLng,
+		zoom: Number,
+		layers: Array,
+		*/
+
+		fadeAnimation: L.DomUtil.TRANSITION && !L.Browser.android23,
+		trackResize: true,
+		markerZoomAnimation: L.DomUtil.TRANSITION && L.Browser.any3d
+	},
+
+	initialize: function (id, options) { // (HTMLElement or String, Object)
+		options = L.setOptions(this, options);
+
+
+		this._initContainer(id);
+		this._initLayout();
+
+		// hack for https://github.com/Leaflet/Leaflet/issues/1980
+		this._onResize = L.bind(this._onResize, this);
+
+		this._initEvents();
+
+		if (options.maxBounds) {
+			this.setMaxBounds(options.maxBounds);
+		}
+
+		if (options.center && options.zoom !== undefined) {
+			this.setView(L.latLng(options.center), options.zoom, {reset: true});
+		}
+
+		this._handlers = [];
+
+		this._layers = {};
+		this._zoomBoundLayers = {};
+		this._tileLayersNum = 0;
+
+		this.callInitHooks();
+
+		this._addLayers(options.layers);
+	},
+
+
+	// public methods that modify map state
+
+	// replaced by animation-powered implementation in Map.PanAnimation.js
+	setView: function (center, zoom) {
+		zoom = zoom === undefined ? this.getZoom() : zoom;
+		this._resetView(L.latLng(center), this._limitZoom(zoom));
+		return this;
+	},
+
+	setZoom: function (zoom, options) {
+		if (!this._loaded) {
+			this._zoom = this._limitZoom(zoom);
+			return this;
+		}
+		return this.setView(this.getCenter(), zoom, {zoom: options});
+	},
+
+	zoomIn: function (delta, options) {
+		return this.setZoom(this._zoom + (delta || 1), options);
+	},
+
+	zoomOut: function (delta, options) {
+		return this.setZoom(this._zoom - (delta || 1), options);
+	},
+
+	setZoomAround: function (latlng, zoom, options) {
+		var scale = this.getZoomScale(zoom),
+		    viewHalf = this.getSize().divideBy(2),
+		    containerPoint = latlng instanceof L.Point ? latlng : this.latLngToContainerPoint(latlng),
+
+		    centerOffset = containerPoint.subtract(viewHalf).multiplyBy(1 - 1 / scale),
+		    newCenter = this.containerPointToLatLng(viewHalf.add(centerOffset));
+
+		return this.setView(newCenter, zoom, {zoom: options});
+	},
+
+	fitBounds: function (bounds, options) {
+
+		options = options || {};
+		bounds = bounds.getBounds ? bounds.getBounds() : L.latLngBounds(bounds);
+
+		var paddingTL = L.point(options.paddingTopLeft || options.padding || [0, 0]),
+		    paddingBR = L.point(options.paddingBottomRight || options.padding || [0, 0]),
+
+		    zoom = this.getBoundsZoom(bounds, false, paddingTL.add(paddingBR));
+
+		zoom = (options.maxZoom) ? Math.min(options.maxZoom, zoom) : zoom;
+
+		var paddingOffset = paddingBR.subtract(paddingTL).divideBy(2),
+
+		    swPoint = this.project(bounds.getSouthWest(), zoom),
+		    nePoint = this.project(bounds.getNorthEast(), zoom),
+		    center = this.unproject(swPoint.add(nePoint).divideBy(2).add(paddingOffset), zoom);
+
+		return this.setView(center, zoom, options);
+	},
+
+	fitWorld: function (options) {
+		return this.fitBounds([[-90, -180], [90, 180]], options);
+	},
+
+	panTo: function (center, options) { // (LatLng)
+		return this.setView(center, this._zoom, {pan: options});
+	},
+
+	panBy: function (offset) { // (Point)
+		// replaced with animated panBy in Map.PanAnimation.js
+		this.fire('movestart');
+
+		this._rawPanBy(L.point(offset));
+
+		this.fire('move');
+		return this.fire('moveend');
+	},
+
+	setMaxBounds: function (bounds) {
+		bounds = L.latLngBounds(bounds);
+
+		this.options.maxBounds = bounds;
+
+		if (!bounds) {
+			return this.off('moveend', this._panInsideMaxBounds, this);
+		}
+
+		if (this._loaded) {
+			this._panInsideMaxBounds();
+		}
+
+		return this.on('moveend', this._panInsideMaxBounds, this);
+	},
+
+	panInsideBounds: function (bounds, options) {
+		var center = this.getCenter(),
+			newCenter = this._limitCenter(center, this._zoom, bounds);
+
+		if (center.equals(newCenter)) { return this; }
+
+		return this.panTo(newCenter, options);
+	},
+
+	addLayer: function (layer) {
+		// TODO method is too big, refactor
+
+		var id = L.stamp(layer);
+
+		if (this._layers[id]) { return this; }
+
+		this._layers[id] = layer;
+
+		// TODO getMaxZoom, getMinZoom in ILayer (instead of options)
+		if (layer.options && (!isNaN(layer.options.maxZoom) || !isNaN(layer.options.minZoom))) {
+			this._zoomBoundLayers[id] = layer;
+			this._updateZoomLevels();
+		}
+
+		// TODO looks ugly, refactor!!!
+		if (this.options.zoomAnimation && L.TileLayer && (layer instanceof L.TileLayer)) {
+			this._tileLayersNum++;
+			this._tileLayersToLoad++;
+			layer.on('load', this._onTileLayerLoad, this);
+		}
+
+		if (this._loaded) {
+			this._layerAdd(layer);
+		}
+
+		return this;
+	},
+
+	removeLayer: function (layer) {
+		var id = L.stamp(layer);
+
+		if (!this._layers[id]) { return this; }
+
+		if (this._loaded) {
+			layer.onRemove(this);
+		}
+
+		delete this._layers[id];
+
+		if (this._loaded) {
+			this.fire('layerremove', {layer: layer});
+		}
+
+		if (this._zoomBoundLayers[id]) {
+			delete this._zoomBoundLayers[id];
+			this._updateZoomLevels();
+		}
+
+		// TODO looks ugly, refactor
+		if (this.options.zoomAnimation && L.TileLayer && (layer instanceof L.TileLayer)) {
+			this._tileLayersNum--;
+			this._tileLayersToLoad--;
+			layer.off('load', this._onTileLayerLoad, this);
+		}
+
+		return this;
+	},
+
+	hasLayer: function (layer) {
+		if (!layer) { return false; }
+
+		return (L.stamp(layer) in this._layers);
+	},
+
+	eachLayer: function (method, context) {
+		for (var i in this._layers) {
+			method.call(context, this._layers[i]);
+		}
+		return this;
+	},
+
+	invalidateSize: function (options) {
+		if (!this._loaded) { return this; }
+
+		options = L.extend({
+			animate: false,
+			pan: true
+		}, options === true ? {animate: true} : options);
+
+		var oldSize = this.getSize();
+		this._sizeChanged = true;
+		this._initialCenter = null;
+
+		var newSize = this.getSize(),
+		    oldCenter = oldSize.divideBy(2).round(),
+		    newCenter = newSize.divideBy(2).round(),
+		    offset = oldCenter.subtract(newCenter);
+
+		if (!offset.x && !offset.y) { return this; }
+
+		if (options.animate && options.pan) {
+			this.panBy(offset);
+
+		} else {
+			if (options.pan) {
+				this._rawPanBy(offset);
+			}
+
+			this.fire('move');
+
+			if (options.debounceMoveend) {
+				clearTimeout(this._sizeTimer);
+				this._sizeTimer = setTimeout(L.bind(this.fire, this, 'moveend'), 200);
+			} else {
+				this.fire('moveend');
+			}
+		}
+
+		return this.fire('resize', {
+			oldSize: oldSize,
+			newSize: newSize
+		});
+	},
+
+	// TODO handler.addTo
+	addHandler: function (name, HandlerClass) {
+		if (!HandlerClass) { return this; }
+
+		var handler = this[name] = new HandlerClass(this);
+
+		this._handlers.push(handler);
+
+		if (this.options[name]) {
+			handler.enable();
+		}
+
+		return this;
+	},
+
+	remove: function () {
+		if (this._loaded) {
+			this.fire('unload');
+		}
+
+		this._initEvents('off');
+
+		try {
+			// throws error in IE6-8
+			delete this._container._leaflet;
+		} catch (e) {
+			this._container._leaflet = undefined;
+		}
+
+		this._clearPanes();
+		if (this._clearControlPos) {
+			this._clearControlPos();
+		}
+
+		this._clearHandlers();
+
+		return this;
+	},
+
+
+	// public methods for getting map state
+
+	getCenter: function () { // (Boolean) -> LatLng
+		this._checkIfLoaded();
+
+		if (this._initialCenter && !this._moved()) {
+			return this._initialCenter;
+		}
+		return this.layerPointToLatLng(this._getCenterLayerPoint());
+	},
+
+	getZoom: function () {
+		return this._zoom;
+	},
+
+	getBounds: function () {
+		var bounds = this.getPixelBounds(),
+		    sw = this.unproject(bounds.getBottomLeft()),
+		    ne = this.unproject(bounds.getTopRight());
+
+		return new L.LatLngBounds(sw, ne);
+	},
+
+	getMinZoom: function () {
+		return this.options.minZoom === undefined ?
+			(this._layersMinZoom === undefined ? 0 : this._layersMinZoom) :
+			this.options.minZoom;
+	},
+
+	getMaxZoom: function () {
+		return this.options.maxZoom === undefined ?
+			(this._layersMaxZoom === undefined ? Infinity : this._layersMaxZoom) :
+			this.options.maxZoom;
+	},
+
+	getBoundsZoom: function (bounds, inside, padding) { // (LatLngBounds[, Boolean, Point]) -> Number
+		bounds = L.latLngBounds(bounds);
+
+		var zoom = this.getMinZoom() - (inside ? 1 : 0),
+		    maxZoom = this.getMaxZoom(),
+		    size = this.getSize(),
+
+		    nw = bounds.getNorthWest(),
+		    se = bounds.getSouthEast(),
+
+		    zoomNotFound = true,
+		    boundsSize;
+
+		padding = L.point(padding || [0, 0]);
+
+		do {
+			zoom++;
+			boundsSize = this.project(se, zoom).subtract(this.project(nw, zoom)).add(padding);
+			zoomNotFound = !inside ? size.contains(boundsSize) : boundsSize.x < size.x || boundsSize.y < size.y;
+
+		} while (zoomNotFound && zoom <= maxZoom);
+
+		if (zoomNotFound && inside) {
+			return null;
+		}
+
+		return inside ? zoom : zoom - 1;
+	},
+
+	getSize: function () {
+		if (!this._size || this._sizeChanged) {
+			this._size = new L.Point(
+				this._container.clientWidth,
+				this._container.clientHeight);
+
+			this._sizeChanged = false;
+		}
+		return this._size.clone();
+	},
+
+	getPixelBounds: function () {
+		var topLeftPoint = this._getTopLeftPoint();
+		return new L.Bounds(topLeftPoint, topLeftPoint.add(this.getSize()));
+	},
+
+	getPixelOrigin: function () {
+		this._checkIfLoaded();
+		return this._initialTopLeftPoint;
+	},
+
+	getPanes: function () {
+		return this._panes;
+	},
+
+	getContainer: function () {
+		return this._container;
+	},
+
+
+	// TODO replace with universal implementation after refactoring projections
+
+	getZoomScale: function (toZoom) {
+		var crs = this.options.crs;
+		return crs.scale(toZoom) / crs.scale(this._zoom);
+	},
+
+	getScaleZoom: function (scale) {
+		return this._zoom + (Math.log(scale) / Math.LN2);
+	},
+
+
+	// conversion methods
+
+	project: function (latlng, zoom) { // (LatLng[, Number]) -> Point
+		zoom = zoom === undefined ? this._zoom : zoom;
+		return this.options.crs.latLngToPoint(L.latLng(latlng), zoom);
+	},
+
+	unproject: function (point, zoom) { // (Point[, Number]) -> LatLng
+		zoom = zoom === undefined ? this._zoom : zoom;
+		return this.options.crs.pointToLatLng(L.point(point), zoom);
+	},
+
+	layerPointToLatLng: function (point) { // (Point)
+		var projectedPoint = L.point(point).add(this.getPixelOrigin());
+		return this.unproject(projectedPoint);
+	},
+
+	latLngToLayerPoint: function (latlng) { // (LatLng)
+		var projectedPoint = this.project(L.latLng(latlng))._round();
+		return projectedPoint._subtract(this.getPixelOrigin());
+	},
+
+	containerPointToLayerPoint: function (point) { // (Point)
+		return L.point(point).subtract(this._getMapPanePos());
+	},
+
+	layerPointToContainerPoint: function (point) { // (Point)
+		return L.point(point).add(this._getMapPanePos());
+	},
+
+	containerPointToLatLng: function (point) {
+		var layerPoint = this.containerPointToLayerPoint(L.point(point));
+		return this.layerPointToLatLng(layerPoint);
+	},
+
+	latLngToContainerPoint: function (latlng) {
+		return this.layerPointToContainerPoint(this.latLngToLayerPoint(L.latLng(latlng)));
+	},
+
+	mouseEventToContainerPoint: function (e) { // (MouseEvent)
+		return L.DomEvent.getMousePosition(e, this._container);
+	},
+
+	mouseEventToLayerPoint: function (e) { // (MouseEvent)
+		return this.containerPointToLayerPoint(this.mouseEventToContainerPoint(e));
+	},
+
+	mouseEventToLatLng: function (e) { // (MouseEvent)
+		return this.layerPointToLatLng(this.mouseEventToLayerPoint(e));
+	},
+
+
+	// map initialization methods
+
+	_initContainer: function (id) {
+		var container = this._container = L.DomUtil.get(id);
+
+		if (!container) {
+			throw new Error('Map container not found.');
+		} else if (container._leaflet) {
+			throw new Error('Map container is already initialized.');
+		}
+
+		container._leaflet = true;
+	},
+
+	_initLayout: function () {
+		var container = this._container;
+
+		L.DomUtil.addClass(container, 'leaflet-container' +
+			(L.Browser.touch ? ' leaflet-touch' : '') +
+			(L.Browser.retina ? ' leaflet-retina' : '') +
+			(L.Browser.ielt9 ? ' leaflet-oldie' : '') +
+			(this.options.fadeAnimation ? ' leaflet-fade-anim' : ''));
+
+		var position = L.DomUtil.getStyle(container, 'position');
+
+		if (position !== 'absolute' && position !== 'relative' && position !== 'fixed') {
+			container.style.position = 'relative';
+		}
+
+		this._initPanes();
+
+		if (this._initControlPos) {
+			this._initControlPos();
+		}
+	},
+
+	_initPanes: function () {
+		var panes = this._panes = {};
+
+		this._mapPane = panes.mapPane = this._createPane('leaflet-map-pane', this._container);
+
+		this._tilePane = panes.tilePane = this._createPane('leaflet-tile-pane', this._mapPane);
+		panes.objectsPane = this._createPane('leaflet-objects-pane', this._mapPane);
+		panes.shadowPane = this._createPane('leaflet-shadow-pane');
+		panes.overlayPane = this._createPane('leaflet-overlay-pane');
+		panes.markerPane = this._createPane('leaflet-marker-pane');
+		panes.popupPane = this._createPane('leaflet-popup-pane');
+
+		var zoomHide = ' leaflet-zoom-hide';
+
+		if (!this.options.markerZoomAnimation) {
+			L.DomUtil.addClass(panes.markerPane, zoomHide);
+			L.DomUtil.addClass(panes.shadowPane, zoomHide);
+			L.DomUtil.addClass(panes.popupPane, zoomHide);
+		}
+	},
+
+	_createPane: function (className, container) {
+		return L.DomUtil.create('div', className, container || this._panes.objectsPane);
+	},
+
+	_clearPanes: function () {
+		this._container.removeChild(this._mapPane);
+	},
+
+	_addLayers: function (layers) {
+		layers = layers ? (L.Util.isArray(layers) ? layers : [layers]) : [];
+
+		for (var i = 0, len = layers.length; i < len; i++) {
+			this.addLayer(layers[i]);
+		}
+	},
+
+
+	// private methods that modify map state
+
+	_resetView: function (center, zoom, preserveMapOffset, afterZoomAnim) {
+
+		var zoomChanged = (this._zoom !== zoom);
+
+		if (!afterZoomAnim) {
+			this.fire('movestart');
+
+			if (zoomChanged) {
+				this.fire('zoomstart');
+			}
+		}
+
+		this._zoom = zoom;
+		this._initialCenter = center;
+
+		this._initialTopLeftPoint = this._getNewTopLeftPoint(center);
+
+		if (!preserveMapOffset) {
+			L.DomUtil.setPosition(this._mapPane, new L.Point(0, 0));
+		} else {
+			this._initialTopLeftPoint._add(this._getMapPanePos());
+		}
+
+		this._tileLayersToLoad = this._tileLayersNum;
+
+		var loading = !this._loaded;
+		this._loaded = true;
+
+		this.fire('viewreset', {hard: !preserveMapOffset});
+
+		if (loading) {
+			this.fire('load');
+			this.eachLayer(this._layerAdd, this);
+		}
+
+		this.fire('move');
+
+		if (zoomChanged || afterZoomAnim) {
+			this.fire('zoomend');
+		}
+
+		this.fire('moveend', {hard: !preserveMapOffset});
+	},
+
+	_rawPanBy: function (offset) {
+		L.DomUtil.setPosition(this._mapPane, this._getMapPanePos().subtract(offset));
+	},
+
+	_getZoomSpan: function () {
+		return this.getMaxZoom() - this.getMinZoom();
+	},
+
+	_updateZoomLevels: function () {
+		var i,
+			minZoom = Infinity,
+			maxZoom = -Infinity,
+			oldZoomSpan = this._getZoomSpan();
+
+		for (i in this._zoomBoundLayers) {
+			var layer = this._zoomBoundLayers[i];
+			if (!isNaN(layer.options.minZoom)) {
+				minZoom = Math.min(minZoom, layer.options.minZoom);
+			}
+			if (!isNaN(layer.options.maxZoom)) {
+				maxZoom = Math.max(maxZoom, layer.options.maxZoom);
+			}
+		}
+
+		if (i === undefined) { // we have no tilelayers
+			this._layersMaxZoom = this._layersMinZoom = undefined;
+		} else {
+			this._layersMaxZoom = maxZoom;
+			this._layersMinZoom = minZoom;
+		}
+
+		if (oldZoomSpan !== this._getZoomSpan()) {
+			this.fire('zoomlevelschange');
+		}
+	},
+
+	_panInsideMaxBounds: function () {
+		this.panInsideBounds(this.options.maxBounds);
+	},
+
+	_checkIfLoaded: function () {
+		if (!this._loaded) {
+			throw new Error('Set map center and zoom first.');
+		}
+	},
+
+	// map events
+
+	_initEvents: function (onOff) {
+		if (!L.DomEvent) { return; }
+
+		onOff = onOff || 'on';
+
+		L.DomEvent[onOff](this._container, 'click', this._onMouseClick, this);
+
+		var events = ['dblclick', 'mousedown', 'mouseup', 'mouseenter',
+		              'mouseleave', 'mousemove', 'contextmenu'],
+		    i, len;
+
+		for (i = 0, len = events.length; i < len; i++) {
+			L.DomEvent[onOff](this._container, events[i], this._fireMouseEvent, this);
+		}
+
+		if (this.options.trackResize) {
+			L.DomEvent[onOff](window, 'resize', this._onResize, this);
+		}
+	},
+
+	_onResize: function () {
+		L.Util.cancelAnimFrame(this._resizeRequest);
+		this._resizeRequest = L.Util.requestAnimFrame(
+		        function () { this.invalidateSize({debounceMoveend: true}); }, this, false, this._container);
+	},
+
+	_onMouseClick: function (e) {
+		if (!this._loaded || (!e._simulated &&
+		        ((this.dragging && this.dragging.moved()) ||
+		         (this.boxZoom  && this.boxZoom.moved()))) ||
+		            L.DomEvent._skipped(e)) { return; }
+
+		this.fire('preclick');
+		this._fireMouseEvent(e);
+	},
+
+	_fireMouseEvent: function (e) {
+		if (!this._loaded || L.DomEvent._skipped(e)) { return; }
+
+		var type = e.type;
+
+		type = (type === 'mouseenter' ? 'mouseover' : (type === 'mouseleave' ? 'mouseout' : type));
+
+		if (!this.hasEventListeners(type)) { return; }
+
+		if (type === 'contextmenu') {
+			L.DomEvent.preventDefault(e);
+		}
+
+		var containerPoint = this.mouseEventToContainerPoint(e),
+		    layerPoint = this.containerPointToLayerPoint(containerPoint),
+		    latlng = this.layerPointToLatLng(layerPoint);
+
+		this.fire(type, {
+			latlng: latlng,
+			layerPoint: layerPoint,
+			containerPoint: containerPoint,
+			originalEvent: e
+		});
+	},
+
+	_onTileLayerLoad: function () {
+		this._tileLayersToLoad--;
+		if (this._tileLayersNum && !this._tileLayersToLoad) {
+			this.fire('tilelayersload');
+		}
+	},
+
+	_clearHandlers: function () {
+		for (var i = 0, len = this._handlers.length; i < len; i++) {
+			this._handlers[i].disable();
+		}
+	},
+
+	whenReady: function (callback, context) {
+		if (this._loaded) {
+			callback.call(context || this, this);
+		} else {
+			this.on('load', callback, context);
+		}
+		return this;
+	},
+
+	_layerAdd: function (layer) {
+		layer.onAdd(this);
+		this.fire('layeradd', {layer: layer});
+	},
+
+
+	// private methods for getting map state
+
+	_getMapPanePos: function () {
+		return L.DomUtil.getPosition(this._mapPane);
+	},
+
+	_moved: function () {
+		var pos = this._getMapPanePos();
+		return pos && !pos.equals([0, 0]);
+	},
+
+	_getTopLeftPoint: function () {
+		return this.getPixelOrigin().subtract(this._getMapPanePos());
+	},
+
+	_getNewTopLeftPoint: function (center, zoom) {
+		var viewHalf = this.getSize()._divideBy(2);
+		// TODO round on display, not calculation to increase precision?
+		return this.project(center, zoom)._subtract(viewHalf)._round();
+	},
+
+	_latLngToNewLayerPoint: function (latlng, newZoom, newCenter) {
+		var topLeft = this._getNewTopLeftPoint(newCenter, newZoom).add(this._getMapPanePos());
+		return this.project(latlng, newZoom)._subtract(topLeft);
+	},
+
+	// layer point of the current center
+	_getCenterLayerPoint: function () {
+		return this.containerPointToLayerPoint(this.getSize()._divideBy(2));
+	},
+
+	// offset of the specified place to the current center in pixels
+	_getCenterOffset: function (latlng) {
+		return this.latLngToLayerPoint(latlng).subtract(this._getCenterLayerPoint());
+	},
+
+	// adjust center for view to get inside bounds
+	_limitCenter: function (center, zoom, bounds) {
+
+		if (!bounds) { return center; }
+
+		var centerPoint = this.project(center, zoom),
+		    viewHalf = this.getSize().divideBy(2),
+		    viewBounds = new L.Bounds(centerPoint.subtract(viewHalf), centerPoint.add(viewHalf)),
+		    offset = this._getBoundsOffset(viewBounds, bounds, zoom);
+
+		return this.unproject(centerPoint.add(offset), zoom);
+	},
+
+	// adjust offset for view to get inside bounds
+	_limitOffset: function (offset, bounds) {
+		if (!bounds) { return offset; }
+
+		var viewBounds = this.getPixelBounds(),
+		    newBounds = new L.Bounds(viewBounds.min.add(offset), viewBounds.max.add(offset));
+
+		return offset.add(this._getBoundsOffset(newBounds, bounds));
+	},
+
+	// returns offset needed for pxBounds to get inside maxBounds at a specified zoom
+	_getBoundsOffset: function (pxBounds, maxBounds, zoom) {
+		var nwOffset = this.project(maxBounds.getNorthWest(), zoom).subtract(pxBounds.min),
+		    seOffset = this.project(maxBounds.getSouthEast(), zoom).subtract(pxBounds.max),
+
+		    dx = this._rebound(nwOffset.x, -seOffset.x),
+		    dy = this._rebound(nwOffset.y, -seOffset.y);
+
+		return new L.Point(dx, dy);
+	},
+
+	_rebound: function (left, right) {
+		return left + right > 0 ?
+			Math.round(left - right) / 2 :
+			Math.max(0, Math.ceil(left)) - Math.max(0, Math.floor(right));
+	},
+
+	_limitZoom: function (zoom) {
+		var min = this.getMinZoom(),
+		    max = this.getMaxZoom();
+
+		return Math.max(min, Math.min(max, zoom));
+	}
+});
+
+L.map = function (id, options) {
+	return new L.Map(id, options);
+};
+
+
+/*
+ * Mercator projection that takes into account that the Earth is not a perfect sphere.
+ * Less popular than spherical mercator; used by projections like EPSG:3395.
+ */
+
+L.Projection.Mercator = {
+	MAX_LATITUDE: 85.0840591556,
+
+	R_MINOR: 6356752.314245179,
+	R_MAJOR: 6378137,
+
+	project: function (latlng) { // (LatLng) -> Point
+		var d = L.LatLng.DEG_TO_RAD,
+		    max = this.MAX_LATITUDE,
+		    lat = Math.max(Math.min(max, latlng.lat), -max),
+		    r = this.R_MAJOR,
+		    r2 = this.R_MINOR,
+		    x = latlng.lng * d * r,
+		    y = lat * d,
+		    tmp = r2 / r,
+		    eccent = Math.sqrt(1.0 - tmp * tmp),
+		    con = eccent * Math.sin(y);
+
+		con = Math.pow((1 - con) / (1 + con), eccent * 0.5);
+
+		var ts = Math.tan(0.5 * ((Math.PI * 0.5) - y)) / con;
+		y = -r * Math.log(ts);
+
+		return new L.Point(x, y);
+	},
+
+	unproject: function (point) { // (Point, Boolean) -> LatLng
+		var d = L.LatLng.RAD_TO_DEG,
+		    r = this.R_MAJOR,
+		    r2 = this.R_MINOR,
+		    lng = point.x * d / r,
+		    tmp = r2 / r,
+		    eccent = Math.sqrt(1 - (tmp * tmp)),
+		    ts = Math.exp(- point.y / r),
+		    phi = (Math.PI / 2) - 2 * Math.atan(ts),
+		    numIter = 15,
+		    tol = 1e-7,
+		    i = numIter,
+		    dphi = 0.1,
+		    con;
+
+		while ((Math.abs(dphi) > tol) && (--i > 0)) {
+			con = eccent * Math.sin(phi);
+			dphi = (Math.PI / 2) - 2 * Math.atan(ts *
+			            Math.pow((1.0 - con) / (1.0 + con), 0.5 * eccent)) - phi;
+			phi += dphi;
+		}
+
+		return new L.LatLng(phi * d, lng);
+	}
+};
+
+
+
+L.CRS.EPSG3395 = L.extend({}, L.CRS, {
+	code: 'EPSG:3395',
+
+	projection: L.Projection.Mercator,
+
+	transformation: (function () {
+		var m = L.Projection.Mercator,
+		    r = m.R_MAJOR,
+		    scale = 0.5 / (Math.PI * r);
+
+		return new L.Transformation(scale, 0.5, -scale, 0.5);
+	}())
+});
+
+
+/*
+ * L.TileLayer is used for standard xyz-numbered tile layers.
+ */
+
+L.TileLayer = L.Class.extend({
+	includes: L.Mixin.Events,
+
+	options: {
+		minZoom: 0,
+		maxZoom: 18,
+		tileSize: 256,
+		subdomains: 'abc',
+		errorTileUrl: '',
+		attribution: '',
+		zoomOffset: 0,
+		opacity: 1,
+		/*
+		maxNativeZoom: null,
+		zIndex: null,
+		tms: false,
+		continuousWorld: false,
+		noWrap: false,
+		zoomReverse: false,
+		detectRetina: false,
+		reuseTiles: false,
+		bounds: false,
+		*/
+		unloadInvisibleTiles: L.Browser.mobile,
+		updateWhenIdle: L.Browser.mobile
+	},
+
+	initialize: function (url, options) {
+		options = L.setOptions(this, options);
+
+		// detecting retina displays, adjusting tileSize and zoom levels
+		if (options.detectRetina && L.Browser.retina && options.maxZoom > 0) {
+
+			options.tileSize = Math.floor(options.tileSize / 2);
+			options.zoomOffset++;
+
+			if (options.minZoom > 0) {
+				options.minZoom--;
+			}
+			this.options.maxZoom--;
+		}
+
+		if (options.bounds) {
+			options.bounds = L.latLngBounds(options.bounds);
+		}
+
+		this._url = url;
+
+		var subdomains = this.options.subdomains;
+
+		if (typeof subdomains === 'string') {
+			this.options.subdomains = subdomains.split('');
+		}
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+		this._animated = map._zoomAnimated;
+
+		// create a container div for tiles
+		this._initContainer();
+
+		// set up events
+		map.on({
+			'viewreset': this._reset,
+			'moveend': this._update
+		}, this);
+
+		if (this._animated) {
+			map.on({
+				'zoomanim': this._animateZoom,
+				'zoomend': this._endZoomAnim
+			}, this);
+		}
+
+		if (!this.options.updateWhenIdle) {
+			this._limitedUpdate = L.Util.limitExecByInterval(this._update, 150, this);
+			map.on('move', this._limitedUpdate, this);
+		}
+
+		this._reset();
+		this._update();
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	onRemove: function (map) {
+		this._container.parentNode.removeChild(this._container);
+
+		map.off({
+			'viewreset': this._reset,
+			'moveend': this._update
+		}, this);
+
+		if (this._animated) {
+			map.off({
+				'zoomanim': this._animateZoom,
+				'zoomend': this._endZoomAnim
+			}, this);
+		}
+
+		if (!this.options.updateWhenIdle) {
+			map.off('move', this._limitedUpdate, this);
+		}
+
+		this._container = null;
+		this._map = null;
+	},
+
+	bringToFront: function () {
+		var pane = this._map._panes.tilePane;
+
+		if (this._container) {
+			pane.appendChild(this._container);
+			this._setAutoZIndex(pane, Math.max);
+		}
+
+		return this;
+	},
+
+	bringToBack: function () {
+		var pane = this._map._panes.tilePane;
+
+		if (this._container) {
+			pane.insertBefore(this._container, pane.firstChild);
+			this._setAutoZIndex(pane, Math.min);
+		}
+
+		return this;
+	},
+
+	getAttribution: function () {
+		return this.options.attribution;
+	},
+
+	getContainer: function () {
+		return this._container;
+	},
+
+	setOpacity: function (opacity) {
+		this.options.opacity = opacity;
+
+		if (this._map) {
+			this._updateOpacity();
+		}
+
+		return this;
+	},
+
+	setZIndex: function (zIndex) {
+		this.options.zIndex = zIndex;
+		this._updateZIndex();
+
+		return this;
+	},
+
+	setUrl: function (url, noRedraw) {
+		this._url = url;
+
+		if (!noRedraw) {
+			this.redraw();
+		}
+
+		return this;
+	},
+
+	redraw: function () {
+		if (this._map) {
+			this._reset({hard: true});
+			this._update();
+		}
+		return this;
+	},
+
+	_updateZIndex: function () {
+		if (this._container && this.options.zIndex !== undefined) {
+			this._container.style.zIndex = this.options.zIndex;
+		}
+	},
+
+	_setAutoZIndex: function (pane, compare) {
+
+		var layers = pane.children,
+		    edgeZIndex = -compare(Infinity, -Infinity), // -Infinity for max, Infinity for min
+		    zIndex, i, len;
+
+		for (i = 0, len = layers.length; i < len; i++) {
+
+			if (layers[i] !== this._container) {
+				zIndex = parseInt(layers[i].style.zIndex, 10);
+
+				if (!isNaN(zIndex)) {
+					edgeZIndex = compare(edgeZIndex, zIndex);
+				}
+			}
+		}
+
+		this.options.zIndex = this._container.style.zIndex =
+		        (isFinite(edgeZIndex) ? edgeZIndex : 0) + compare(1, -1);
+	},
+
+	_updateOpacity: function () {
+		var i,
+		    tiles = this._tiles;
+
+		if (L.Browser.ielt9) {
+			for (i in tiles) {
+				L.DomUtil.setOpacity(tiles[i], this.options.opacity);
+			}
+		} else {
+			L.DomUtil.setOpacity(this._container, this.options.opacity);
+		}
+	},
+
+	_initContainer: function () {
+		var tilePane = this._map._panes.tilePane;
+
+		if (!this._container) {
+			this._container = L.DomUtil.create('div', 'leaflet-layer');
+
+			this._updateZIndex();
+
+			if (this._animated) {
+				var className = 'leaflet-tile-container';
+
+				this._bgBuffer = L.DomUtil.create('div', className, this._container);
+				this._tileContainer = L.DomUtil.create('div', className, this._container);
+
+			} else {
+				this._tileContainer = this._container;
+			}
+
+			tilePane.appendChild(this._container);
+
+			if (this.options.opacity < 1) {
+				this._updateOpacity();
+			}
+		}
+	},
+
+	_reset: function (e) {
+		for (var key in this._tiles) {
+			this.fire('tileunload', {tile: this._tiles[key]});
+		}
+
+		this._tiles = {};
+		this._tilesToLoad = 0;
+
+		if (this.options.reuseTiles) {
+			this._unusedTiles = [];
+		}
+
+		this._tileContainer.innerHTML = '';
+
+		if (this._animated && e && e.hard) {
+			this._clearBgBuffer();
+		}
+
+		this._initContainer();
+	},
+
+	_getTileSize: function () {
+		var map = this._map,
+		    zoom = map.getZoom() + this.options.zoomOffset,
+		    zoomN = this.options.maxNativeZoom,
+		    tileSize = this.options.tileSize;
+
+		if (zoomN && zoom > zoomN) {
+			tileSize = Math.round(map.getZoomScale(zoom) / map.getZoomScale(zoomN) * tileSize);
+		}
+
+		return tileSize;
+	},
+
+	_update: function () {
+
+		if (!this._map) { return; }
+
+		var map = this._map,
+		    bounds = map.getPixelBounds(),
+		    zoom = map.getZoom(),
+		    tileSize = this._getTileSize();
+
+		if (zoom > this.options.maxZoom || zoom < this.options.minZoom) {
+			return;
+		}
+
+		var tileBounds = L.bounds(
+		        bounds.min.divideBy(tileSize)._floor(),
+		        bounds.max.divideBy(tileSize)._floor());
+
+		this._addTilesFromCenterOut(tileBounds);
+
+		if (this.options.unloadInvisibleTiles || this.options.reuseTiles) {
+			this._removeOtherTiles(tileBounds);
+		}
+	},
+
+	_addTilesFromCenterOut: function (bounds) {
+		var queue = [],
+		    center = bounds.getCenter();
+
+		var j, i, point;
+
+		for (j = bounds.min.y; j <= bounds.max.y; j++) {
+			for (i = bounds.min.x; i <= bounds.max.x; i++) {
+				point = new L.Point(i, j);
+
+				if (this._tileShouldBeLoaded(point)) {
+					queue.push(point);
+				}
+			}
+		}
+
+		var tilesToLoad = queue.length;
+
+		if (tilesToLoad === 0) { return; }
+
+		// load tiles in order of their distance to center
+		queue.sort(function (a, b) {
+			return a.distanceTo(center) - b.distanceTo(center);
+		});
+
+		var fragment = document.createDocumentFragment();
+
+		// if its the first batch of tiles to load
+		if (!this._tilesToLoad) {
+			this.fire('loading');
+		}
+
+		this._tilesToLoad += tilesToLoad;
+
+		for (i = 0; i < tilesToLoad; i++) {
+			this._addTile(queue[i], fragment);
+		}
+
+		this._tileContainer.appendChild(fragment);
+	},
+
+	_tileShouldBeLoaded: function (tilePoint) {
+		if ((tilePoint.x + ':' + tilePoint.y) in this._tiles) {
+			return false; // already loaded
+		}
+
+		var options = this.options;
+
+		if (!options.continuousWorld) {
+			var limit = this._getWrapTileNum();
+
+			// don't load if exceeds world bounds
+			if ((options.noWrap && (tilePoint.x < 0 || tilePoint.x >= limit.x)) ||
+				tilePoint.y < 0 || tilePoint.y >= limit.y) { return false; }
+		}
+
+		if (options.bounds) {
+			var tileSize = this._getTileSize(),
+			    nwPoint = tilePoint.multiplyBy(tileSize),
+			    sePoint = nwPoint.add([tileSize, tileSize]),
+			    nw = this._map.unproject(nwPoint),
+			    se = this._map.unproject(sePoint);
+
+			// TODO temporary hack, will be removed after refactoring projections
+			// https://github.com/Leaflet/Leaflet/issues/1618
+			if (!options.continuousWorld && !options.noWrap) {
+				nw = nw.wrap();
+				se = se.wrap();
+			}
+
+			if (!options.bounds.intersects([nw, se])) { return false; }
+		}
+
+		return true;
+	},
+
+	_removeOtherTiles: function (bounds) {
+		var kArr, x, y, key;
+
+		for (key in this._tiles) {
+			kArr = key.split(':');
+			x = parseInt(kArr[0], 10);
+			y = parseInt(kArr[1], 10);
+
+			// remove tile if it's out of bounds
+			if (x < bounds.min.x || x > bounds.max.x || y < bounds.min.y || y > bounds.max.y) {
+				this._removeTile(key);
+			}
+		}
+	},
+
+	_removeTile: function (key) {
+		var tile = this._tiles[key];
+
+		this.fire('tileunload', {tile: tile, url: tile.src});
+
+		if (this.options.reuseTiles) {
+			L.DomUtil.removeClass(tile, 'leaflet-tile-loaded');
+			this._unusedTiles.push(tile);
+
+		} else if (tile.parentNode === this._tileContainer) {
+			this._tileContainer.removeChild(tile);
+		}
+
+		// for https://github.com/CloudMade/Leaflet/issues/137
+		if (!L.Browser.android) {
+			tile.onload = null;
+			tile.src = L.Util.emptyImageUrl;
+		}
+
+		delete this._tiles[key];
+	},
+
+	_addTile: function (tilePoint, container) {
+		var tilePos = this._getTilePos(tilePoint);
+
+		// get unused tile - or create a new tile
+		var tile = this._getTile();
+
+		/*
+		Chrome 20 layouts much faster with top/left (verify with timeline, frames)
+		Android 4 browser has display issues with top/left and requires transform instead
+		(other browsers don't currently care) - see debug/hacks/jitter.html for an example
+		*/
+		L.DomUtil.setPosition(tile, tilePos, L.Browser.chrome);
+
+		this._tiles[tilePoint.x + ':' + tilePoint.y] = tile;
+
+		this._loadTile(tile, tilePoint);
+
+		if (tile.parentNode !== this._tileContainer) {
+			container.appendChild(tile);
+		}
+	},
+
+	_getZoomForUrl: function () {
+
+		var options = this.options,
+		    zoom = this._map.getZoom();
+
+		if (options.zoomReverse) {
+			zoom = options.maxZoom - zoom;
+		}
+
+		zoom += options.zoomOffset;
+
+		return options.maxNativeZoom ? Math.min(zoom, options.maxNativeZoom) : zoom;
+	},
+
+	_getTilePos: function (tilePoint) {
+		var origin = this._map.getPixelOrigin(),
+		    tileSize = this._getTileSize();
+
+		return tilePoint.multiplyBy(tileSize).subtract(origin);
+	},
+
+	// image-specific code (override to implement e.g. Canvas or SVG tile layer)
+
+	getTileUrl: function (tilePoint) {
+		return L.Util.template(this._url, L.extend({
+			s: this._getSubdomain(tilePoint),
+			z: tilePoint.z,
+			x: tilePoint.x,
+			y: tilePoint.y
+		}, this.options));
+	},
+
+	_getWrapTileNum: function () {
+		var crs = this._map.options.crs,
+		    size = crs.getSize(this._map.getZoom());
+		return size.divideBy(this._getTileSize())._floor();
+	},
+
+	_adjustTilePoint: function (tilePoint) {
+
+		var limit = this._getWrapTileNum();
+
+		// wrap tile coordinates
+		if (!this.options.continuousWorld && !this.options.noWrap) {
+			tilePoint.x = ((tilePoint.x % limit.x) + limit.x) % limit.x;
+		}
+
+		if (this.options.tms) {
+			tilePoint.y = limit.y - tilePoint.y - 1;
+		}
+
+		tilePoint.z = this._getZoomForUrl();
+	},
+
+	_getSubdomain: function (tilePoint) {
+		var index = Math.abs(tilePoint.x + tilePoint.y) % this.options.subdomains.length;
+		return this.options.subdomains[index];
+	},
+
+	_getTile: function () {
+		if (this.options.reuseTiles && this._unusedTiles.length > 0) {
+			var tile = this._unusedTiles.pop();
+			this._resetTile(tile);
+			return tile;
+		}
+		return this._createTile();
+	},
+
+	// Override if data stored on a tile needs to be cleaned up before reuse
+	_resetTile: function (/*tile*/) {},
+
+	_createTile: function () {
+		var tile = L.DomUtil.create('img', 'leaflet-tile');
+		tile.style.width = tile.style.height = this._getTileSize() + 'px';
+		tile.galleryimg = 'no';
+
+		tile.onselectstart = tile.onmousemove = L.Util.falseFn;
+
+		if (L.Browser.ielt9 && this.options.opacity !== undefined) {
+			L.DomUtil.setOpacity(tile, this.options.opacity);
+		}
+		// without this hack, tiles disappear after zoom on Chrome for Android
+		// https://github.com/Leaflet/Leaflet/issues/2078
+		if (L.Browser.mobileWebkit3d) {
+			tile.style.WebkitBackfaceVisibility = 'hidden';
+		}
+		return tile;
+	},
+
+	_loadTile: function (tile, tilePoint) {
+		tile._layer  = this;
+		tile.onload  = this._tileOnLoad;
+		tile.onerror = this._tileOnError;
+
+		this._adjustTilePoint(tilePoint);
+		tile.src     = this.getTileUrl(tilePoint);
+
+		this.fire('tileloadstart', {
+			tile: tile,
+			url: tile.src
+		});
+	},
+
+	_tileLoaded: function () {
+		this._tilesToLoad--;
+
+		if (this._animated) {
+			L.DomUtil.addClass(this._tileContainer, 'leaflet-zoom-animated');
+		}
+
+		if (!this._tilesToLoad) {
+			this.fire('load');
+
+			if (this._animated) {
+				// clear scaled tiles after all new tiles are loaded (for performance)
+				clearTimeout(this._clearBgBufferTimer);
+				this._clearBgBufferTimer = setTimeout(L.bind(this._clearBgBuffer, this), 500);
+			}
+		}
+	},
+
+	_tileOnLoad: function () {
+		var layer = this._layer;
+
+		//Only if we are loading an actual image
+		if (this.src !== L.Util.emptyImageUrl) {
+			L.DomUtil.addClass(this, 'leaflet-tile-loaded');
+
+			layer.fire('tileload', {
+				tile: this,
+				url: this.src
+			});
+		}
+
+		layer._tileLoaded();
+	},
+
+	_tileOnError: function () {
+		var layer = this._layer;
+
+		layer.fire('tileerror', {
+			tile: this,
+			url: this.src
+		});
+
+		var newUrl = layer.options.errorTileUrl;
+		if (newUrl) {
+			this.src = newUrl;
+		}
+
+		layer._tileLoaded();
+	}
+});
+
+L.tileLayer = function (url, options) {
+	return new L.TileLayer(url, options);
+};
+
+
+/*
+ * L.TileLayer.WMS is used for putting WMS tile layers on the map.
+ */
+
+L.TileLayer.WMS = L.TileLayer.extend({
+
+	defaultWmsParams: {
+		service: 'WMS',
+		request: 'GetMap',
+		version: '1.1.1',
+		layers: '',
+		styles: '',
+		format: 'image/jpeg',
+		transparent: false
+	},
+
+	initialize: function (url, options) { // (String, Object)
+
+		this._url = url;
+
+		var wmsParams = L.extend({}, this.defaultWmsParams),
+		    tileSize = options.tileSize || this.options.tileSize;
+
+		if (options.detectRetina && L.Browser.retina) {
+			wmsParams.width = wmsParams.height = tileSize * 2;
+		} else {
+			wmsParams.width = wmsParams.height = tileSize;
+		}
+
+		for (var i in options) {
+			// all keys that are not TileLayer options go to WMS params
+			if (!this.options.hasOwnProperty(i) && i !== 'crs') {
+				wmsParams[i] = options[i];
+			}
+		}
+
+		this.wmsParams = wmsParams;
+
+		L.setOptions(this, options);
+	},
+
+	onAdd: function (map) {
+
+		this._crs = this.options.crs || map.options.crs;
+
+		this._wmsVersion = parseFloat(this.wmsParams.version);
+
+		var projectionKey = this._wmsVersion >= 1.3 ? 'crs' : 'srs';
+		this.wmsParams[projectionKey] = this._crs.code;
+
+		L.TileLayer.prototype.onAdd.call(this, map);
+	},
+
+	getTileUrl: function (tilePoint) { // (Point, Number) -> String
+
+		var map = this._map,
+		    tileSize = this.options.tileSize,
+
+		    nwPoint = tilePoint.multiplyBy(tileSize),
+		    sePoint = nwPoint.add([tileSize, tileSize]),
+
+		    nw = this._crs.project(map.unproject(nwPoint, tilePoint.z)),
+		    se = this._crs.project(map.unproject(sePoint, tilePoint.z)),
+		    bbox = this._wmsVersion >= 1.3 && this._crs === L.CRS.EPSG4326 ?
+		        [se.y, nw.x, nw.y, se.x].join(',') :
+		        [nw.x, se.y, se.x, nw.y].join(','),
+
+		    url = L.Util.template(this._url, {s: this._getSubdomain(tilePoint)});
+
+		return url + L.Util.getParamString(this.wmsParams, url, true) + '&BBOX=' + bbox;
+	},
+
+	setParams: function (params, noRedraw) {
+
+		L.extend(this.wmsParams, params);
+
+		if (!noRedraw) {
+			this.redraw();
+		}
+
+		return this;
+	}
+});
+
+L.tileLayer.wms = function (url, options) {
+	return new L.TileLayer.WMS(url, options);
+};
+
+
+/*
+ * L.TileLayer.Canvas is a class that you can use as a base for creating
+ * dynamically drawn Canvas-based tile layers.
+ */
+
+L.TileLayer.Canvas = L.TileLayer.extend({
+	options: {
+		async: false
+	},
+
+	initialize: function (options) {
+		L.setOptions(this, options);
+	},
+
+	redraw: function () {
+		if (this._map) {
+			this._reset({hard: true});
+			this._update();
+		}
+
+		for (var i in this._tiles) {
+			this._redrawTile(this._tiles[i]);
+		}
+		return this;
+	},
+
+	_redrawTile: function (tile) {
+		this.drawTile(tile, tile._tilePoint, this._map._zoom);
+	},
+
+	_createTile: function () {
+		var tile = L.DomUtil.create('canvas', 'leaflet-tile');
+		tile.width = tile.height = this.options.tileSize;
+		tile.onselectstart = tile.onmousemove = L.Util.falseFn;
+		return tile;
+	},
+
+	_loadTile: function (tile, tilePoint) {
+		tile._layer = this;
+		tile._tilePoint = tilePoint;
+
+		this._redrawTile(tile);
+
+		if (!this.options.async) {
+			this.tileDrawn(tile);
+		}
+	},
+
+	drawTile: function (/*tile, tilePoint*/) {
+		// override with rendering code
+	},
+
+	tileDrawn: function (tile) {
+		this._tileOnLoad.call(tile);
+	}
+});
+
+
+L.tileLayer.canvas = function (options) {
+	return new L.TileLayer.Canvas(options);
+};
+
+
+/*
+ * L.ImageOverlay is used to overlay images over the map (to specific geographical bounds).
+ */
+
+L.ImageOverlay = L.Class.extend({
+	includes: L.Mixin.Events,
+
+	options: {
+		opacity: 1
+	},
+
+	initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
+		this._url = url;
+		this._bounds = L.latLngBounds(bounds);
+
+		L.setOptions(this, options);
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+
+		if (!this._image) {
+			this._initImage();
+		}
+
+		map._panes.overlayPane.appendChild(this._image);
+
+		map.on('viewreset', this._reset, this);
+
+		if (map.options.zoomAnimation && L.Browser.any3d) {
+			map.on('zoomanim', this._animateZoom, this);
+		}
+
+		this._reset();
+	},
+
+	onRemove: function (map) {
+		map.getPanes().overlayPane.removeChild(this._image);
+
+		map.off('viewreset', this._reset, this);
+
+		if (map.options.zoomAnimation) {
+			map.off('zoomanim', this._animateZoom, this);
+		}
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	setOpacity: function (opacity) {
+		this.options.opacity = opacity;
+		this._updateOpacity();
+		return this;
+	},
+
+	// TODO remove bringToFront/bringToBack duplication from TileLayer/Path
+	bringToFront: function () {
+		if (this._image) {
+			this._map._panes.overlayPane.appendChild(this._image);
+		}
+		return this;
+	},
+
+	bringToBack: function () {
+		var pane = this._map._panes.overlayPane;
+		if (this._image) {
+			pane.insertBefore(this._image, pane.firstChild);
+		}
+		return this;
+	},
+
+	setUrl: function (url) {
+		this._url = url;
+		this._image.src = this._url;
+	},
+
+	getAttribution: function () {
+		return this.options.attribution;
+	},
+
+	_initImage: function () {
+		this._image = L.DomUtil.create('img', 'leaflet-image-layer');
+
+		if (this._map.options.zoomAnimation && L.Browser.any3d) {
+			L.DomUtil.addClass(this._image, 'leaflet-zoom-animated');
+		} else {
+			L.DomUtil.addClass(this._image, 'leaflet-zoom-hide');
+		}
+
+		this._updateOpacity();
+
+		//TODO createImage util method to remove duplication
+		L.extend(this._image, {
+			galleryimg: 'no',
+			onselectstart: L.Util.falseFn,
+			onmousemove: L.Util.falseFn,
+			onload: L.bind(this._onImageLoad, this),
+			src: this._url
+		});
+	},
+
+	_animateZoom: function (e) {
+		var map = this._map,
+		    image = this._image,
+		    scale = map.getZoomScale(e.zoom),
+		    nw = this._bounds.getNorthWest(),
+		    se = this._bounds.getSouthEast(),
+
+		    topLeft = map._latLngToNewLayerPoint(nw, e.zoom, e.center),
+		    size = map._latLngToNewLayerPoint(se, e.zoom, e.center)._subtract(topLeft),
+		    origin = topLeft._add(size._multiplyBy((1 / 2) * (1 - 1 / scale)));
+
+		image.style[L.DomUtil.TRANSFORM] =
+		        L.DomUtil.getTranslateString(origin) + ' scale(' + scale + ') ';
+	},
+
+	_reset: function () {
+		var image   = this._image,
+		    topLeft = this._map.latLngToLayerPoint(this._bounds.getNorthWest()),
+		    size = this._map.latLngToLayerPoint(this._bounds.getSouthEast())._subtract(topLeft);
+
+		L.DomUtil.setPosition(image, topLeft);
+
+		image.style.width  = size.x + 'px';
+		image.style.height = size.y + 'px';
+	},
+
+	_onImageLoad: function () {
+		this.fire('load');
+	},
+
+	_updateOpacity: function () {
+		L.DomUtil.setOpacity(this._image, this.options.opacity);
+	}
+});
+
+L.imageOverlay = function (url, bounds, options) {
+	return new L.ImageOverlay(url, bounds, options);
+};
+
+
+/*
+ * L.Icon is an image-based icon class that you can use with L.Marker for custom markers.
+ */
+
+L.Icon = L.Class.extend({
+	options: {
+		/*
+		iconUrl: (String) (required)
+		iconRetinaUrl: (String) (optional, used for retina devices if detected)
+		iconSize: (Point) (can be set through CSS)
+		iconAnchor: (Point) (centered by default, can be set in CSS with negative margins)
+		popupAnchor: (Point) (if not specified, popup opens in the anchor point)
+		shadowUrl: (String) (no shadow by default)
+		shadowRetinaUrl: (String) (optional, used for retina devices if detected)
+		shadowSize: (Point)
+		shadowAnchor: (Point)
+		*/
+		className: ''
+	},
+
+	initialize: function (options) {
+		L.setOptions(this, options);
+	},
+
+	createIcon: function (oldIcon) {
+		return this._createIcon('icon', oldIcon);
+	},
+
+	createShadow: function (oldIcon) {
+		return this._createIcon('shadow', oldIcon);
+	},
+
+	_createIcon: function (name, oldIcon) {
+		var src = this._getIconUrl(name);
+
+		if (!src) {
+			if (name === 'icon') {
+				throw new Error('iconUrl not set in Icon options (see the docs).');
+			}
+			return null;
+		}
+
+		var img;
+		if (!oldIcon || oldIcon.tagName !== 'IMG') {
+			img = this._createImg(src);
+		} else {
+			img = this._createImg(src, oldIcon);
+		}
+		this._setIconStyles(img, name);
+
+		return img;
+	},
+
+	_setIconStyles: function (img, name) {
+		var options = this.options,
+		    size = L.point(options[name + 'Size']),
+		    anchor;
+
+		if (name === 'shadow') {
+			anchor = L.point(options.shadowAnchor || options.iconAnchor);
+		} else {
+			anchor = L.point(options.iconAnchor);
+		}
+
+		if (!anchor && size) {
+			anchor = size.divideBy(2, true);
+		}
+
+		img.className = 'leaflet-marker-' + name + ' ' + options.className;
+
+		if (anchor) {
+			img.style.marginLeft = (-anchor.x) + 'px';
+			img.style.marginTop  = (-anchor.y) + 'px';
+		}
+
+		if (size) {
+			img.style.width  = size.x + 'px';
+			img.style.height = size.y + 'px';
+		}
+	},
+
+	_createImg: function (src, el) {
+		el = el || document.createElement('img');
+		el.src = src;
+		return el;
+	},
+
+	_getIconUrl: function (name) {
+		if (L.Browser.retina && this.options[name + 'RetinaUrl']) {
+			return this.options[name + 'RetinaUrl'];
+		}
+		return this.options[name + 'Url'];
+	}
+});
+
+L.icon = function (options) {
+	return new L.Icon(options);
+};
+
+
+/*
+ * L.Icon.Default is the blue marker icon used by default in Leaflet.
+ */
+
+L.Icon.Default = L.Icon.extend({
+
+	options: {
+		iconSize: [25, 41],
+		iconAnchor: [12, 41],
+		popupAnchor: [1, -34],
+
+		shadowSize: [41, 41]
+	},
+
+	_getIconUrl: function (name) {
+		var key = name + 'Url';
+
+		if (this.options[key]) {
+			return this.options[key];
+		}
+
+		if (L.Browser.retina && name === 'icon') {
+			name += '-2x';
+		}
+
+		var path = L.Icon.Default.imagePath;
+
+		if (!path) {
+			throw new Error('Couldn\'t autodetect L.Icon.Default.imagePath, set it manually.');
+		}
+
+		return path + '/marker-' + name + '.png';
+	}
+});
+
+L.Icon.Default.imagePath = (function () {
+	var scripts = document.getElementsByTagName('script'),
+	    leafletRe = /[\/^]leaflet[\-\._]?([\w\-\._]*)\.js\??/;
+
+	var i, len, src, matches, path;
+
+	for (i = 0, len = scripts.length; i < len; i++) {
+		src = scripts[i].src;
+		matches = src.match(leafletRe);
+
+		if (matches) {
+			path = src.split(leafletRe)[0];
+			return (path ? path + '/' : '') + 'images';
+		}
+	}
+}());
+
+
+/*
+ * L.Marker is used to display clickable/draggable icons on the map.
+ */
+
+L.Marker = L.Class.extend({
+
+	includes: L.Mixin.Events,
+
+	options: {
+		icon: new L.Icon.Default(),
+		title: '',
+		alt: '',
+		clickable: true,
+		draggable: false,
+		keyboard: true,
+		zIndexOffset: 0,
+		opacity: 1,
+		riseOnHover: false,
+		riseOffset: 250
+	},
+
+	initialize: function (latlng, options) {
+		L.setOptions(this, options);
+		this._latlng = L.latLng(latlng);
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+
+		map.on('viewreset', this.update, this);
+
+		this._initIcon();
+		this.update();
+		this.fire('add');
+
+		if (map.options.zoomAnimation && map.options.markerZoomAnimation) {
+			map.on('zoomanim', this._animateZoom, this);
+		}
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	onRemove: function (map) {
+		if (this.dragging) {
+			this.dragging.disable();
+		}
+
+		this._removeIcon();
+		this._removeShadow();
+
+		this.fire('remove');
+
+		map.off({
+			'viewreset': this.update,
+			'zoomanim': this._animateZoom
+		}, this);
+
+		this._map = null;
+	},
+
+	getLatLng: function () {
+		return this._latlng;
+	},
+
+	setLatLng: function (latlng) {
+		this._latlng = L.latLng(latlng);
+
+		this.update();
+
+		return this.fire('move', { latlng: this._latlng });
+	},
+
+	setZIndexOffset: function (offset) {
+		this.options.zIndexOffset = offset;
+		this.update();
+
+		return this;
+	},
+
+	setIcon: function (icon) {
+
+		this.options.icon = icon;
+
+		if (this._map) {
+			this._initIcon();
+			this.update();
+		}
+
+		if (this._popup) {
+			this.bindPopup(this._popup);
+		}
+
+		return this;
+	},
+
+	update: function () {
+		if (this._icon) {
+			this._setPos(this._map.latLngToLayerPoint(this._latlng).round());
+		}
+		return this;
+	},
+
+	_initIcon: function () {
+		var options = this.options,
+		    map = this._map,
+		    animation = (map.options.zoomAnimation && map.options.markerZoomAnimation),
+		    classToAdd = animation ? 'leaflet-zoom-animated' : 'leaflet-zoom-hide';
+
+		var icon = options.icon.createIcon(this._icon),
+			addIcon = false;
+
+		// if we're not reusing the icon, remove the old one and init new one
+		if (icon !== this._icon) {
+			if (this._icon) {
+				this._removeIcon();
+			}
+			addIcon = true;
+
+			if (options.title) {
+				icon.title = options.title;
+			}
+
+			if (options.alt) {
+				icon.alt = options.alt;
+			}
+		}
+
+		L.DomUtil.addClass(icon, classToAdd);
+
+		if (options.keyboard) {
+			icon.tabIndex = '0';
+		}
+
+		this._icon = icon;
+
+		this._initInteraction();
+
+		if (options.riseOnHover) {
+			L.DomEvent
+				.on(icon, 'mouseover', this._bringToFront, this)
+				.on(icon, 'mouseout', this._resetZIndex, this);
+		}
+
+		var newShadow = options.icon.createShadow(this._shadow),
+			addShadow = false;
+
+		if (newShadow !== this._shadow) {
+			this._removeShadow();
+			addShadow = true;
+		}
+
+		if (newShadow) {
+			L.DomUtil.addClass(newShadow, classToAdd);
+		}
+		this._shadow = newShadow;
+
+
+		if (options.opacity < 1) {
+			this._updateOpacity();
+		}
+
+
+		var panes = this._map._panes;
+
+		if (addIcon) {
+			panes.markerPane.appendChild(this._icon);
+		}
+
+		if (newShadow && addShadow) {
+			panes.shadowPane.appendChild(this._shadow);
+		}
+	},
+
+	_removeIcon: function () {
+		if (this.options.riseOnHover) {
+			L.DomEvent
+			    .off(this._icon, 'mouseover', this._bringToFront)
+			    .off(this._icon, 'mouseout', this._resetZIndex);
+		}
+
+		this._map._panes.markerPane.removeChild(this._icon);
+
+		this._icon = null;
+	},
+
+	_removeShadow: function () {
+		if (this._shadow) {
+			this._map._panes.shadowPane.removeChild(this._shadow);
+		}
+		this._shadow = null;
+	},
+
+	_setPos: function (pos) {
+		L.DomUtil.setPosition(this._icon, pos);
+
+		if (this._shadow) {
+			L.DomUtil.setPosition(this._shadow, pos);
+		}
+
+		this._zIndex = pos.y + this.options.zIndexOffset;
+
+		this._resetZIndex();
+	},
+
+	_updateZIndex: function (offset) {
+		this._icon.style.zIndex = this._zIndex + offset;
+	},
+
+	_animateZoom: function (opt) {
+		var pos = this._map._latLngToNewLayerPoint(this._latlng, opt.zoom, opt.center).round();
+
+		this._setPos(pos);
+	},
+
+	_initInteraction: function () {
+
+		if (!this.options.clickable) { return; }
+
+		// TODO refactor into something shared with Map/Path/etc. to DRY it up
+
+		var icon = this._icon,
+		    events = ['dblclick', 'mousedown', 'mouseover', 'mouseout', 'contextmenu'];
+
+		L.DomUtil.addClass(icon, 'leaflet-clickable');
+		L.DomEvent.on(icon, 'click', this._onMouseClick, this);
+		L.DomEvent.on(icon, 'keypress', this._onKeyPress, this);
+
+		for (var i = 0; i < events.length; i++) {
+			L.DomEvent.on(icon, events[i], this._fireMouseEvent, this);
+		}
+
+		if (L.Handler.MarkerDrag) {
+			this.dragging = new L.Handler.MarkerDrag(this);
+
+			if (this.options.draggable) {
+				this.dragging.enable();
+			}
+		}
+	},
+
+	_onMouseClick: function (e) {
+		var wasDragged = this.dragging && this.dragging.moved();
+
+		if (this.hasEventListeners(e.type) || wasDragged) {
+			L.DomEvent.stopPropagation(e);
+		}
+
+		if (wasDragged) { return; }
+
+		if ((!this.dragging || !this.dragging._enabled) && this._map.dragging && this._map.dragging.moved()) { return; }
+
+		this.fire(e.type, {
+			originalEvent: e,
+			latlng: this._latlng
+		});
+	},
+
+	_onKeyPress: function (e) {
+		if (e.keyCode === 13) {
+			this.fire('click', {
+				originalEvent: e,
+				latlng: this._latlng
+			});
+		}
+	},
+
+	_fireMouseEvent: function (e) {
+
+		this.fire(e.type, {
+			originalEvent: e,
+			latlng: this._latlng
+		});
+
+		// TODO proper custom event propagation
+		// this line will always be called if marker is in a FeatureGroup
+		if (e.type === 'contextmenu' && this.hasEventListeners(e.type)) {
+			L.DomEvent.preventDefault(e);
+		}
+		if (e.type !== 'mousedown') {
+			L.DomEvent.stopPropagation(e);
+		} else {
+			L.DomEvent.preventDefault(e);
+		}
+	},
+
+	setOpacity: function (opacity) {
+		this.options.opacity = opacity;
+		if (this._map) {
+			this._updateOpacity();
+		}
+
+		return this;
+	},
+
+	_updateOpacity: function () {
+		L.DomUtil.setOpacity(this._icon, this.options.opacity);
+		if (this._shadow) {
+			L.DomUtil.setOpacity(this._shadow, this.options.opacity);
+		}
+	},
+
+	_bringToFront: function () {
+		this._updateZIndex(this.options.riseOffset);
+	},
+
+	_resetZIndex: function () {
+		this._updateZIndex(0);
+	}
+});
+
+L.marker = function (latlng, options) {
+	return new L.Marker(latlng, options);
+};
+
+
+/*
+ * L.DivIcon is a lightweight HTML-based icon class (as opposed to the image-based L.Icon)
+ * to use with L.Marker.
+ */
+
+L.DivIcon = L.Icon.extend({
+	options: {
+		iconSize: [12, 12], // also can be set through CSS
+		/*
+		iconAnchor: (Point)
+		popupAnchor: (Point)
+		html: (String)
+		bgPos: (Point)
+		*/
+		className: 'leaflet-div-icon',
+		html: false
+	},
+
+	createIcon: function (oldIcon) {
+		var div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div'),
+		    options = this.options;
+
+		if (options.html !== false) {
+			div.innerHTML = options.html;
+		} else {
+			div.innerHTML = '';
+		}
+
+		if (options.bgPos) {
+			div.style.backgroundPosition =
+			        (-options.bgPos.x) + 'px ' + (-options.bgPos.y) + 'px';
+		}
+
+		this._setIconStyles(div, 'icon');
+		return div;
+	},
+
+	createShadow: function () {
+		return null;
+	}
+});
+
+L.divIcon = function (options) {
+	return new L.DivIcon(options);
+};
+
+
+/*
+ * L.Popup is used for displaying popups on the map.
+ */
+
+L.Map.mergeOptions({
+	closePopupOnClick: true
+});
+
+L.Popup = L.Class.extend({
+	includes: L.Mixin.Events,
+
+	options: {
+		minWidth: 50,
+		maxWidth: 300,
+		// maxHeight: null,
+		autoPan: true,
+		closeButton: true,
+		offset: [0, 7],
+		autoPanPadding: [5, 5],
+		// autoPanPaddingTopLeft: null,
+		// autoPanPaddingBottomRight: null,
+		keepInView: false,
+		className: '',
+		zoomAnimation: true
+	},
+
+	initialize: function (options, source) {
+		L.setOptions(this, options);
+
+		this._source = source;
+		this._animated = L.Browser.any3d && this.options.zoomAnimation;
+		this._isOpen = false;
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+
+		if (!this._container) {
+			this._initLayout();
+		}
+
+		var animFade = map.options.fadeAnimation;
+
+		if (animFade) {
+			L.DomUtil.setOpacity(this._container, 0);
+		}
+		map._panes.popupPane.appendChild(this._container);
+
+		map.on(this._getEvents(), this);
+
+		this.update();
+
+		if (animFade) {
+			L.DomUtil.setOpacity(this._container, 1);
+		}
+
+		this.fire('open');
+
+		map.fire('popupopen', {popup: this});
+
+		if (this._source) {
+			this._source.fire('popupopen', {popup: this});
+		}
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	openOn: function (map) {
+		map.openPopup(this);
+		return this;
+	},
+
+	onRemove: function (map) {
+		map._panes.popupPane.removeChild(this._container);
+
+		L.Util.falseFn(this._container.offsetWidth); // force reflow
+
+		map.off(this._getEvents(), this);
+
+		if (map.options.fadeAnimation) {
+			L.DomUtil.setOpacity(this._container, 0);
+		}
+
+		this._map = null;
+
+		this.fire('close');
+
+		map.fire('popupclose', {popup: this});
+
+		if (this._source) {
+			this._source.fire('popupclose', {popup: this});
+		}
+	},
+
+	getLatLng: function () {
+		return this._latlng;
+	},
+
+	setLatLng: function (latlng) {
+		this._latlng = L.latLng(latlng);
+		if (this._map) {
+			this._updatePosition();
+			this._adjustPan();
+		}
+		return this;
+	},
+
+	getContent: function () {
+		return this._content;
+	},
+
+	setContent: function (content) {
+		this._content = content;
+		this.update();
+		return this;
+	},
+
+	update: function () {
+		if (!this._map) { return; }
+
+		this._container.style.visibility = 'hidden';
+
+		this._updateContent();
+		this._updateLayout();
+		this._updatePosition();
+
+		this._container.style.visibility = '';
+
+		this._adjustPan();
+	},
+
+	_getEvents: function () {
+		var events = {
+			viewreset: this._updatePosition
+		};
+
+		if (this._animated) {
+			events.zoomanim = this._zoomAnimation;
+		}
+		if ('closeOnClick' in this.options ? this.options.closeOnClick : this._map.options.closePopupOnClick) {
+			events.preclick = this._close;
+		}
+		if (this.options.keepInView) {
+			events.moveend = this._adjustPan;
+		}
+
+		return events;
+	},
+
+	_close: function () {
+		if (this._map) {
+			this._map.closePopup(this);
+		}
+	},
+
+	_initLayout: function () {
+		var prefix = 'leaflet-popup',
+			containerClass = prefix + ' ' + this.options.className + ' leaflet-zoom-' +
+			        (this._animated ? 'animated' : 'hide'),
+			container = this._container = L.DomUtil.create('div', containerClass),
+			closeButton;
+
+		if (this.options.closeButton) {
+			closeButton = this._closeButton =
+			        L.DomUtil.create('a', prefix + '-close-button', container);
+			closeButton.href = '#close';
+			closeButton.innerHTML = '&#215;';
+			L.DomEvent.disableClickPropagation(closeButton);
+
+			L.DomEvent.on(closeButton, 'click', this._onCloseButtonClick, this);
+		}
+
+		var wrapper = this._wrapper =
+		        L.DomUtil.create('div', prefix + '-content-wrapper', container);
+		L.DomEvent.disableClickPropagation(wrapper);
+
+		this._contentNode = L.DomUtil.create('div', prefix + '-content', wrapper);
+
+		L.DomEvent.disableScrollPropagation(this._contentNode);
+		L.DomEvent.on(wrapper, 'contextmenu', L.DomEvent.stopPropagation);
+
+		this._tipContainer = L.DomUtil.create('div', prefix + '-tip-container', container);
+		this._tip = L.DomUtil.create('div', prefix + '-tip', this._tipContainer);
+	},
+
+	_updateContent: function () {
+		if (!this._content) { return; }
+
+		if (typeof this._content === 'string') {
+			this._contentNode.innerHTML = this._content;
+		} else {
+			while (this._contentNode.hasChildNodes()) {
+				this._contentNode.removeChild(this._contentNode.firstChild);
+			}
+			this._contentNode.appendChild(this._content);
+		}
+		this.fire('contentupdate');
+	},
+
+	_updateLayout: function () {
+		var container = this._contentNode,
+		    style = container.style;
+
+		style.width = '';
+		style.whiteSpace = 'nowrap';
+
+		var width = container.offsetWidth;
+		width = Math.min(width, this.options.maxWidth);
+		width = Math.max(width, this.options.minWidth);
+
+		style.width = (width + 1) + 'px';
+		style.whiteSpace = '';
+
+		style.height = '';
+
+		var height = container.offsetHeight,
+		    maxHeight = this.options.maxHeight,
+		    scrolledClass = 'leaflet-popup-scrolled';
+
+		if (maxHeight && height > maxHeight) {
+			style.height = maxHeight + 'px';
+			L.DomUtil.addClass(container, scrolledClass);
+		} else {
+			L.DomUtil.removeClass(container, scrolledClass);
+		}
+
+		this._containerWidth = this._container.offsetWidth;
+	},
+
+	_updatePosition: function () {
+		if (!this._map) { return; }
+
+		var pos = this._map.latLngToLayerPoint(this._latlng),
+		    animated = this._animated,
+		    offset = L.point(this.options.offset);
+
+		if (animated) {
+			L.DomUtil.setPosition(this._container, pos);
+		}
+
+		this._containerBottom = -offset.y - (animated ? 0 : pos.y);
+		this._containerLeft = -Math.round(this._containerWidth / 2) + offset.x + (animated ? 0 : pos.x);
+
+		// bottom position the popup in case the height of the popup changes (images loading etc)
+		this._container.style.bottom = this._containerBottom + 'px';
+		this._container.style.left = this._containerLeft + 'px';
+	},
+
+	_zoomAnimation: function (opt) {
+		var pos = this._map._latLngToNewLayerPoint(this._latlng, opt.zoom, opt.center);
+
+		L.DomUtil.setPosition(this._container, pos);
+	},
+
+	_adjustPan: function () {
+		if (!this.options.autoPan) { return; }
+
+		var map = this._map,
+		    containerHeight = this._container.offsetHeight,
+		    containerWidth = this._containerWidth,
+
+		    layerPos = new L.Point(this._containerLeft, -containerHeight - this._containerBottom);
+
+		if (this._animated) {
+			layerPos._add(L.DomUtil.getPosition(this._container));
+		}
+
+		var containerPos = map.layerPointToContainerPoint(layerPos),
+		    padding = L.point(this.options.autoPanPadding),
+		    paddingTL = L.point(this.options.autoPanPaddingTopLeft || padding),
+		    paddingBR = L.point(this.options.autoPanPaddingBottomRight || padding),
+		    size = map.getSize(),
+		    dx = 0,
+		    dy = 0;
+
+		if (containerPos.x + containerWidth + paddingBR.x > size.x) { // right
+			dx = containerPos.x + containerWidth - size.x + paddingBR.x;
+		}
+		if (containerPos.x - dx - paddingTL.x < 0) { // left
+			dx = containerPos.x - paddingTL.x;
+		}
+		if (containerPos.y + containerHeight + paddingBR.y > size.y) { // bottom
+			dy = containerPos.y + containerHeight - size.y + paddingBR.y;
+		}
+		if (containerPos.y - dy - paddingTL.y < 0) { // top
+			dy = containerPos.y - paddingTL.y;
+		}
+
+		if (dx || dy) {
+			map
+			    .fire('autopanstart')
+			    .panBy([dx, dy]);
+		}
+	},
+
+	_onCloseButtonClick: function (e) {
+		this._close();
+		L.DomEvent.stop(e);
+	}
+});
+
+L.popup = function (options, source) {
+	return new L.Popup(options, source);
+};
+
+
+L.Map.include({
+	openPopup: function (popup, latlng, options) { // (Popup) or (String || HTMLElement, LatLng[, Object])
+		this.closePopup();
+
+		if (!(popup instanceof L.Popup)) {
+			var content = popup;
+
+			popup = new L.Popup(options)
+			    .setLatLng(latlng)
+			    .setContent(content);
+		}
+		popup._isOpen = true;
+
+		this._popup = popup;
+		return this.addLayer(popup);
+	},
+
+	closePopup: function (popup) {
+		if (!popup || popup === this._popup) {
+			popup = this._popup;
+			this._popup = null;
+		}
+		if (popup) {
+			this.removeLayer(popup);
+			popup._isOpen = false;
+		}
+		return this;
+	}
+});
+
+
+/*
+ * Popup extension to L.Marker, adding popup-related methods.
+ */
+
+L.Marker.include({
+	openPopup: function () {
+		if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
+			this._popup.setLatLng(this._latlng);
+			this._map.openPopup(this._popup);
+		}
+
+		return this;
+	},
+
+	closePopup: function () {
+		if (this._popup) {
+			this._popup._close();
+		}
+		return this;
+	},
+
+	togglePopup: function () {
+		if (this._popup) {
+			if (this._popup._isOpen) {
+				this.closePopup();
+			} else {
+				this.openPopup();
+			}
+		}
+		return this;
+	},
+
+	bindPopup: function (content, options) {
+		var anchor = L.point(this.options.icon.options.popupAnchor || [0, 0]);
+
+		anchor = anchor.add(L.Popup.prototype.options.offset);
+
+		if (options && options.offset) {
+			anchor = anchor.add(options.offset);
+		}
+
+		options = L.extend({offset: anchor}, options);
+
+		if (!this._popupHandlersAdded) {
+			this
+			    .on('click', this.togglePopup, this)
+			    .on('remove', this.closePopup, this)
+			    .on('move', this._movePopup, this);
+			this._popupHandlersAdded = true;
+		}
+
+		if (content instanceof L.Popup) {
+			L.setOptions(content, options);
+			this._popup = content;
+			content._source = this;
+		} else {
+			this._popup = new L.Popup(options, this)
+				.setContent(content);
+		}
+
+		return this;
+	},
+
+	setPopupContent: function (content) {
+		if (this._popup) {
+			this._popup.setContent(content);
+		}
+		return this;
+	},
+
+	unbindPopup: function () {
+		if (this._popup) {
+			this._popup = null;
+			this
+			    .off('click', this.togglePopup, this)
+			    .off('remove', this.closePopup, this)
+			    .off('move', this._movePopup, this);
+			this._popupHandlersAdded = false;
+		}
+		return this;
+	},
+
+	getPopup: function () {
+		return this._popup;
+	},
+
+	_movePopup: function (e) {
+		this._popup.setLatLng(e.latlng);
+	}
+});
+
+
+/*
+ * L.LayerGroup is a class to combine several layers into one so that
+ * you can manipulate the group (e.g. add/remove it) as one layer.
+ */
+
+L.LayerGroup = L.Class.extend({
+	initialize: function (layers) {
+		this._layers = {};
+
+		var i, len;
+
+		if (layers) {
+			for (i = 0, len = layers.length; i < len; i++) {
+				this.addLayer(layers[i]);
+			}
+		}
+	},
+
+	addLayer: function (layer) {
+		var id = this.getLayerId(layer);
+
+		this._layers[id] = layer;
+
+		if (this._map) {
+			this._map.addLayer(layer);
+		}
+
+		return this;
+	},
+
+	removeLayer: function (layer) {
+		var id = layer in this._layers ? layer : this.getLayerId(layer);
+
+		if (this._map && this._layers[id]) {
+			this._map.removeLayer(this._layers[id]);
+		}
+
+		delete this._layers[id];
+
+		return this;
+	},
+
+	hasLayer: function (layer) {
+		if (!layer) { return false; }
+
+		return (layer in this._layers || this.getLayerId(layer) in this._layers);
+	},
+
+	clearLayers: function () {
+		this.eachLayer(this.removeLayer, this);
+		return this;
+	},
+
+	invoke: function (methodName) {
+		var args = Array.prototype.slice.call(arguments, 1),
+		    i, layer;
+
+		for (i in this._layers) {
+			layer = this._layers[i];
+
+			if (layer[methodName]) {
+				layer[methodName].apply(layer, args);
+			}
+		}
+
+		return this;
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+		this.eachLayer(map.addLayer, map);
+	},
+
+	onRemove: function (map) {
+		this.eachLayer(map.removeLayer, map);
+		this._map = null;
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	eachLayer: function (method, context) {
+		for (var i in this._layers) {
+			method.call(context, this._layers[i]);
+		}
+		return this;
+	},
+
+	getLayer: function (id) {
+		return this._layers[id];
+	},
+
+	getLayers: function () {
+		var layers = [];
+
+		for (var i in this._layers) {
+			layers.push(this._layers[i]);
+		}
+		return layers;
+	},
+
+	setZIndex: function (zIndex) {
+		return this.invoke('setZIndex', zIndex);
+	},
+
+	getLayerId: function (layer) {
+		return L.stamp(layer);
+	}
+});
+
+L.layerGroup = function (layers) {
+	return new L.LayerGroup(layers);
+};
+
+
+/*
+ * L.FeatureGroup extends L.LayerGroup by introducing mouse events and additional methods
+ * shared between a group of interactive layers (like vectors or markers).
+ */
+
+L.FeatureGroup = L.LayerGroup.extend({
+	includes: L.Mixin.Events,
+
+	statics: {
+		EVENTS: 'click dblclick mouseover mouseout mousemove contextmenu popupopen popupclose'
+	},
+
+	addLayer: function (layer) {
+		if (this.hasLayer(layer)) {
+			return this;
+		}
+
+		if ('on' in layer) {
+			layer.on(L.FeatureGroup.EVENTS, this._propagateEvent, this);
+		}
+
+		L.LayerGroup.prototype.addLayer.call(this, layer);
+
+		if (this._popupContent && layer.bindPopup) {
+			layer.bindPopup(this._popupContent, this._popupOptions);
+		}
+
+		return this.fire('layeradd', {layer: layer});
+	},
+
+	removeLayer: function (layer) {
+		if (!this.hasLayer(layer)) {
+			return this;
+		}
+		if (layer in this._layers) {
+			layer = this._layers[layer];
+		}
+
+		if ('off' in layer) {
+			layer.off(L.FeatureGroup.EVENTS, this._propagateEvent, this);
+		}
+
+		L.LayerGroup.prototype.removeLayer.call(this, layer);
+
+		if (this._popupContent) {
+			this.invoke('unbindPopup');
+		}
+
+		return this.fire('layerremove', {layer: layer});
+	},
+
+	bindPopup: function (content, options) {
+		this._popupContent = content;
+		this._popupOptions = options;
+		return this.invoke('bindPopup', content, options);
+	},
+
+	openPopup: function (latlng) {
+		// open popup on the first layer
+		for (var id in this._layers) {
+			this._layers[id].openPopup(latlng);
+			break;
+		}
+		return this;
+	},
+
+	setStyle: function (style) {
+		return this.invoke('setStyle', style);
+	},
+
+	bringToFront: function () {
+		return this.invoke('bringToFront');
+	},
+
+	bringToBack: function () {
+		return this.invoke('bringToBack');
+	},
+
+	getBounds: function () {
+		var bounds = new L.LatLngBounds();
+
+		this.eachLayer(function (layer) {
+			bounds.extend(layer instanceof L.Marker ? layer.getLatLng() : layer.getBounds());
+		});
+
+		return bounds;
+	},
+
+	_propagateEvent: function (e) {
+		e = L.extend({
+			layer: e.target,
+			target: this
+		}, e);
+		this.fire(e.type, e);
+	}
+});
+
+L.featureGroup = function (layers) {
+	return new L.FeatureGroup(layers);
+};
+
+
+/*
+ * L.Path is a base class for rendering vector paths on a map. Inherited by Polyline, Circle, etc.
+ */
+
+L.Path = L.Class.extend({
+	includes: [L.Mixin.Events],
+
+	statics: {
+		// how much to extend the clip area around the map view
+		// (relative to its size, e.g. 0.5 is half the screen in each direction)
+		// set it so that SVG element doesn't exceed 1280px (vectors flicker on dragend if it is)
+		CLIP_PADDING: (function () {
+			var max = L.Browser.mobile ? 1280 : 2000,
+			    target = (max / Math.max(window.outerWidth, window.outerHeight) - 1) / 2;
+			return Math.max(0, Math.min(0.5, target));
+		})()
+	},
+
+	options: {
+		stroke: true,
+		color: '#0033ff',
+		dashArray: null,
+		lineCap: null,
+		lineJoin: null,
+		weight: 5,
+		opacity: 0.5,
+
+		fill: false,
+		fillColor: null, //same as color by default
+		fillOpacity: 0.2,
+
+		clickable: true
+	},
+
+	initialize: function (options) {
+		L.setOptions(this, options);
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+
+		if (!this._container) {
+			this._initElements();
+			this._initEvents();
+		}
+
+		this.projectLatlngs();
+		this._updatePath();
+
+		if (this._container) {
+			this._map._pathRoot.appendChild(this._container);
+		}
+
+		this.fire('add');
+
+		map.on({
+			'viewreset': this.projectLatlngs,
+			'moveend': this._updatePath
+		}, this);
+	},
+
+	addTo: function (map) {
+		map.addLayer(this);
+		return this;
+	},
+
+	onRemove: function (map) {
+		map._pathRoot.removeChild(this._container);
+
+		// Need to fire remove event before we set _map to null as the event hooks might need the object
+		this.fire('remove');
+		this._map = null;
+
+		if (L.Browser.vml) {
+			this._container = null;
+			this._stroke = null;
+			this._fill = null;
+		}
+
+		map.off({
+			'viewreset': this.projectLatlngs,
+			'moveend': this._updatePath
+		}, this);
+	},
+
+	projectLatlngs: function () {
+		// do all projection stuff here
+	},
+
+	setStyle: function (style) {
+		L.setOptions(this, style);
+
+		if (this._container) {
+			this._updateStyle();
+		}
+
+		return this;
+	},
+
+	redraw: function () {
+		if (this._map) {
+			this.projectLatlngs();
+			this._updatePath();
+		}
+		return this;
+	}
+});
+
+L.Map.include({
+	_updatePathViewport: function () {
+		var p = L.Path.CLIP_PADDING,
+		    size = this.getSize(),
+		    panePos = L.DomUtil.getPosition(this._mapPane),
+		    min = panePos.multiplyBy(-1)._subtract(size.multiplyBy(p)._round()),
+		    max = min.add(size.multiplyBy(1 + p * 2)._round());
+
+		this._pathViewport = new L.Bounds(min, max);
+	}
+});
+
+
+/*
+ * Extends L.Path with SVG-specific rendering code.
+ */
+
+L.Path.SVG_NS = 'http://www.w3.org/2000/svg';
+
+L.Browser.svg = !!(document.createElementNS && document.createElementNS(L.Path.SVG_NS, 'svg').createSVGRect);
+
+L.Path = L.Path.extend({
+	statics: {
+		SVG: L.Browser.svg
+	},
+
+	bringToFront: function () {
+		var root = this._map._pathRoot,
+		    path = this._container;
+
+		if (path && root.lastChild !== path) {
+			root.appendChild(path);
+		}
+		return this;
+	},
+
+	bringToBack: function () {
+		var root = this._map._pathRoot,
+		    path = this._container,
+		    first = root.firstChild;
+
+		if (path && first !== path) {
+			root.insertBefore(path, first);
+		}
+		return this;
+	},
+
+	getPathString: function () {
+		// form path string here
+	},
+
+	_createElement: function (name) {
+		return document.createElementNS(L.Path.SVG_NS, name);
+	},
+
+	_initElements: function () {
+		this._map._initPathRoot();
+		this._initPath();
+		this._initStyle();
+	},
+
+	_initPath: function () {
+		this._container = this._createElement('g');
+
+		this._path = this._createElement('path');
+
+		if (this.options.className) {
+			L.DomUtil.addClass(this._path, this.options.className);
+		}
+
+		this._container.appendChild(this._path);
+	},
+
+	_initStyle: function () {
+		if (this.options.stroke) {
+			this._path.setAttribute('stroke-linejoin', 'round');
+			this._path.setAttribute('stroke-linecap', 'round');
+		}
+		if (this.options.fill) {
+			this._path.setAttribute('fill-rule', 'evenodd');
+		}
+		if (this.options.pointerEvents) {
+			this._path.setAttribute('pointer-events', this.options.pointerEvents);
+		}
+		if (!this.options.clickable && !this.options.pointerEvents) {
+			this._path.setAttribute('pointer-events', 'none');
+		}
+		this._updateStyle();
+	},
+
+	_updateStyle: function () {
+		if (this.options.stroke) {
+			this._path.setAttribute('stroke', this.options.color);
+			this._path.setAttribute('stroke-opacity', this.options.opacity);
+			this._path.setAttribute('stroke-width', this.options.weight);
+			if (this.options.dashArray) {
+				this._path.setAttribute('stroke-dasharray', this.options.dashArray);
+			} else {
+				this._path.removeAttribute('stroke-dasharray');
+			}
+			if (this.options.lineCap) {
+				this._path.setAttribute('stroke-linecap', this.options.lineCap);
+			}
+			if (this.options.lineJoin) {
+				this._path.setAttribute('stroke-linejoin', this.options.lineJoin);
+			}
+		} else {
+			this._path.setAttribute('stroke', 'none');
+		}
+		if (this.options.fill) {
+			this._path.setAttribute('fill', this.options.fillColor || this.options.color);
+			this._path.setAttribute('fill-opacity', this.options.fillOpacity);
+		} else {
+			this._path.setAttribute('fill', 'none');
+		}
+	},
+
+	_updatePath: function () {
+		var str = this.getPathString();
+		if (!str) {
+			// fix webkit empty string parsing bug
+			str = 'M0 0';
+		}
+		this._path.setAttribute('d', str);
+	},
+
+	// TODO remove duplication with L.Map
+	_initEvents: function () {
+		if (this.options.clickable) {
+			if (L.Browser.svg || !L.Browser.vml) {
+				L.DomUtil.addClass(this._path, 'leaflet-clickable');
+			}
+
+			L.DomEvent.on(this._container, 'click', this._onMouseClick, this);
+
+			var events = ['dblclick', 'mousedown', 'mouseover',
+			              'mouseout', 'mousemove', 'contextmenu'];
+			for (var i = 0; i < events.length; i++) {
+				L.DomEvent.on(this._container, events[i], this._fireMouseEvent, this);
+			}
+		}
+	},
+
+	_onMouseClick: function (e) {
+		if (this._map.dragging && this._map.dragging.moved()) { return; }
+
+		this._fireMouseEvent(e);
+	},
+
+	_fireMouseEvent: function (e) {
+		if (!this._map || !this.hasEventListeners(e.type)) { return; }
+
+		var map = this._map,
+		    containerPoint = map.mouseEventToContainerPoint(e),
+		    layerPoint = map.containerPointToLayerPoint(containerPoint),
+		    latlng = map.layerPointToLatLng(layerPoint);
+
+		this.fire(e.type, {
+			latlng: latlng,
+			layerPoint: layerPoint,
+			containerPoint: containerPoint,
+			originalEvent: e
+		});
+
+		if (e.type === 'contextmenu') {
+			L.DomEvent.preventDefault(e);
+		}
+		if (e.type !== 'mousemove') {
+			L.DomEvent.stopPropagation(e);
+		}
+	}
+});
+
+L.Map.include({
+	_initPathRoot: function () {
+		if (!this._pathRoot) {
+			this._pathRoot = L.Path.prototype._createElement('svg');
+			this._panes.overlayPane.appendChild(this._pathRoot);
+
+			if (this.options.zoomAnimation && L.Browser.any3d) {
+				L.DomUtil.addClass(this._pathRoot, 'leaflet-zoom-animated');
+
+				this.on({
+					'zoomanim': this._animatePathZoom,
+					'zoomend': this._endPathZoom
+				});
+			} else {
+				L.DomUtil.addClass(this._pathRoot, 'leaflet-zoom-hide');
+			}
+
+			this.on('moveend', this._updateSvgViewport);
+			this._updateSvgViewport();
+		}
+	},
+
+	_animatePathZoom: function (e) {
+		var scale = this.getZoomScale(e.zoom),
+		    offset = this._getCenterOffset(e.center)._multiplyBy(-scale)._add(this._pathViewport.min);
+
+		this._pathRoot.style[L.DomUtil.TRANSFORM] =
+		        L.DomUtil.getTranslateString(offset) + ' scale(' + scale + ') ';
+
+		this._pathZooming = true;
+	},
+
+	_endPathZoom: function () {
+		this._pathZooming = false;
+	},
+
+	_updateSvgViewport: function () {
+
+		if (this._pathZooming) {
+			// Do not update SVGs while a zoom animation is going on otherwise the animation will break.
+			// When the zoom animation ends we will be updated again anyway
+			// This fixes the case where you do a momentum move and zoom while the move is still ongoing.
+			return;
+		}
+
+		this._updatePathViewport();
+
+		var vp = this._pathViewport,
+		    min = vp.min,
+		    max = vp.max,
+		    width = max.x - min.x,
+		    height = max.y - min.y,
+		    root = this._pathRoot,
+		    pane = this._panes.overlayPane;
+
+		// Hack to make flicker on drag end on mobile webkit less irritating
+		if (L.Browser.mobileWebkit) {
+			pane.removeChild(root);
+		}
+
+		L.DomUtil.setPosition(root, min);
+		root.setAttribute('width', width);
+		root.setAttribute('height', height);
+		root.setAttribute('viewBox', [min.x, min.y, width, height].join(' '));
+
+		if (L.Browser.mobileWebkit) {
+			pane.appendChild(root);
+		}
+	}
+});
+
+
+/*
+ * Popup extension to L.Path (polylines, polygons, circles), adding popup-related methods.
+ */
+
+L.Path.include({
+
+	bindPopup: function (content, options) {
+
+		if (content instanceof L.Popup) {
+			this._popup = content;
+		} else {
+			if (!this._popup || options) {
+				this._popup = new L.Popup(options, this);
+			}
+			this._popup.setContent(content);
+		}
+
+		if (!this._popupHandlersAdded) {
+			this
+			    .on('click', this._openPopup, this)
+			    .on('remove', this.closePopup, this);
+
+			this._popupHandlersAdded = true;
+		}
+
+		return this;
+	},
+
+	unbindPopup: function () {
+		if (this._popup) {
+			this._popup = null;
+			this
+			    .off('click', this._openPopup)
+			    .off('remove', this.closePopup);
+
+			this._popupHandlersAdded = false;
+		}
+		return this;
+	},
+
+	openPopup: function (latlng) {
+
+		if (this._popup) {
+			// open the popup from one of the path's points if not specified
+			latlng = latlng || this._latlng ||
+			         this._latlngs[Math.floor(this._latlngs.length / 2)];
+
+			this._openPopup({latlng: latlng});
+		}
+
+		return this;
+	},
+
+	closePopup: function () {
+		if (this._popup) {
+			this._popup._close();
+		}
+		return this;
+	},
+
+	_openPopup: function (e) {
+		this._popup.setLatLng(e.latlng);
+		this._map.openPopup(this._popup);
+	}
+});
+
+
+/*
+ * Vector rendering for IE6-8 through VML.
+ * Thanks to Dmitry Baranovsky and his Raphael library for inspiration!
+ */
+
+L.Browser.vml = !L.Browser.svg && (function () {
+	try {
+		var div = document.createElement('div');
+		div.innerHTML = '<v:shape adj="1"/>';
+
+		var shape = div.firstChild;
+		shape.style.behavior = 'url(#default#VML)';
+
+		return shape && (typeof shape.adj === 'object');
+
+	} catch (e) {
+		return false;
+	}
+}());
+
+L.Path = L.Browser.svg || !L.Browser.vml ? L.Path : L.Path.extend({
+	statics: {
+		VML: true,
+		CLIP_PADDING: 0.02
+	},
+
+	_createElement: (function () {
+		try {
+			document.namespaces.add('lvml', 'urn:schemas-microsoft-com:vml');
+			return function (name) {
+				return document.createElement('<lvml:' + name + ' class="lvml">');
+			};
+		} catch (e) {
+			return function (name) {
+				return document.createElement(
+				        '<' + name + ' xmlns="urn:schemas-microsoft.com:vml" class="lvml">');
+			};
+		}
+	}()),
+
+	_initPath: function () {
+		var container = this._container = this._createElement('shape');
+
+		L.DomUtil.addClass(container, 'leaflet-vml-shape' +
+			(this.options.className ? ' ' + this.options.className : ''));
+
+		if (this.options.clickable) {
+			L.DomUtil.addClass(container, 'leaflet-clickable');
+		}
+
+		container.coordsize = '1 1';
+
+		this._path = this._createElement('path');
+		container.appendChild(this._path);
+
+		this._map._pathRoot.appendChild(container);
+	},
+
+	_initStyle: function () {
+		this._updateStyle();
+	},
+
+	_updateStyle: function () {
+		var stroke = this._stroke,
+		    fill = this._fill,
+		    options = this.options,
+		    container = this._container;
+
+		container.stroked = options.stroke;
+		container.filled = options.fill;
+
+		if (options.stroke) {
+			if (!stroke) {
+				stroke = this._stroke = this._createElement('stroke');
+				stroke.endcap = 'round';
+				container.appendChild(stroke);
+			}
+			stroke.weight = options.weight + 'px';
+			stroke.color = options.color;
+			stroke.opacity = options.opacity;
+
+			if (options.dashArray) {
+				stroke.dashStyle = L.Util.isArray(options.dashArray) ?
+				    options.dashArray.join(' ') :
+				    options.dashArray.replace(/( *, *)/g, ' ');
+			} else {
+				stroke.dashStyle = '';
+			}
+			if (options.lineCap) {
+				stroke.endcap = options.lineCap.replace('butt', 'flat');
+			}
+			if (options.lineJoin) {
+				stroke.joinstyle = options.lineJoin;
+			}
+
+		} else if (stroke) {
+			container.removeChild(stroke);
+			this._stroke = null;
+		}
+
+		if (options.fill) {
+			if (!fill) {
+				fill = this._fill = this._createElement('fill');
+				container.appendChild(fill);
+			}
+			fill.color = options.fillColor || options.color;
+			fill.opacity = options.fillOpacity;
+
+		} else if (fill) {
+			container.removeChild(fill);
+			this._fill = null;
+		}
+	},
+
+	_updatePath: function () {
+		var style = this._container.style;
+
+		style.display = 'none';
+		this._path.v = this.getPathString() + ' '; // the space fixes IE empty path string bug
+		style.display = '';
+	}
+});
+
+L.Map.include(L.Browser.svg || !L.Browser.vml ? {} : {
+	_initPathRoot: function () {
+		if (this._pathRoot) { return; }
+
+		var root = this._pathRoot = document.createElement('div');
+		root.className = 'leaflet-vml-container';
+		this._panes.overlayPane.appendChild(root);
+
+		this.on('moveend', this._updatePathViewport);
+		this._updatePathViewport();
+	}
+});
+
+
+/*
+ * Vector rendering for all browsers that support canvas.
+ */
+
+L.Browser.canvas = (function () {
+	return !!document.createElement('canvas').getContext;
+}());
+
+L.Path = (L.Path.SVG && !window.L_PREFER_CANVAS) || !L.Browser.canvas ? L.Path : L.Path.extend({
+	statics: {
+		//CLIP_PADDING: 0.02, // not sure if there's a need to set it to a small value
+		CANVAS: true,
+		SVG: false
+	},
+
+	redraw: function () {
+		if (this._map) {
+			this.projectLatlngs();
+			this._requestUpdate();
+		}
+		return this;
+	},
+
+	setStyle: function (style) {
+		L.setOptions(this, style);
+
+		if (this._map) {
+			this._updateStyle();
+			this._requestUpdate();
+		}
+		return this;
+	},
+
+	onRemove: function (map) {
+		map
+		    .off('viewreset', this.projectLatlngs, this)
+		    .off('moveend', this._updatePath, this);
+
+		if (this.options.clickable) {
+			this._map.off('click', this._onClick, this);
+			this._map.off('mousemove', this._onMouseMove, this);
+		}
+
+		this._requestUpdate();
+		
+		this.fire('remove');
+		this._map = null;
+	},
+
+	_requestUpdate: function () {
+		if (this._map && !L.Path._updateRequest) {
+			L.Path._updateRequest = L.Util.requestAnimFrame(this._fireMapMoveEnd, this._map);
+		}
+	},
+
+	_fireMapMoveEnd: function () {
+		L.Path._updateRequest = null;
+		this.fire('moveend');
+	},
+
+	_initElements: function () {
+		this._map._initPathRoot();
+		this._ctx = this._map._canvasCtx;
+	},
+
+	_updateStyle: function () {
+		var options = this.options;
+
+		if (options.stroke) {
+			this._ctx.lineWidth = options.weight;
+			this._ctx.strokeStyle = options.color;
+		}
+		if (options.fill) {
+			this._ctx.fillStyle = options.fillColor || options.color;
+		}
+
+		if (options.lineCap) {
+			this._ctx.lineCap = options.lineCap;
+		}
+		if (options.lineJoin) {
+			this._ctx.lineJoin = options.lineJoin;
+		}
+	},
+
+	_drawPath: function () {
+		var i, j, len, len2, point, drawMethod;
+
+		this._ctx.beginPath();
+
+		for (i = 0, len = this._parts.length; i < len; i++) {
+			for (j = 0, len2 = this._parts[i].length; j < len2; j++) {
+				point = this._parts[i][j];
+				drawMethod = (j === 0 ? 'move' : 'line') + 'To';
+
+				this._ctx[drawMethod](point.x, point.y);
+			}
+			// TODO refactor ugly hack
+			if (this instanceof L.Polygon) {
+				this._ctx.closePath();
+			}
+		}
+	},
+
+	_checkIfEmpty: function () {
+		return !this._parts.length;
+	},
+
+	_updatePath: function () {
+		if (this._checkIfEmpty()) { return; }
+
+		var ctx = this._ctx,
+		    options = this.options;
+
+		this._drawPath();
+		ctx.save();
+		this._updateStyle();
+
+		if (options.fill) {
+			ctx.globalAlpha = options.fillOpacity;
+			ctx.fill(options.fillRule || 'evenodd');
+		}
+
+		if (options.stroke) {
+			ctx.globalAlpha = options.opacity;
+			ctx.stroke();
+		}
+
+		ctx.restore();
+
+		// TODO optimization: 1 fill/stroke for all features with equal style instead of 1 for each feature
+	},
+
+	_initEvents: function () {
+		if (this.options.clickable) {
+			this._map.on('mousemove', this._onMouseMove, this);
+			this._map.on('click dblclick contextmenu', this._fireMouseEvent, this);
+		}
+	},
+
+	_fireMouseEvent: function (e) {
+		if (this._containsPoint(e.layerPoint)) {
+			this.fire(e.type, e);
+		}
+	},
+
+	_onMouseMove: function (e) {
+		if (!this._map || this._map._animatingZoom) { return; }
+
+		// TODO don't do on each move
+		if (this._containsPoint(e.layerPoint)) {
+			this._ctx.canvas.style.cursor = 'pointer';
+			this._mouseInside = true;
+			this.fire('mouseover', e);
+
+		} else if (this._mouseInside) {
+			this._ctx.canvas.style.cursor = '';
+			this._mouseInside = false;
+			this.fire('mouseout', e);
+		}
+	}
+});
+
+L.Map.include((L.Path.SVG && !window.L_PREFER_CANVAS) || !L.Browser.canvas ? {} : {
+	_initPathRoot: function () {
+		var root = this._pathRoot,
+		    ctx;
+
+		if (!root) {
+			root = this._pathRoot = document.createElement('canvas');
+			root.style.position = 'absolute';
+			ctx = this._canvasCtx = root.getContext('2d');
+
+			ctx.lineCap = 'round';
+			ctx.lineJoin = 'round';
+
+			this._panes.overlayPane.appendChild(root);
+
+			if (this.options.zoomAnimation) {
+				this._pathRoot.className = 'leaflet-zoom-animated';
+				this.on('zoomanim', this._animatePathZoom);
+				this.on('zoomend', this._endPathZoom);
+			}
+			this.on('moveend', this._updateCanvasViewport);
+			this._updateCanvasViewport();
+		}
+	},
+
+	_updateCanvasViewport: function () {
+		// don't redraw while zooming. See _updateSvgViewport for more details
+		if (this._pathZooming) { return; }
+		this._updatePathViewport();
+
+		var vp = this._pathViewport,
+		    min = vp.min,
+		    size = vp.max.subtract(min),
+		    root = this._pathRoot;
+
+		//TODO check if this works properly on mobile webkit
+		L.DomUtil.setPosition(root, min);
+		root.width = size.x;
+		root.height = size.y;
+		root.getContext('2d').translate(-min.x, -min.y);
+	}
+});
+
+
+/*
+ * L.LineUtil contains different utility functions for line segments
+ * and polylines (clipping, simplification, distances, etc.)
+ */
+
+/*jshint bitwise:false */ // allow bitwise operations for this file
+
+L.LineUtil = {
+
+	// Simplify polyline with vertex reduction and Douglas-Peucker simplification.
+	// Improves rendering performance dramatically by lessening the number of points to draw.
+
+	simplify: function (/*Point[]*/ points, /*Number*/ tolerance) {
+		if (!tolerance || !points.length) {
+			return points.slice();
+		}
+
+		var sqTolerance = tolerance * tolerance;
+
+		// stage 1: vertex reduction
+		points = this._reducePoints(points, sqTolerance);
+
+		// stage 2: Douglas-Peucker simplification
+		points = this._simplifyDP(points, sqTolerance);
+
+		return points;
+	},
+
+	// distance from a point to a segment between two points
+	pointToSegmentDistance:  function (/*Point*/ p, /*Point*/ p1, /*Point*/ p2) {
+		return Math.sqrt(this._sqClosestPointOnSegment(p, p1, p2, true));
+	},
+
+	closestPointOnSegment: function (/*Point*/ p, /*Point*/ p1, /*Point*/ p2) {
+		return this._sqClosestPointOnSegment(p, p1, p2);
+	},
+
+	// Douglas-Peucker simplification, see http://en.wikipedia.org/wiki/Douglas-Peucker_algorithm
+	_simplifyDP: function (points, sqTolerance) {
+
+		var len = points.length,
+		    ArrayConstructor = typeof Uint8Array !== undefined + '' ? Uint8Array : Array,
+		    markers = new ArrayConstructor(len);
+
+		markers[0] = markers[len - 1] = 1;
+
+		this._simplifyDPStep(points, markers, sqTolerance, 0, len - 1);
+
+		var i,
+		    newPoints = [];
+
+		for (i = 0; i < len; i++) {
+			if (markers[i]) {
+				newPoints.push(points[i]);
+			}
+		}
+
+		return newPoints;
+	},
+
+	_simplifyDPStep: function (points, markers, sqTolerance, first, last) {
+
+		var maxSqDist = 0,
+		    index, i, sqDist;
+
+		for (i = first + 1; i <= last - 1; i++) {
+			sqDist = this._sqClosestPointOnSegment(points[i], points[first], points[last], true);
+
+			if (sqDist > maxSqDist) {
+				index = i;
+				maxSqDist = sqDist;
+			}
+		}
+
+		if (maxSqDist > sqTolerance) {
+			markers[index] = 1;
+
+			this._simplifyDPStep(points, markers, sqTolerance, first, index);
+			this._simplifyDPStep(points, markers, sqTolerance, index, last);
+		}
+	},
+
+	// reduce points that are too close to each other to a single point
+	_reducePoints: function (points, sqTolerance) {
+		var reducedPoints = [points[0]];
+
+		for (var i = 1, prev = 0, len = points.length; i < len; i++) {
+			if (this._sqDist(points[i], points[prev]) > sqTolerance) {
+				reducedPoints.push(points[i]);
+				prev = i;
+			}
+		}
+		if (prev < len - 1) {
+			reducedPoints.push(points[len - 1]);
+		}
+		return reducedPoints;
+	},
+
+	// Cohen-Sutherland line clipping algorithm.
+	// Used to avoid rendering parts of a polyline that are not currently visible.
+
+	clipSegment: function (a, b, bounds, useLastCode) {
+		var codeA = useLastCode ? this._lastCode : this._getBitCode(a, bounds),
+		    codeB = this._getBitCode(b, bounds),
+
+		    codeOut, p, newCode;
+
+		// save 2nd code to avoid calculating it on the next segment
+		this._lastCode = codeB;
+
+		while (true) {
+			// if a,b is inside the clip window (trivial accept)
+			if (!(codeA | codeB)) {
+				return [a, b];
+			// if a,b is outside the clip window (trivial reject)
+			} else if (codeA & codeB) {
+				return false;
+			// other cases
+			} else {
+				codeOut = codeA || codeB;
+				p = this._getEdgeIntersection(a, b, codeOut, bounds);
+				newCode = this._getBitCode(p, bounds);
+
+				if (codeOut === codeA) {
+					a = p;
+					codeA = newCode;
+				} else {
+					b = p;
+					codeB = newCode;
+				}
+			}
+		}
+	},
+
+	_getEdgeIntersection: function (a, b, code, bounds) {
+		var dx = b.x - a.x,
+		    dy = b.y - a.y,
+		    min = bounds.min,
+		    max = bounds.max;
+
+		if (code & 8) { // top
+			return new L.Point(a.x + dx * (max.y - a.y) / dy, max.y);
+		} else if (code & 4) { // bottom
+			return new L.Point(a.x + dx * (min.y - a.y) / dy, min.y);
+		} else if (code & 2) { // right
+			return new L.Point(max.x, a.y + dy * (max.x - a.x) / dx);
+		} else if (code & 1) { // left
+			return new L.Point(min.x, a.y + dy * (min.x - a.x) / dx);
+		}
+	},
+
+	_getBitCode: function (/*Point*/ p, bounds) {
+		var code = 0;
+
+		if (p.x < bounds.min.x) { // left
+			code |= 1;
+		} else if (p.x > bounds.max.x) { // right
+			code |= 2;
+		}
+		if (p.y < bounds.min.y) { // bottom
+			code |= 4;
+		} else if (p.y > bounds.max.y) { // top
+			code |= 8;
+		}
+
+		return code;
+	},
+
+	// square distance (to avoid unnecessary Math.sqrt calls)
+	_sqDist: function (p1, p2) {
+		var dx = p2.x - p1.x,
+		    dy = p2.y - p1.y;
+		return dx * dx + dy * dy;
+	},
+
+	// return closest point on segment or distance to that point
+	_sqClosestPointOnSegment: function (p, p1, p2, sqDist) {
+		var x = p1.x,
+		    y = p1.y,
+		    dx = p2.x - x,
+		    dy = p2.y - y,
+		    dot = dx * dx + dy * dy,
+		    t;
+
+		if (dot > 0) {
+			t = ((p.x - x) * dx + (p.y - y) * dy) / dot;
+
+			if (t > 1) {
+				x = p2.x;
+				y = p2.y;
+			} else if (t > 0) {
+				x += dx * t;
+				y += dy * t;
+			}
+		}
+
+		dx = p.x - x;
+		dy = p.y - y;
+
+		return sqDist ? dx * dx + dy * dy : new L.Point(x, y);
+	}
+};
+
+
+/*
+ * L.Polyline is used to display polylines on a map.
+ */
+
+L.Polyline = L.Path.extend({
+	initialize: function (latlngs, options) {
+		L.Path.prototype.initialize.call(this, options);
+
+		this._latlngs = this._convertLatLngs(latlngs);
+	},
+
+	options: {
+		// how much to simplify the polyline on each zoom level
+		// more = better performance and smoother look, less = more accurate
+		smoothFactor: 1.0,
+		noClip: false
+	},
+
+	projectLatlngs: function () {
+		this._originalPoints = [];
+
+		for (var i = 0, len = this._latlngs.length; i < len; i++) {
+			this._originalPoints[i] = this._map.latLngToLayerPoint(this._latlngs[i]);
+		}
+	},
+
+	getPathString: function () {
+		for (var i = 0, len = this._parts.length, str = ''; i < len; i++) {
+			str += this._getPathPartStr(this._parts[i]);
+		}
+		return str;
+	},
+
+	getLatLngs: function () {
+		return this._latlngs;
+	},
+
+	setLatLngs: function (latlngs) {
+		this._latlngs = this._convertLatLngs(latlngs);
+		return this.redraw();
+	},
+
+	addLatLng: function (latlng) {
+		this._latlngs.push(L.latLng(latlng));
+		return this.redraw();
+	},
+
+	spliceLatLngs: function () { // (Number index, Number howMany)
+		var removed = [].splice.apply(this._latlngs, arguments);
+		this._convertLatLngs(this._latlngs, true);
+		this.redraw();
+		return removed;
+	},
+
+	closestLayerPoint: function (p) {
+		var minDistance = Infinity, parts = this._parts, p1, p2, minPoint = null;
+
+		for (var j = 0, jLen = parts.length; j < jLen; j++) {
+			var points = parts[j];
+			for (var i = 1, len = points.length; i < len; i++) {
+				p1 = points[i - 1];
+				p2 = points[i];
+				var sqDist = L.LineUtil._sqClosestPointOnSegment(p, p1, p2, true);
+				if (sqDist < minDistance) {
+					minDistance = sqDist;
+					minPoint = L.LineUtil._sqClosestPointOnSegment(p, p1, p2);
+				}
+			}
+		}
+		if (minPoint) {
+			minPoint.distance = Math.sqrt(minDistance);
+		}
+		return minPoint;
+	},
+
+	getBounds: function () {
+		return new L.LatLngBounds(this.getLatLngs());
+	},
+
+	_convertLatLngs: function (latlngs, overwrite) {
+		var i, len, target = overwrite ? latlngs : [];
+
+		for (i = 0, len = latlngs.length; i < len; i++) {
+			if (L.Util.isArray(latlngs[i]) && typeof latlngs[i][0] !== 'number') {
+				return;
+			}
+			target[i] = L.latLng(latlngs[i]);
+		}
+		return target;
+	},
+
+	_initEvents: function () {
+		L.Path.prototype._initEvents.call(this);
+	},
+
+	_getPathPartStr: function (points) {
+		var round = L.Path.VML;
+
+		for (var j = 0, len2 = points.length, str = '', p; j < len2; j++) {
+			p = points[j];
+			if (round) {
+				p._round();
+			}
+			str += (j ? 'L' : 'M') + p.x + ' ' + p.y;
+		}
+		return str;
+	},
+
+	_clipPoints: function () {
+		var points = this._originalPoints,
+		    len = points.length,
+		    i, k, segment;
+
+		if (this.options.noClip) {
+			this._parts = [points];
+			return;
+		}
+
+		this._parts = [];
+
+		var parts = this._parts,
+		    vp = this._map._pathViewport,
+		    lu = L.LineUtil;
+
+		for (i = 0, k = 0; i < len - 1; i++) {
+			segment = lu.clipSegment(points[i], points[i + 1], vp, i);
+			if (!segment) {
+				continue;
+			}
+
+			parts[k] = parts[k] || [];
+			parts[k].push(segment[0]);
+
+			// if segment goes out of screen, or it's the last one, it's the end of the line part
+			if ((segment[1] !== points[i + 1]) || (i === len - 2)) {
+				parts[k].push(segment[1]);
+				k++;
+			}
+		}
+	},
+
+	// simplify each clipped part of the polyline
+	_simplifyPoints: function () {
+		var parts = this._parts,
+		    lu = L.LineUtil;
+
+		for (var i = 0, len = parts.length; i < len; i++) {
+			parts[i] = lu.simplify(parts[i], this.options.smoothFactor);
+		}
+	},
+
+	_updatePath: function () {
+		if (!this._map) { return; }
+
+		this._clipPoints();
+		this._simplifyPoints();
+
+		L.Path.prototype._updatePath.call(this);
+	}
+});
+
+L.polyline = function (latlngs, options) {
+	return new L.Polyline(latlngs, options);
+};
+
+
+/*
+ * L.PolyUtil contains utility functions for polygons (clipping, etc.).
+ */
+
+/*jshint bitwise:false */ // allow bitwise operations here
+
+L.PolyUtil = {};
+
+/*
+ * Sutherland-Hodgeman polygon clipping algorithm.
+ * Used to avoid rendering parts of a polygon that are not currently visible.
+ */
+L.PolyUtil.clipPolygon = function (points, bounds) {
+	var clippedPoints,
+	    edges = [1, 4, 2, 8],
+	    i, j, k,
+	    a, b,
+	    len, edge, p,
+	    lu = L.LineUtil;
+
+	for (i = 0, len = points.length; i < len; i++) {
+		points[i]._code = lu._getBitCode(points[i], bounds);
+	}
+
+	// for each edge (left, bottom, right, top)
+	for (k = 0; k < 4; k++) {
+		edge = edges[k];
+		clippedPoints = [];
+
+		for (i = 0, len = points.length, j = len - 1; i < len; j = i++) {
+			a = points[i];
+			b = points[j];
+
+			// if a is inside the clip window
+			if (!(a._code & edge)) {
+				// if b is outside the clip window (a->b goes out of screen)
+				if (b._code & edge) {
+					p = lu._getEdgeIntersection(b, a, edge, bounds);
+					p._code = lu._getBitCode(p, bounds);
+					clippedPoints.push(p);
+				}
+				clippedPoints.push(a);
+
+			// else if b is inside the clip window (a->b enters the screen)
+			} else if (!(b._code & edge)) {
+				p = lu._getEdgeIntersection(b, a, edge, bounds);
+				p._code = lu._getBitCode(p, bounds);
+				clippedPoints.push(p);
+			}
+		}
+		points = clippedPoints;
+	}
+
+	return points;
+};
+
+
+/*
+ * L.Polygon is used to display polygons on a map.
+ */
+
+L.Polygon = L.Polyline.extend({
+	options: {
+		fill: true
+	},
+
+	initialize: function (latlngs, options) {
+		L.Polyline.prototype.initialize.call(this, latlngs, options);
+		this._initWithHoles(latlngs);
+	},
+
+	_initWithHoles: function (latlngs) {
+		var i, len, hole;
+		if (latlngs && L.Util.isArray(latlngs[0]) && (typeof latlngs[0][0] !== 'number')) {
+			this._latlngs = this._convertLatLngs(latlngs[0]);
+			this._holes = latlngs.slice(1);
+
+			for (i = 0, len = this._holes.length; i < len; i++) {
+				hole = this._holes[i] = this._convertLatLngs(this._holes[i]);
+				if (hole[0].equals(hole[hole.length - 1])) {
+					hole.pop();
+				}
+			}
+		}
+
+		// filter out last point if its equal to the first one
+		latlngs = this._latlngs;
+
+		if (latlngs.length >= 2 && latlngs[0].equals(latlngs[latlngs.length - 1])) {
+			latlngs.pop();
+		}
+	},
+
+	projectLatlngs: function () {
+		L.Polyline.prototype.projectLatlngs.call(this);
+
+		// project polygon holes points
+		// TODO move this logic to Polyline to get rid of duplication
+		this._holePoints = [];
+
+		if (!this._holes) { return; }
+
+		var i, j, len, len2;
+
+		for (i = 0, len = this._holes.length; i < len; i++) {
+			this._holePoints[i] = [];
+
+			for (j = 0, len2 = this._holes[i].length; j < len2; j++) {
+				this._holePoints[i][j] = this._map.latLngToLayerPoint(this._holes[i][j]);
+			}
+		}
+	},
+
+	setLatLngs: function (latlngs) {
+		if (latlngs && L.Util.isArray(latlngs[0]) && (typeof latlngs[0][0] !== 'number')) {
+			this._initWithHoles(latlngs);
+			return this.redraw();
+		} else {
+			return L.Polyline.prototype.setLatLngs.call(this, latlngs);
+		}
+	},
+
+	_clipPoints: function () {
+		var points = this._originalPoints,
+		    newParts = [];
+
+		this._parts = [points].concat(this._holePoints);
+
+		if (this.options.noClip) { return; }
+
+		for (var i = 0, len = this._parts.length; i < len; i++) {
+			var clipped = L.PolyUtil.clipPolygon(this._parts[i], this._map._pathViewport);
+			if (clipped.length) {
+				newParts.push(clipped);
+			}
+		}
+
+		this._parts = newParts;
+	},
+
+	_getPathPartStr: function (points) {
+		var str = L.Polyline.prototype._getPathPartStr.call(this, points);
+		return str + (L.Browser.svg ? 'z' : 'x');
+	}
+});
+
+L.polygon = function (latlngs, options) {
+	return new L.Polygon(latlngs, options);
+};
+
+
+/*
+ * Contains L.MultiPolyline and L.MultiPolygon layers.
+ */
+
+(function () {
+	function createMulti(Klass) {
+
+		return L.FeatureGroup.extend({
+
+			initialize: function (latlngs, options) {
+				this._layers = {};
+				this._options = options;
+				this.setLatLngs(latlngs);
+			},
+
+			setLatLngs: function (latlngs) {
+				var i = 0,
+				    len = latlngs.length;
+
+				this.eachLayer(function (layer) {
+					if (i < len) {
+						layer.setLatLngs(latlngs[i++]);
+					} else {
+						this.removeLayer(layer);
+					}
+				}, this);
+
+				while (i < len) {
+					this.addLayer(new Klass(latlngs[i++], this._options));
+				}
+
+				return this;
+			},
+
+			getLatLngs: function () {
+				var latlngs = [];
+
+				this.eachLayer(function (layer) {
+					latlngs.push(layer.getLatLngs());
+				});
+
+				return latlngs;
+			}
+		});
+	}
+
+	L.MultiPolyline = createMulti(L.Polyline);
+	L.MultiPolygon = createMulti(L.Polygon);
+
+	L.multiPolyline = function (latlngs, options) {
+		return new L.MultiPolyline(latlngs, options);
+	};
+
+	L.multiPolygon = function (latlngs, options) {
+		return new L.MultiPolygon(latlngs, options);
+	};
+}());
+
+
+/*
+ * L.Rectangle extends Polygon and creates a rectangle when passed a LatLngBounds object.
+ */
+
+L.Rectangle = L.Polygon.extend({
+	initialize: function (latLngBounds, options) {
+		L.Polygon.prototype.initialize.call(this, this._boundsToLatLngs(latLngBounds), options);
+	},
+
+	setBounds: function (latLngBounds) {
+		this.setLatLngs(this._boundsToLatLngs(latLngBounds));
+	},
+
+	_boundsToLatLngs: function (latLngBounds) {
+		latLngBounds = L.latLngBounds(latLngBounds);
+		return [
+			latLngBounds.getSouthWest(),
+			latLngBounds.getNorthWest(),
+			latLngBounds.getNorthEast(),
+			latLngBounds.getSouthEast()
+		];
+	}
+});
+
+L.rectangle = function (latLngBounds, options) {
+	return new L.Rectangle(latLngBounds, options);
+};
+
+
+/*
+ * L.Circle is a circle overlay (with a certain radius in meters).
+ */
+
+L.Circle = L.Path.extend({
+	initialize: function (latlng, radius, options) {
+		L.Path.prototype.initialize.call(this, options);
+
+		this._latlng = L.latLng(latlng);
+		this._mRadius = radius;
+	},
+
+	options: {
+		fill: true
+	},
+
+	setLatLng: function (latlng) {
+		this._latlng = L.latLng(latlng);
+		return this.redraw();
+	},
+
+	setRadius: function (radius) {
+		this._mRadius = radius;
+		return this.redraw();
+	},
+
+	projectLatlngs: function () {
+		var lngRadius = this._getLngRadius(),
+		    latlng = this._latlng,
+		    pointLeft = this._map.latLngToLayerPoint([latlng.lat, latlng.lng - lngRadius]);
+
+		this._point = this._map.latLngToLayerPoint(latlng);
+		this._radius = Math.max(this._point.x - pointLeft.x, 1);
+	},
+
+	getBounds: function () {
+		var lngRadius = this._getLngRadius(),
+		    latRadius = (this._mRadius / 40075017) * 360,
+		    latlng = this._latlng;
+
+		return new L.LatLngBounds(
+		        [latlng.lat - latRadius, latlng.lng - lngRadius],
+		        [latlng.lat + latRadius, latlng.lng + lngRadius]);
+	},
+
+	getLatLng: function () {
+		return this._latlng;
+	},
+
+	getPathString: function () {
+		var p = this._point,
+		    r = this._radius;
+
+		if (this._checkIfEmpty()) {
+			return '';
+		}
+
+		if (L.Browser.svg) {
+			return 'M' + p.x + ',' + (p.y - r) +
+			       'A' + r + ',' + r + ',0,1,1,' +
+			       (p.x - 0.1) + ',' + (p.y - r) + ' z';
+		} else {
+			p._round();
+			r = Math.round(r);
+			return 'AL ' + p.x + ',' + p.y + ' ' + r + ',' + r + ' 0,' + (65535 * 360);
+		}
+	},
+
+	getRadius: function () {
+		return this._mRadius;
+	},
+
+	// TODO Earth hardcoded, move into projection code!
+
+	_getLatRadius: function () {
+		return (this._mRadius / 40075017) * 360;
+	},
+
+	_getLngRadius: function () {
+		return this._getLatRadius() / Math.cos(L.LatLng.DEG_TO_RAD * this._latlng.lat);
+	},
+
+	_checkIfEmpty: function () {
+		if (!this._map) {
+			return false;
+		}
+		var vp = this._map._pathViewport,
+		    r = this._radius,
+		    p = this._point;
+
+		return p.x - r > vp.max.x || p.y - r > vp.max.y ||
+		       p.x + r < vp.min.x || p.y + r < vp.min.y;
+	}
+});
+
+L.circle = function (latlng, radius, options) {
+	return new L.Circle(latlng, radius, options);
+};
+
+
+/*
+ * L.CircleMarker is a circle overlay with a permanent pixel radius.
+ */
+
+L.CircleMarker = L.Circle.extend({
+	options: {
+		radius: 10,
+		weight: 2
+	},
+
+	initialize: function (latlng, options) {
+		L.Circle.prototype.initialize.call(this, latlng, null, options);
+		this._radius = this.options.radius;
+	},
+
+	projectLatlngs: function () {
+		this._point = this._map.latLngToLayerPoint(this._latlng);
+	},
+
+	_updateStyle : function () {
+		L.Circle.prototype._updateStyle.call(this);
+		this.setRadius(this.options.radius);
+	},
+
+	setLatLng: function (latlng) {
+		L.Circle.prototype.setLatLng.call(this, latlng);
+		if (this._popup && this._popup._isOpen) {
+			this._popup.setLatLng(latlng);
+		}
+		return this;
+	},
+
+	setRadius: function (radius) {
+		this.options.radius = this._radius = radius;
+		return this.redraw();
+	},
+
+	getRadius: function () {
+		return this._radius;
+	}
+});
+
+L.circleMarker = function (latlng, options) {
+	return new L.CircleMarker(latlng, options);
+};
+
+
+/*
+ * Extends L.Polyline to be able to manually detect clicks on Canvas-rendered polylines.
+ */
+
+L.Polyline.include(!L.Path.CANVAS ? {} : {
+	_containsPoint: function (p, closed) {
+		var i, j, k, len, len2, dist, part,
+		    w = this.options.weight / 2;
+
+		if (L.Browser.touch) {
+			w += 10; // polyline click tolerance on touch devices
+		}
+
+		for (i = 0, len = this._parts.length; i < len; i++) {
+			part = this._parts[i];
+			for (j = 0, len2 = part.length, k = len2 - 1; j < len2; k = j++) {
+				if (!closed && (j === 0)) {
+					continue;
+				}
+
+				dist = L.LineUtil.pointToSegmentDistance(p, part[k], part[j]);
+
+				if (dist <= w) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+});
+
+
+/*
+ * Extends L.Polygon to be able to manually detect clicks on Canvas-rendered polygons.
+ */
+
+L.Polygon.include(!L.Path.CANVAS ? {} : {
+	_containsPoint: function (p) {
+		var inside = false,
+		    part, p1, p2,
+		    i, j, k,
+		    len, len2;
+
+		// TODO optimization: check if within bounds first
+
+		if (L.Polyline.prototype._containsPoint.call(this, p, true)) {
+			// click on polygon border
+			return true;
+		}
+
+		// ray casting algorithm for detecting if point is in polygon
+
+		for (i = 0, len = this._parts.length; i < len; i++) {
+			part = this._parts[i];
+
+			for (j = 0, len2 = part.length, k = len2 - 1; j < len2; k = j++) {
+				p1 = part[j];
+				p2 = part[k];
+
+				if (((p1.y > p.y) !== (p2.y > p.y)) &&
+						(p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
+					inside = !inside;
+				}
+			}
+		}
+
+		return inside;
+	}
+});
+
+
+/*
+ * Extends L.Circle with Canvas-specific code.
+ */
+
+L.Circle.include(!L.Path.CANVAS ? {} : {
+	_drawPath: function () {
+		var p = this._point;
+		this._ctx.beginPath();
+		this._ctx.arc(p.x, p.y, this._radius, 0, Math.PI * 2, false);
+	},
+
+	_containsPoint: function (p) {
+		var center = this._point,
+		    w2 = this.options.stroke ? this.options.weight / 2 : 0;
+
+		return (p.distanceTo(center) <= this._radius + w2);
+	}
+});
+
+
+/*
+ * CircleMarker canvas specific drawing parts.
+ */
+
+L.CircleMarker.include(!L.Path.CANVAS ? {} : {
+	_updateStyle: function () {
+		L.Path.prototype._updateStyle.call(this);
+	}
+});
+
+
+/*
+ * L.GeoJSON turns any GeoJSON data into a Leaflet layer.
+ */
+
+L.GeoJSON = L.FeatureGroup.extend({
+
+	initialize: function (geojson, options) {
+		L.setOptions(this, options);
+
+		this._layers = {};
+
+		if (geojson) {
+			this.addData(geojson);
+		}
+	},
+
+	addData: function (geojson) {
+		var features = L.Util.isArray(geojson) ? geojson : geojson.features,
+		    i, len, feature;
+
+		if (features) {
+			for (i = 0, len = features.length; i < len; i++) {
+				// Only add this if geometry or geometries are set and not null
+				feature = features[i];
+				if (feature.geometries || feature.geometry || feature.features || feature.coordinates) {
+					this.addData(features[i]);
+				}
+			}
+			return this;
+		}
+
+		var options = this.options;
+
+		if (options.filter && !options.filter(geojson)) { return; }
+
+		var layer = L.GeoJSON.geometryToLayer(geojson, options.pointToLayer, options.coordsToLatLng, options);
+		layer.feature = L.GeoJSON.asFeature(geojson);
+
+		layer.defaultOptions = layer.options;
+		this.resetStyle(layer);
+
+		if (options.onEachFeature) {
+			options.onEachFeature(geojson, layer);
+		}
+
+		return this.addLayer(layer);
+	},
+
+	resetStyle: function (layer) {
+		var style = this.options.style;
+		if (style) {
+			// reset any custom styles
+			L.Util.extend(layer.options, layer.defaultOptions);
+
+			this._setLayerStyle(layer, style);
+		}
+	},
+
+	setStyle: function (style) {
+		this.eachLayer(function (layer) {
+			this._setLayerStyle(layer, style);
+		}, this);
+	},
+
+	_setLayerStyle: function (layer, style) {
+		if (typeof style === 'function') {
+			style = style(layer.feature);
+		}
+		if (layer.setStyle) {
+			layer.setStyle(style);
+		}
+	}
+});
+
+L.extend(L.GeoJSON, {
+	geometryToLayer: function (geojson, pointToLayer, coordsToLatLng, vectorOptions) {
+		var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
+		    coords = geometry.coordinates,
+		    layers = [],
+		    latlng, latlngs, i, len;
+
+		coordsToLatLng = coordsToLatLng || this.coordsToLatLng;
+
+		switch (geometry.type) {
+		case 'Point':
+			latlng = coordsToLatLng(coords);
+			return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
+
+		case 'MultiPoint':
+			for (i = 0, len = coords.length; i < len; i++) {
+				latlng = coordsToLatLng(coords[i]);
+				layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
+			}
+			return new L.FeatureGroup(layers);
+
+		case 'LineString':
+			latlngs = this.coordsToLatLngs(coords, 0, coordsToLatLng);
+			return new L.Polyline(latlngs, vectorOptions);
+
+		case 'Polygon':
+			if (coords.length === 2 && !coords[1].length) {
+				throw new Error('Invalid GeoJSON object.');
+			}
+			latlngs = this.coordsToLatLngs(coords, 1, coordsToLatLng);
+			return new L.Polygon(latlngs, vectorOptions);
+
+		case 'MultiLineString':
+			latlngs = this.coordsToLatLngs(coords, 1, coordsToLatLng);
+			return new L.MultiPolyline(latlngs, vectorOptions);
+
+		case 'MultiPolygon':
+			latlngs = this.coordsToLatLngs(coords, 2, coordsToLatLng);
+			return new L.MultiPolygon(latlngs, vectorOptions);
+
+		case 'GeometryCollection':
+			for (i = 0, len = geometry.geometries.length; i < len; i++) {
+
+				layers.push(this.geometryToLayer({
+					geometry: geometry.geometries[i],
+					type: 'Feature',
+					properties: geojson.properties
+				}, pointToLayer, coordsToLatLng, vectorOptions));
+			}
+			return new L.FeatureGroup(layers);
+
+		default:
+			throw new Error('Invalid GeoJSON object.');
+		}
+	},
+
+	coordsToLatLng: function (coords) { // (Array[, Boolean]) -> LatLng
+		return new L.LatLng(coords[1], coords[0], coords[2]);
+	},
+
+	coordsToLatLngs: function (coords, levelsDeep, coordsToLatLng) { // (Array[, Number, Function]) -> Array
+		var latlng, i, len,
+		    latlngs = [];
+
+		for (i = 0, len = coords.length; i < len; i++) {
+			latlng = levelsDeep ?
+			        this.coordsToLatLngs(coords[i], levelsDeep - 1, coordsToLatLng) :
+			        (coordsToLatLng || this.coordsToLatLng)(coords[i]);
+
+			latlngs.push(latlng);
+		}
+
+		return latlngs;
+	},
+
+	latLngToCoords: function (latlng) {
+		var coords = [latlng.lng, latlng.lat];
+
+		if (latlng.alt !== undefined) {
+			coords.push(latlng.alt);
+		}
+		return coords;
+	},
+
+	latLngsToCoords: function (latLngs) {
+		var coords = [];
+
+		for (var i = 0, len = latLngs.length; i < len; i++) {
+			coords.push(L.GeoJSON.latLngToCoords(latLngs[i]));
+		}
+
+		return coords;
+	},
+
+	getFeature: function (layer, newGeometry) {
+		return layer.feature ? L.extend({}, layer.feature, {geometry: newGeometry}) : L.GeoJSON.asFeature(newGeometry);
+	},
+
+	asFeature: function (geoJSON) {
+		if (geoJSON.type === 'Feature') {
+			return geoJSON;
+		}
+
+		return {
+			type: 'Feature',
+			properties: {},
+			geometry: geoJSON
+		};
+	}
+});
+
+var PointToGeoJSON = {
+	toGeoJSON: function () {
+		return L.GeoJSON.getFeature(this, {
+			type: 'Point',
+			coordinates: L.GeoJSON.latLngToCoords(this.getLatLng())
+		});
+	}
+};
+
+L.Marker.include(PointToGeoJSON);
+L.Circle.include(PointToGeoJSON);
+L.CircleMarker.include(PointToGeoJSON);
+
+L.Polyline.include({
+	toGeoJSON: function () {
+		return L.GeoJSON.getFeature(this, {
+			type: 'LineString',
+			coordinates: L.GeoJSON.latLngsToCoords(this.getLatLngs())
+		});
+	}
+});
+
+L.Polygon.include({
+	toGeoJSON: function () {
+		var coords = [L.GeoJSON.latLngsToCoords(this.getLatLngs())],
+		    i, len, hole;
+
+		coords[0].push(coords[0][0]);
+
+		if (this._holes) {
+			for (i = 0, len = this._holes.length; i < len; i++) {
+				hole = L.GeoJSON.latLngsToCoords(this._holes[i]);
+				hole.push(hole[0]);
+				coords.push(hole);
+			}
+		}
+
+		return L.GeoJSON.getFeature(this, {
+			type: 'Polygon',
+			coordinates: coords
+		});
+	}
+});
+
+(function () {
+	function multiToGeoJSON(type) {
+		return function () {
+			var coords = [];
+
+			this.eachLayer(function (layer) {
+				coords.push(layer.toGeoJSON().geometry.coordinates);
+			});
+
+			return L.GeoJSON.getFeature(this, {
+				type: type,
+				coordinates: coords
+			});
+		};
+	}
+
+	L.MultiPolyline.include({toGeoJSON: multiToGeoJSON('MultiLineString')});
+	L.MultiPolygon.include({toGeoJSON: multiToGeoJSON('MultiPolygon')});
+
+	L.LayerGroup.include({
+		toGeoJSON: function () {
+
+			var geometry = this.feature && this.feature.geometry,
+				jsons = [],
+				json;
+
+			if (geometry && geometry.type === 'MultiPoint') {
+				return multiToGeoJSON('MultiPoint').call(this);
+			}
+
+			var isGeometryCollection = geometry && geometry.type === 'GeometryCollection';
+
+			this.eachLayer(function (layer) {
+				if (layer.toGeoJSON) {
+					json = layer.toGeoJSON();
+					jsons.push(isGeometryCollection ? json.geometry : L.GeoJSON.asFeature(json));
+				}
+			});
+
+			if (isGeometryCollection) {
+				return L.GeoJSON.getFeature(this, {
+					geometries: jsons,
+					type: 'GeometryCollection'
+				});
+			}
+
+			return {
+				type: 'FeatureCollection',
+				features: jsons
+			};
+		}
+	});
+}());
+
+L.geoJson = function (geojson, options) {
+	return new L.GeoJSON(geojson, options);
+};
+
+
+/*
+ * L.DomEvent contains functions for working with DOM events.
+ */
+
+L.DomEvent = {
+	/* inspired by John Resig, Dean Edwards and YUI addEvent implementations */
+	addListener: function (obj, type, fn, context) { // (HTMLElement, String, Function[, Object])
+
+		var id = L.stamp(fn),
+		    key = '_leaflet_' + type + id,
+		    handler, originalHandler, newType;
+
+		if (obj[key]) { return this; }
+
+		handler = function (e) {
+			return fn.call(context || obj, e || L.DomEvent._getEvent());
+		};
+
+		if (L.Browser.pointer && type.indexOf('touch') === 0) {
+			return this.addPointerListener(obj, type, handler, id);
+		}
+		if (L.Browser.touch && (type === 'dblclick') && this.addDoubleTapListener) {
+			this.addDoubleTapListener(obj, handler, id);
+		}
+
+		if ('addEventListener' in obj) {
+
+			if (type === 'mousewheel') {
+				obj.addEventListener('DOMMouseScroll', handler, false);
+				obj.addEventListener(type, handler, false);
+
+			} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
+
+				originalHandler = handler;
+				newType = (type === 'mouseenter' ? 'mouseover' : 'mouseout');
+
+				handler = function (e) {
+					if (!L.DomEvent._checkMouse(obj, e)) { return; }
+					return originalHandler(e);
+				};
+
+				obj.addEventListener(newType, handler, false);
+
+			} else if (type === 'click' && L.Browser.android) {
+				originalHandler = handler;
+				handler = function (e) {
+					return L.DomEvent._filterClick(e, originalHandler);
+				};
+
+				obj.addEventListener(type, handler, false);
+			} else {
+				obj.addEventListener(type, handler, false);
+			}
+
+		} else if ('attachEvent' in obj) {
+			obj.attachEvent('on' + type, handler);
+		}
+
+		obj[key] = handler;
+
+		return this;
+	},
+
+	removeListener: function (obj, type, fn) {  // (HTMLElement, String, Function)
+
+		var id = L.stamp(fn),
+		    key = '_leaflet_' + type + id,
+		    handler = obj[key];
+
+		if (!handler) { return this; }
+
+		if (L.Browser.pointer && type.indexOf('touch') === 0) {
+			this.removePointerListener(obj, type, id);
+		} else if (L.Browser.touch && (type === 'dblclick') && this.removeDoubleTapListener) {
+			this.removeDoubleTapListener(obj, id);
+
+		} else if ('removeEventListener' in obj) {
+
+			if (type === 'mousewheel') {
+				obj.removeEventListener('DOMMouseScroll', handler, false);
+				obj.removeEventListener(type, handler, false);
+
+			} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
+				obj.removeEventListener((type === 'mouseenter' ? 'mouseover' : 'mouseout'), handler, false);
+			} else {
+				obj.removeEventListener(type, handler, false);
+			}
+		} else if ('detachEvent' in obj) {
+			obj.detachEvent('on' + type, handler);
+		}
+
+		obj[key] = null;
+
+		return this;
+	},
+
+	stopPropagation: function (e) {
+
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		} else {
+			e.cancelBubble = true;
+		}
+		L.DomEvent._skipped(e);
+
+		return this;
+	},
+
+	disableScrollPropagation: function (el) {
+		var stop = L.DomEvent.stopPropagation;
+
+		return L.DomEvent
+			.on(el, 'mousewheel', stop)
+			.on(el, 'MozMousePixelScroll', stop);
+	},
+
+	disableClickPropagation: function (el) {
+		var stop = L.DomEvent.stopPropagation;
+
+		for (var i = L.Draggable.START.length - 1; i >= 0; i--) {
+			L.DomEvent.on(el, L.Draggable.START[i], stop);
+		}
+
+		return L.DomEvent
+			.on(el, 'click', L.DomEvent._fakeStop)
+			.on(el, 'dblclick', stop);
+	},
+
+	preventDefault: function (e) {
+
+		if (e.preventDefault) {
+			e.preventDefault();
+		} else {
+			e.returnValue = false;
+		}
+		return this;
+	},
+
+	stop: function (e) {
+		return L.DomEvent
+			.preventDefault(e)
+			.stopPropagation(e);
+	},
+
+	getMousePosition: function (e, container) {
+		if (!container) {
+			return new L.Point(e.clientX, e.clientY);
+		}
+
+		var rect = container.getBoundingClientRect();
+
+		return new L.Point(
+			e.clientX - rect.left - container.clientLeft,
+			e.clientY - rect.top - container.clientTop);
+	},
+
+	getWheelDelta: function (e) {
+
+		var delta = 0;
+
+		if (e.wheelDelta) {
+			delta = e.wheelDelta / 120;
+		}
+		if (e.detail) {
+			delta = -e.detail / 3;
+		}
+		return delta;
+	},
+
+	_skipEvents: {},
+
+	_fakeStop: function (e) {
+		// fakes stopPropagation by setting a special event flag, checked/reset with L.DomEvent._skipped(e)
+		L.DomEvent._skipEvents[e.type] = true;
+	},
+
+	_skipped: function (e) {
+		var skipped = this._skipEvents[e.type];
+		// reset when checking, as it's only used in map container and propagates outside of the map
+		this._skipEvents[e.type] = false;
+		return skipped;
+	},
+
+	// check if element really left/entered the event target (for mouseenter/mouseleave)
+	_checkMouse: function (el, e) {
+
+		var related = e.relatedTarget;
+
+		if (!related) { return true; }
+
+		try {
+			while (related && (related !== el)) {
+				related = related.parentNode;
+			}
+		} catch (err) {
+			return false;
+		}
+		return (related !== el);
+	},
+
+	_getEvent: function () { // evil magic for IE
+		/*jshint noarg:false */
+		var e = window.event;
+		if (!e) {
+			var caller = arguments.callee.caller;
+			while (caller) {
+				e = caller['arguments'][0];
+				if (e && window.Event === e.constructor) {
+					break;
+				}
+				caller = caller.caller;
+			}
+		}
+		return e;
+	},
+
+	// this is a horrible workaround for a bug in Android where a single touch triggers two click events
+	_filterClick: function (e, handler) {
+		var timeStamp = (e.timeStamp || e.originalEvent.timeStamp),
+			elapsed = L.DomEvent._lastClick && (timeStamp - L.DomEvent._lastClick);
+
+		// are they closer together than 500ms yet more than 100ms?
+		// Android typically triggers them ~300ms apart while multiple listeners
+		// on the same event should be triggered far faster;
+		// or check if click is simulated on the element, and if it is, reject any non-simulated events
+
+		if ((elapsed && elapsed > 100 && elapsed < 500) || (e.target._simulatedClick && !e._simulated)) {
+			L.DomEvent.stop(e);
+			return;
+		}
+		L.DomEvent._lastClick = timeStamp;
+
+		return handler(e);
+	}
+};
+
+L.DomEvent.on = L.DomEvent.addListener;
+L.DomEvent.off = L.DomEvent.removeListener;
+
+
+/*
+ * L.Draggable allows you to add dragging capabilities to any element. Supports mobile devices too.
+ */
+
+L.Draggable = L.Class.extend({
+	includes: L.Mixin.Events,
+
+	statics: {
+		START: L.Browser.touch ? ['touchstart', 'mousedown'] : ['mousedown'],
+		END: {
+			mousedown: 'mouseup',
+			touchstart: 'touchend',
+			pointerdown: 'touchend',
+			MSPointerDown: 'touchend'
+		},
+		MOVE: {
+			mousedown: 'mousemove',
+			touchstart: 'touchmove',
+			pointerdown: 'touchmove',
+			MSPointerDown: 'touchmove'
+		}
+	},
+
+	initialize: function (element, dragStartTarget) {
+		this._element = element;
+		this._dragStartTarget = dragStartTarget || element;
+	},
+
+	enable: function () {
+		if (this._enabled) { return; }
+
+		for (var i = L.Draggable.START.length - 1; i >= 0; i--) {
+			L.DomEvent.on(this._dragStartTarget, L.Draggable.START[i], this._onDown, this);
+		}
+
+		this._enabled = true;
+	},
+
+	disable: function () {
+		if (!this._enabled) { return; }
+
+		for (var i = L.Draggable.START.length - 1; i >= 0; i--) {
+			L.DomEvent.off(this._dragStartTarget, L.Draggable.START[i], this._onDown, this);
+		}
+
+		this._enabled = false;
+		this._moved = false;
+	},
+
+	_onDown: function (e) {
+		this._moved = false;
+
+		if (e.shiftKey || ((e.which !== 1) && (e.button !== 1) && !e.touches)) { return; }
+
+		L.DomEvent.stopPropagation(e);
+
+		if (L.Draggable._disabled) { return; }
+
+		L.DomUtil.disableImageDrag();
+		L.DomUtil.disableTextSelection();
+
+		if (this._moving) { return; }
+
+		var first = e.touches ? e.touches[0] : e;
+
+		this._startPoint = new L.Point(first.clientX, first.clientY);
+		this._startPos = this._newPos = L.DomUtil.getPosition(this._element);
+
+		L.DomEvent
+		    .on(document, L.Draggable.MOVE[e.type], this._onMove, this)
+		    .on(document, L.Draggable.END[e.type], this._onUp, this);
+	},
+
+	_onMove: function (e) {
+		if (e.touches && e.touches.length > 1) {
+			this._moved = true;
+			return;
+		}
+
+		var first = (e.touches && e.touches.length === 1 ? e.touches[0] : e),
+		    newPoint = new L.Point(first.clientX, first.clientY),
+		    offset = newPoint.subtract(this._startPoint);
+
+		if (!offset.x && !offset.y) { return; }
+		if (L.Browser.touch && Math.abs(offset.x) + Math.abs(offset.y) < 3) { return; }
+
+		L.DomEvent.preventDefault(e);
+
+		if (!this._moved) {
+			this.fire('dragstart');
+
+			this._moved = true;
+			this._startPos = L.DomUtil.getPosition(this._element).subtract(offset);
+
+			L.DomUtil.addClass(document.body, 'leaflet-dragging');
+			this._lastTarget = e.target || e.srcElement;
+			L.DomUtil.addClass(this._lastTarget, 'leaflet-drag-target');
+		}
+
+		this._newPos = this._startPos.add(offset);
+		this._moving = true;
+
+		L.Util.cancelAnimFrame(this._animRequest);
+		this._animRequest = L.Util.requestAnimFrame(this._updatePosition, this, true, this._dragStartTarget);
+	},
+
+	_updatePosition: function () {
+		this.fire('predrag');
+		L.DomUtil.setPosition(this._element, this._newPos);
+		this.fire('drag');
+	},
+
+	_onUp: function () {
+		L.DomUtil.removeClass(document.body, 'leaflet-dragging');
+
+		if (this._lastTarget) {
+			L.DomUtil.removeClass(this._lastTarget, 'leaflet-drag-target');
+			this._lastTarget = null;
+		}
+
+		for (var i in L.Draggable.MOVE) {
+			L.DomEvent
+			    .off(document, L.Draggable.MOVE[i], this._onMove)
+			    .off(document, L.Draggable.END[i], this._onUp);
+		}
+
+		L.DomUtil.enableImageDrag();
+		L.DomUtil.enableTextSelection();
+
+		if (this._moved && this._moving) {
+			// ensure drag is not fired after dragend
+			L.Util.cancelAnimFrame(this._animRequest);
+
+			this.fire('dragend', {
+				distance: this._newPos.distanceTo(this._startPos)
+			});
+		}
+
+		this._moving = false;
+	}
+});
+
+
+/*
+	L.Handler is a base class for handler classes that are used internally to inject
+	interaction features like dragging to classes like Map and Marker.
+*/
+
+L.Handler = L.Class.extend({
+	initialize: function (map) {
+		this._map = map;
+	},
+
+	enable: function () {
+		if (this._enabled) { return; }
+
+		this._enabled = true;
+		this.addHooks();
+	},
+
+	disable: function () {
+		if (!this._enabled) { return; }
+
+		this._enabled = false;
+		this.removeHooks();
+	},
+
+	enabled: function () {
+		return !!this._enabled;
+	}
+});
+
+
+/*
+ * L.Handler.MapDrag is used to make the map draggable (with panning inertia), enabled by default.
+ */
+
+L.Map.mergeOptions({
+	dragging: true,
+
+	inertia: !L.Browser.android23,
+	inertiaDeceleration: 3400, // px/s^2
+	inertiaMaxSpeed: Infinity, // px/s
+	inertiaThreshold: L.Browser.touch ? 32 : 18, // ms
+	easeLinearity: 0.25,
+
+	// TODO refactor, move to CRS
+	worldCopyJump: false
+});
+
+L.Map.Drag = L.Handler.extend({
+	addHooks: function () {
+		if (!this._draggable) {
+			var map = this._map;
+
+			this._draggable = new L.Draggable(map._mapPane, map._container);
+
+			this._draggable.on({
+				'dragstart': this._onDragStart,
+				'drag': this._onDrag,
+				'dragend': this._onDragEnd
+			}, this);
+
+			if (map.options.worldCopyJump) {
+				this._draggable.on('predrag', this._onPreDrag, this);
+				map.on('viewreset', this._onViewReset, this);
+
+				map.whenReady(this._onViewReset, this);
+			}
+		}
+		this._draggable.enable();
+	},
+
+	removeHooks: function () {
+		this._draggable.disable();
+	},
+
+	moved: function () {
+		return this._draggable && this._draggable._moved;
+	},
+
+	_onDragStart: function () {
+		var map = this._map;
+
+		if (map._panAnim) {
+			map._panAnim.stop();
+		}
+
+		map
+		    .fire('movestart')
+		    .fire('dragstart');
+
+		if (map.options.inertia) {
+			this._positions = [];
+			this._times = [];
+		}
+	},
+
+	_onDrag: function () {
+		if (this._map.options.inertia) {
+			var time = this._lastTime = +new Date(),
+			    pos = this._lastPos = this._draggable._newPos;
+
+			this._positions.push(pos);
+			this._times.push(time);
+
+			if (time - this._times[0] > 200) {
+				this._positions.shift();
+				this._times.shift();
+			}
+		}
+
+		this._map
+		    .fire('move')
+		    .fire('drag');
+	},
+
+	_onViewReset: function () {
+		// TODO fix hardcoded Earth values
+		var pxCenter = this._map.getSize()._divideBy(2),
+		    pxWorldCenter = this._map.latLngToLayerPoint([0, 0]);
+
+		this._initialWorldOffset = pxWorldCenter.subtract(pxCenter).x;
+		this._worldWidth = this._map.project([0, 180]).x;
+	},
+
+	_onPreDrag: function () {
+		// TODO refactor to be able to adjust map pane position after zoom
+		var worldWidth = this._worldWidth,
+		    halfWidth = Math.round(worldWidth / 2),
+		    dx = this._initialWorldOffset,
+		    x = this._draggable._newPos.x,
+		    newX1 = (x - halfWidth + dx) % worldWidth + halfWidth - dx,
+		    newX2 = (x + halfWidth + dx) % worldWidth - halfWidth - dx,
+		    newX = Math.abs(newX1 + dx) < Math.abs(newX2 + dx) ? newX1 : newX2;
+
+		this._draggable._newPos.x = newX;
+	},
+
+	_onDragEnd: function (e) {
+		var map = this._map,
+		    options = map.options,
+		    delay = +new Date() - this._lastTime,
+
+		    noInertia = !options.inertia || delay > options.inertiaThreshold || !this._positions[0];
+
+		map.fire('dragend', e);
+
+		if (noInertia) {
+			map.fire('moveend');
+
+		} else {
+
+			var direction = this._lastPos.subtract(this._positions[0]),
+			    duration = (this._lastTime + delay - this._times[0]) / 1000,
+			    ease = options.easeLinearity,
+
+			    speedVector = direction.multiplyBy(ease / duration),
+			    speed = speedVector.distanceTo([0, 0]),
+
+			    limitedSpeed = Math.min(options.inertiaMaxSpeed, speed),
+			    limitedSpeedVector = speedVector.multiplyBy(limitedSpeed / speed),
+
+			    decelerationDuration = limitedSpeed / (options.inertiaDeceleration * ease),
+			    offset = limitedSpeedVector.multiplyBy(-decelerationDuration / 2).round();
+
+			if (!offset.x || !offset.y) {
+				map.fire('moveend');
+
+			} else {
+				offset = map._limitOffset(offset, map.options.maxBounds);
+
+				L.Util.requestAnimFrame(function () {
+					map.panBy(offset, {
+						duration: decelerationDuration,
+						easeLinearity: ease,
+						noMoveStart: true
+					});
+				});
+			}
+		}
+	}
+});
+
+L.Map.addInitHook('addHandler', 'dragging', L.Map.Drag);
+
+
+/*
+ * L.Handler.DoubleClickZoom is used to handle double-click zoom on the map, enabled by default.
+ */
+
+L.Map.mergeOptions({
+	doubleClickZoom: true
+});
+
+L.Map.DoubleClickZoom = L.Handler.extend({
+	addHooks: function () {
+		this._map.on('dblclick', this._onDoubleClick, this);
+	},
+
+	removeHooks: function () {
+		this._map.off('dblclick', this._onDoubleClick, this);
+	},
+
+	_onDoubleClick: function (e) {
+		var map = this._map,
+		    zoom = map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1);
+
+		if (map.options.doubleClickZoom === 'center') {
+			map.setZoom(zoom);
+		} else {
+			map.setZoomAround(e.containerPoint, zoom);
+		}
+	}
+});
+
+L.Map.addInitHook('addHandler', 'doubleClickZoom', L.Map.DoubleClickZoom);
+
+
+/*
+ * L.Handler.ScrollWheelZoom is used by L.Map to enable mouse scroll wheel zoom on the map.
+ */
+
+L.Map.mergeOptions({
+	scrollWheelZoom: true
+});
+
+L.Map.ScrollWheelZoom = L.Handler.extend({
+	addHooks: function () {
+		L.DomEvent.on(this._map._container, 'mousewheel', this._onWheelScroll, this);
+		L.DomEvent.on(this._map._container, 'MozMousePixelScroll', L.DomEvent.preventDefault);
+		this._delta = 0;
+	},
+
+	removeHooks: function () {
+		L.DomEvent.off(this._map._container, 'mousewheel', this._onWheelScroll);
+		L.DomEvent.off(this._map._container, 'MozMousePixelScroll', L.DomEvent.preventDefault);
+	},
+
+	_onWheelScroll: function (e) {
+		var delta = L.DomEvent.getWheelDelta(e);
+
+		this._delta += delta;
+		this._lastMousePos = this._map.mouseEventToContainerPoint(e);
+
+		if (!this._startTime) {
+			this._startTime = +new Date();
+		}
+
+		var left = Math.max(40 - (+new Date() - this._startTime), 0);
+
+		clearTimeout(this._timer);
+		this._timer = setTimeout(L.bind(this._performZoom, this), left);
+
+		L.DomEvent.preventDefault(e);
+		L.DomEvent.stopPropagation(e);
+	},
+
+	_performZoom: function () {
+		var map = this._map,
+		    delta = this._delta,
+		    zoom = map.getZoom();
+
+		delta = delta > 0 ? Math.ceil(delta) : Math.floor(delta);
+		delta = Math.max(Math.min(delta, 4), -4);
+		delta = map._limitZoom(zoom + delta) - zoom;
+
+		this._delta = 0;
+		this._startTime = null;
+
+		if (!delta) { return; }
+
+		if (map.options.scrollWheelZoom === 'center') {
+			map.setZoom(zoom + delta);
+		} else {
+			map.setZoomAround(this._lastMousePos, zoom + delta);
+		}
+	}
+});
+
+L.Map.addInitHook('addHandler', 'scrollWheelZoom', L.Map.ScrollWheelZoom);
+
+
+/*
+ * Extends the event handling code with double tap support for mobile browsers.
+ */
+
+L.extend(L.DomEvent, {
+
+	_touchstart: L.Browser.msPointer ? 'MSPointerDown' : L.Browser.pointer ? 'pointerdown' : 'touchstart',
+	_touchend: L.Browser.msPointer ? 'MSPointerUp' : L.Browser.pointer ? 'pointerup' : 'touchend',
+
+	// inspired by Zepto touch code by Thomas Fuchs
+	addDoubleTapListener: function (obj, handler, id) {
+		var last,
+		    doubleTap = false,
+		    delay = 250,
+		    touch,
+		    pre = '_leaflet_',
+		    touchstart = this._touchstart,
+		    touchend = this._touchend,
+		    trackedTouches = [];
+
+		function onTouchStart(e) {
+			var count;
+
+			if (L.Browser.pointer) {
+				trackedTouches.push(e.pointerId);
+				count = trackedTouches.length;
+			} else {
+				count = e.touches.length;
+			}
+			if (count > 1) {
+				return;
+			}
+
+			var now = Date.now(),
+				delta = now - (last || now);
+
+			touch = e.touches ? e.touches[0] : e;
+			doubleTap = (delta > 0 && delta <= delay);
+			last = now;
+		}
+
+		function onTouchEnd(e) {
+			if (L.Browser.pointer) {
+				var idx = trackedTouches.indexOf(e.pointerId);
+				if (idx === -1) {
+					return;
+				}
+				trackedTouches.splice(idx, 1);
+			}
+
+			if (doubleTap) {
+				if (L.Browser.pointer) {
+					// work around .type being readonly with MSPointer* events
+					var newTouch = { },
+						prop;
+
+					// jshint forin:false
+					for (var i in touch) {
+						prop = touch[i];
+						if (typeof prop === 'function') {
+							newTouch[i] = prop.bind(touch);
+						} else {
+							newTouch[i] = prop;
+						}
+					}
+					touch = newTouch;
+				}
+				touch.type = 'dblclick';
+				handler(touch);
+				last = null;
+			}
+		}
+		obj[pre + touchstart + id] = onTouchStart;
+		obj[pre + touchend + id] = onTouchEnd;
+
+		// on pointer we need to listen on the document, otherwise a drag starting on the map and moving off screen
+		// will not come through to us, so we will lose track of how many touches are ongoing
+		var endElement = L.Browser.pointer ? document.documentElement : obj;
+
+		obj.addEventListener(touchstart, onTouchStart, false);
+		endElement.addEventListener(touchend, onTouchEnd, false);
+
+		if (L.Browser.pointer) {
+			endElement.addEventListener(L.DomEvent.POINTER_CANCEL, onTouchEnd, false);
+		}
+
+		return this;
+	},
+
+	removeDoubleTapListener: function (obj, id) {
+		var pre = '_leaflet_';
+
+		obj.removeEventListener(this._touchstart, obj[pre + this._touchstart + id], false);
+		(L.Browser.pointer ? document.documentElement : obj).removeEventListener(
+		        this._touchend, obj[pre + this._touchend + id], false);
+
+		if (L.Browser.pointer) {
+			document.documentElement.removeEventListener(L.DomEvent.POINTER_CANCEL, obj[pre + this._touchend + id],
+				false);
+		}
+
+		return this;
+	}
+});
+
+
+/*
+ * Extends L.DomEvent to provide touch support for Internet Explorer and Windows-based devices.
+ */
+
+L.extend(L.DomEvent, {
+
+	//static
+	POINTER_DOWN: L.Browser.msPointer ? 'MSPointerDown' : 'pointerdown',
+	POINTER_MOVE: L.Browser.msPointer ? 'MSPointerMove' : 'pointermove',
+	POINTER_UP: L.Browser.msPointer ? 'MSPointerUp' : 'pointerup',
+	POINTER_CANCEL: L.Browser.msPointer ? 'MSPointerCancel' : 'pointercancel',
+
+	_pointers: [],
+	_pointerDocumentListener: false,
+
+	// Provides a touch events wrapper for (ms)pointer events.
+	// Based on changes by veproza https://github.com/CloudMade/Leaflet/pull/1019
+	//ref http://www.w3.org/TR/pointerevents/ https://www.w3.org/Bugs/Public/show_bug.cgi?id=22890
+
+	addPointerListener: function (obj, type, handler, id) {
+
+		switch (type) {
+		case 'touchstart':
+			return this.addPointerListenerStart(obj, type, handler, id);
+		case 'touchend':
+			return this.addPointerListenerEnd(obj, type, handler, id);
+		case 'touchmove':
+			return this.addPointerListenerMove(obj, type, handler, id);
+		default:
+			throw 'Unknown touch event type';
+		}
+	},
+
+	addPointerListenerStart: function (obj, type, handler, id) {
+		var pre = '_leaflet_',
+		    pointers = this._pointers;
+
+		var cb = function (e) {
+			if (e.pointerType !== 'mouse' && e.pointerType !== e.MSPOINTER_TYPE_MOUSE) {
+				L.DomEvent.preventDefault(e);
+			}
+
+			var alreadyInArray = false;
+			for (var i = 0; i < pointers.length; i++) {
+				if (pointers[i].pointerId === e.pointerId) {
+					alreadyInArray = true;
+					break;
+				}
+			}
+			if (!alreadyInArray) {
+				pointers.push(e);
+			}
+
+			e.touches = pointers.slice();
+			e.changedTouches = [e];
+
+			handler(e);
+		};
+
+		obj[pre + 'touchstart' + id] = cb;
+		obj.addEventListener(this.POINTER_DOWN, cb, false);
+
+		// need to also listen for end events to keep the _pointers list accurate
+		// this needs to be on the body and never go away
+		if (!this._pointerDocumentListener) {
+			var internalCb = function (e) {
+				for (var i = 0; i < pointers.length; i++) {
+					if (pointers[i].pointerId === e.pointerId) {
+						pointers.splice(i, 1);
+						break;
+					}
+				}
+			};
+			//We listen on the documentElement as any drags that end by moving the touch off the screen get fired there
+			document.documentElement.addEventListener(this.POINTER_UP, internalCb, false);
+			document.documentElement.addEventListener(this.POINTER_CANCEL, internalCb, false);
+
+			this._pointerDocumentListener = true;
+		}
+
+		return this;
+	},
+
+	addPointerListenerMove: function (obj, type, handler, id) {
+		var pre = '_leaflet_',
+		    touches = this._pointers;
+
+		function cb(e) {
+
+			// don't fire touch moves when mouse isn't down
+			if ((e.pointerType === e.MSPOINTER_TYPE_MOUSE || e.pointerType === 'mouse') && e.buttons === 0) { return; }
+
+			for (var i = 0; i < touches.length; i++) {
+				if (touches[i].pointerId === e.pointerId) {
+					touches[i] = e;
+					break;
+				}
+			}
+
+			e.touches = touches.slice();
+			e.changedTouches = [e];
+
+			handler(e);
+		}
+
+		obj[pre + 'touchmove' + id] = cb;
+		obj.addEventListener(this.POINTER_MOVE, cb, false);
+
+		return this;
+	},
+
+	addPointerListenerEnd: function (obj, type, handler, id) {
+		var pre = '_leaflet_',
+		    touches = this._pointers;
+
+		var cb = function (e) {
+			for (var i = 0; i < touches.length; i++) {
+				if (touches[i].pointerId === e.pointerId) {
+					touches.splice(i, 1);
+					break;
+				}
+			}
+
+			e.touches = touches.slice();
+			e.changedTouches = [e];
+
+			handler(e);
+		};
+
+		obj[pre + 'touchend' + id] = cb;
+		obj.addEventListener(this.POINTER_UP, cb, false);
+		obj.addEventListener(this.POINTER_CANCEL, cb, false);
+
+		return this;
+	},
+
+	removePointerListener: function (obj, type, id) {
+		var pre = '_leaflet_',
+		    cb = obj[pre + type + id];
+
+		switch (type) {
+		case 'touchstart':
+			obj.removeEventListener(this.POINTER_DOWN, cb, false);
+			break;
+		case 'touchmove':
+			obj.removeEventListener(this.POINTER_MOVE, cb, false);
+			break;
+		case 'touchend':
+			obj.removeEventListener(this.POINTER_UP, cb, false);
+			obj.removeEventListener(this.POINTER_CANCEL, cb, false);
+			break;
+		}
+
+		return this;
+	}
+});
+
+
+/*
+ * L.Handler.TouchZoom is used by L.Map to add pinch zoom on supported mobile browsers.
+ */
+
+L.Map.mergeOptions({
+	touchZoom: L.Browser.touch && !L.Browser.android23,
+	bounceAtZoomLimits: true
+});
+
+L.Map.TouchZoom = L.Handler.extend({
+	addHooks: function () {
+		L.DomEvent.on(this._map._container, 'touchstart', this._onTouchStart, this);
+	},
+
+	removeHooks: function () {
+		L.DomEvent.off(this._map._container, 'touchstart', this._onTouchStart, this);
+	},
+
+	_onTouchStart: function (e) {
+		var map = this._map;
+
+		if (!e.touches || e.touches.length !== 2 || map._animatingZoom || this._zooming) { return; }
+
+		var p1 = map.mouseEventToLayerPoint(e.touches[0]),
+		    p2 = map.mouseEventToLayerPoint(e.touches[1]),
+		    viewCenter = map._getCenterLayerPoint();
+
+		this._startCenter = p1.add(p2)._divideBy(2);
+		this._startDist = p1.distanceTo(p2);
+
+		this._moved = false;
+		this._zooming = true;
+
+		this._centerOffset = viewCenter.subtract(this._startCenter);
+
+		if (map._panAnim) {
+			map._panAnim.stop();
+		}
+
+		L.DomEvent
+		    .on(document, 'touchmove', this._onTouchMove, this)
+		    .on(document, 'touchend', this._onTouchEnd, this);
+
+		L.DomEvent.preventDefault(e);
+	},
+
+	_onTouchMove: function (e) {
+		var map = this._map;
+
+		if (!e.touches || e.touches.length !== 2 || !this._zooming) { return; }
+
+		var p1 = map.mouseEventToLayerPoint(e.touches[0]),
+		    p2 = map.mouseEventToLayerPoint(e.touches[1]);
+
+		this._scale = p1.distanceTo(p2) / this._startDist;
+		this._delta = p1._add(p2)._divideBy(2)._subtract(this._startCenter);
+
+		if (this._scale === 1) { return; }
+
+		if (!map.options.bounceAtZoomLimits) {
+			if ((map.getZoom() === map.getMinZoom() && this._scale < 1) ||
+			    (map.getZoom() === map.getMaxZoom() && this._scale > 1)) { return; }
+		}
+
+		if (!this._moved) {
+			L.DomUtil.addClass(map._mapPane, 'leaflet-touching');
+
+			map
+			    .fire('movestart')
+			    .fire('zoomstart');
+
+			this._moved = true;
+		}
+
+		L.Util.cancelAnimFrame(this._animRequest);
+		this._animRequest = L.Util.requestAnimFrame(
+		        this._updateOnMove, this, true, this._map._container);
+
+		L.DomEvent.preventDefault(e);
+	},
+
+	_updateOnMove: function () {
+		var map = this._map,
+		    origin = this._getScaleOrigin(),
+		    center = map.layerPointToLatLng(origin),
+		    zoom = map.getScaleZoom(this._scale);
+
+		map._animateZoom(center, zoom, this._startCenter, this._scale, this._delta, false, true);
+	},
+
+	_onTouchEnd: function () {
+		if (!this._moved || !this._zooming) {
+			this._zooming = false;
+			return;
+		}
+
+		var map = this._map;
+
+		this._zooming = false;
+		L.DomUtil.removeClass(map._mapPane, 'leaflet-touching');
+		L.Util.cancelAnimFrame(this._animRequest);
+
+		L.DomEvent
+		    .off(document, 'touchmove', this._onTouchMove)
+		    .off(document, 'touchend', this._onTouchEnd);
+
+		var origin = this._getScaleOrigin(),
+		    center = map.layerPointToLatLng(origin),
+
+		    oldZoom = map.getZoom(),
+		    floatZoomDelta = map.getScaleZoom(this._scale) - oldZoom,
+		    roundZoomDelta = (floatZoomDelta > 0 ?
+		            Math.ceil(floatZoomDelta) : Math.floor(floatZoomDelta)),
+
+		    zoom = map._limitZoom(oldZoom + roundZoomDelta),
+		    scale = map.getZoomScale(zoom) / this._scale;
+
+		map._animateZoom(center, zoom, origin, scale);
+	},
+
+	_getScaleOrigin: function () {
+		var centerOffset = this._centerOffset.subtract(this._delta).divideBy(this._scale);
+		return this._startCenter.add(centerOffset);
+	}
+});
+
+L.Map.addInitHook('addHandler', 'touchZoom', L.Map.TouchZoom);
+
+
+/*
+ * L.Map.Tap is used to enable mobile hacks like quick taps and long hold.
+ */
+
+L.Map.mergeOptions({
+	tap: true,
+	tapTolerance: 15
+});
+
+L.Map.Tap = L.Handler.extend({
+	addHooks: function () {
+		L.DomEvent.on(this._map._container, 'touchstart', this._onDown, this);
+	},
+
+	removeHooks: function () {
+		L.DomEvent.off(this._map._container, 'touchstart', this._onDown, this);
+	},
+
+	_onDown: function (e) {
+		if (!e.touches) { return; }
+
+		L.DomEvent.preventDefault(e);
+
+		this._fireClick = true;
+
+		// don't simulate click or track longpress if more than 1 touch
+		if (e.touches.length > 1) {
+			this._fireClick = false;
+			clearTimeout(this._holdTimeout);
+			return;
+		}
+
+		var first = e.touches[0],
+		    el = first.target;
+
+		this._startPos = this._newPos = new L.Point(first.clientX, first.clientY);
+
+		// if touching a link, highlight it
+		if (el.tagName && el.tagName.toLowerCase() === 'a') {
+			L.DomUtil.addClass(el, 'leaflet-active');
+		}
+
+		// simulate long hold but setting a timeout
+		this._holdTimeout = setTimeout(L.bind(function () {
+			if (this._isTapValid()) {
+				this._fireClick = false;
+				this._onUp();
+				this._simulateEvent('contextmenu', first);
+			}
+		}, this), 1000);
+
+		L.DomEvent
+			.on(document, 'touchmove', this._onMove, this)
+			.on(document, 'touchend', this._onUp, this);
+	},
+
+	_onUp: function (e) {
+		clearTimeout(this._holdTimeout);
+
+		L.DomEvent
+			.off(document, 'touchmove', this._onMove, this)
+			.off(document, 'touchend', this._onUp, this);
+
+		if (this._fireClick && e && e.changedTouches) {
+
+			var first = e.changedTouches[0],
+			    el = first.target;
+
+			if (el && el.tagName && el.tagName.toLowerCase() === 'a') {
+				L.DomUtil.removeClass(el, 'leaflet-active');
+			}
+
+			// simulate click if the touch didn't move too much
+			if (this._isTapValid()) {
+				this._simulateEvent('click', first);
+			}
+		}
+	},
+
+	_isTapValid: function () {
+		return this._newPos.distanceTo(this._startPos) <= this._map.options.tapTolerance;
+	},
+
+	_onMove: function (e) {
+		var first = e.touches[0];
+		this._newPos = new L.Point(first.clientX, first.clientY);
+	},
+
+	_simulateEvent: function (type, e) {
+		var simulatedEvent = document.createEvent('MouseEvents');
+
+		simulatedEvent._simulated = true;
+		e.target._simulatedClick = true;
+
+		simulatedEvent.initMouseEvent(
+		        type, true, true, window, 1,
+		        e.screenX, e.screenY,
+		        e.clientX, e.clientY,
+		        false, false, false, false, 0, null);
+
+		e.target.dispatchEvent(simulatedEvent);
+	}
+});
+
+if (L.Browser.touch && !L.Browser.pointer) {
+	L.Map.addInitHook('addHandler', 'tap', L.Map.Tap);
+}
+
+
+/*
+ * L.Handler.ShiftDragZoom is used to add shift-drag zoom interaction to the map
+  * (zoom to a selected bounding box), enabled by default.
+ */
+
+L.Map.mergeOptions({
+	boxZoom: true
+});
+
+L.Map.BoxZoom = L.Handler.extend({
+	initialize: function (map) {
+		this._map = map;
+		this._container = map._container;
+		this._pane = map._panes.overlayPane;
+		this._moved = false;
+	},
+
+	addHooks: function () {
+		L.DomEvent.on(this._container, 'mousedown', this._onMouseDown, this);
+	},
+
+	removeHooks: function () {
+		L.DomEvent.off(this._container, 'mousedown', this._onMouseDown);
+		this._moved = false;
+	},
+
+	moved: function () {
+		return this._moved;
+	},
+
+	_onMouseDown: function (e) {
+		this._moved = false;
+
+		if (!e.shiftKey || ((e.which !== 1) && (e.button !== 1))) { return false; }
+
+		L.DomUtil.disableTextSelection();
+		L.DomUtil.disableImageDrag();
+
+		this._startLayerPoint = this._map.mouseEventToLayerPoint(e);
+
+		L.DomEvent
+		    .on(document, 'mousemove', this._onMouseMove, this)
+		    .on(document, 'mouseup', this._onMouseUp, this)
+		    .on(document, 'keydown', this._onKeyDown, this);
+	},
+
+	_onMouseMove: function (e) {
+		if (!this._moved) {
+			this._box = L.DomUtil.create('div', 'leaflet-zoom-box', this._pane);
+			L.DomUtil.setPosition(this._box, this._startLayerPoint);
+
+			//TODO refactor: move cursor to styles
+			this._container.style.cursor = 'crosshair';
+			this._map.fire('boxzoomstart');
+		}
+
+		var startPoint = this._startLayerPoint,
+		    box = this._box,
+
+		    layerPoint = this._map.mouseEventToLayerPoint(e),
+		    offset = layerPoint.subtract(startPoint),
+
+		    newPos = new L.Point(
+		        Math.min(layerPoint.x, startPoint.x),
+		        Math.min(layerPoint.y, startPoint.y));
+
+		L.DomUtil.setPosition(box, newPos);
+
+		this._moved = true;
+
+		// TODO refactor: remove hardcoded 4 pixels
+		box.style.width  = (Math.max(0, Math.abs(offset.x) - 4)) + 'px';
+		box.style.height = (Math.max(0, Math.abs(offset.y) - 4)) + 'px';
+	},
+
+	_finish: function () {
+		if (this._moved) {
+			this._pane.removeChild(this._box);
+			this._container.style.cursor = '';
+		}
+
+		L.DomUtil.enableTextSelection();
+		L.DomUtil.enableImageDrag();
+
+		L.DomEvent
+		    .off(document, 'mousemove', this._onMouseMove)
+		    .off(document, 'mouseup', this._onMouseUp)
+		    .off(document, 'keydown', this._onKeyDown);
+	},
+
+	_onMouseUp: function (e) {
+
+		this._finish();
+
+		var map = this._map,
+		    layerPoint = map.mouseEventToLayerPoint(e);
+
+		if (this._startLayerPoint.equals(layerPoint)) { return; }
+
+		var bounds = new L.LatLngBounds(
+		        map.layerPointToLatLng(this._startLayerPoint),
+		        map.layerPointToLatLng(layerPoint));
+
+		map.fitBounds(bounds);
+
+		map.fire('boxzoomend', {
+			boxZoomBounds: bounds
+		});
+	},
+
+	_onKeyDown: function (e) {
+		if (e.keyCode === 27) {
+			this._finish();
+		}
+	}
+});
+
+L.Map.addInitHook('addHandler', 'boxZoom', L.Map.BoxZoom);
+
+
+/*
+ * L.Map.Keyboard is handling keyboard interaction with the map, enabled by default.
+ */
+
+L.Map.mergeOptions({
+	keyboard: true,
+	keyboardPanOffset: 80,
+	keyboardZoomOffset: 1
+});
+
+L.Map.Keyboard = L.Handler.extend({
+
+	keyCodes: {
+		left:    [37],
+		right:   [39],
+		down:    [40],
+		up:      [38],
+		zoomIn:  [187, 107, 61, 171],
+		zoomOut: [189, 109, 173]
+	},
+
+	initialize: function (map) {
+		this._map = map;
+
+		this._setPanOffset(map.options.keyboardPanOffset);
+		this._setZoomOffset(map.options.keyboardZoomOffset);
+	},
+
+	addHooks: function () {
+		var container = this._map._container;
+
+		// make the container focusable by tabbing
+		if (container.tabIndex === -1) {
+			container.tabIndex = '0';
+		}
+
+		L.DomEvent
+		    .on(container, 'focus', this._onFocus, this)
+		    .on(container, 'blur', this._onBlur, this)
+		    .on(container, 'mousedown', this._onMouseDown, this);
+
+		this._map
+		    .on('focus', this._addHooks, this)
+		    .on('blur', this._removeHooks, this);
+	},
+
+	removeHooks: function () {
+		this._removeHooks();
+
+		var container = this._map._container;
+
+		L.DomEvent
+		    .off(container, 'focus', this._onFocus, this)
+		    .off(container, 'blur', this._onBlur, this)
+		    .off(container, 'mousedown', this._onMouseDown, this);
+
+		this._map
+		    .off('focus', this._addHooks, this)
+		    .off('blur', this._removeHooks, this);
+	},
+
+	_onMouseDown: function () {
+		if (this._focused) { return; }
+
+		var body = document.body,
+		    docEl = document.documentElement,
+		    top = body.scrollTop || docEl.scrollTop,
+		    left = body.scrollLeft || docEl.scrollLeft;
+
+		this._map._container.focus();
+
+		window.scrollTo(left, top);
+	},
+
+	_onFocus: function () {
+		this._focused = true;
+		this._map.fire('focus');
+	},
+
+	_onBlur: function () {
+		this._focused = false;
+		this._map.fire('blur');
+	},
+
+	_setPanOffset: function (pan) {
+		var keys = this._panKeys = {},
+		    codes = this.keyCodes,
+		    i, len;
+
+		for (i = 0, len = codes.left.length; i < len; i++) {
+			keys[codes.left[i]] = [-1 * pan, 0];
+		}
+		for (i = 0, len = codes.right.length; i < len; i++) {
+			keys[codes.right[i]] = [pan, 0];
+		}
+		for (i = 0, len = codes.down.length; i < len; i++) {
+			keys[codes.down[i]] = [0, pan];
+		}
+		for (i = 0, len = codes.up.length; i < len; i++) {
+			keys[codes.up[i]] = [0, -1 * pan];
+		}
+	},
+
+	_setZoomOffset: function (zoom) {
+		var keys = this._zoomKeys = {},
+		    codes = this.keyCodes,
+		    i, len;
+
+		for (i = 0, len = codes.zoomIn.length; i < len; i++) {
+			keys[codes.zoomIn[i]] = zoom;
+		}
+		for (i = 0, len = codes.zoomOut.length; i < len; i++) {
+			keys[codes.zoomOut[i]] = -zoom;
+		}
+	},
+
+	_addHooks: function () {
+		L.DomEvent.on(document, 'keydown', this._onKeyDown, this);
+	},
+
+	_removeHooks: function () {
+		L.DomEvent.off(document, 'keydown', this._onKeyDown, this);
+	},
+
+	_onKeyDown: function (e) {
+		var key = e.keyCode,
+		    map = this._map;
+
+		if (key in this._panKeys) {
+
+			if (map._panAnim && map._panAnim._inProgress) { return; }
+
+			map.panBy(this._panKeys[key]);
+
+			if (map.options.maxBounds) {
+				map.panInsideBounds(map.options.maxBounds);
+			}
+
+		} else if (key in this._zoomKeys) {
+			map.setZoom(map.getZoom() + this._zoomKeys[key]);
+
+		} else {
+			return;
+		}
+
+		L.DomEvent.stop(e);
+	}
+});
+
+L.Map.addInitHook('addHandler', 'keyboard', L.Map.Keyboard);
+
+
+/*
+ * L.Handler.MarkerDrag is used internally by L.Marker to make the markers draggable.
+ */
+
+L.Handler.MarkerDrag = L.Handler.extend({
+	initialize: function (marker) {
+		this._marker = marker;
+	},
+
+	addHooks: function () {
+		var icon = this._marker._icon;
+		if (!this._draggable) {
+			this._draggable = new L.Draggable(icon, icon);
+		}
+
+		this._draggable
+			.on('dragstart', this._onDragStart, this)
+			.on('drag', this._onDrag, this)
+			.on('dragend', this._onDragEnd, this);
+		this._draggable.enable();
+		L.DomUtil.addClass(this._marker._icon, 'leaflet-marker-draggable');
+	},
+
+	removeHooks: function () {
+		this._draggable
+			.off('dragstart', this._onDragStart, this)
+			.off('drag', this._onDrag, this)
+			.off('dragend', this._onDragEnd, this);
+
+		this._draggable.disable();
+		L.DomUtil.removeClass(this._marker._icon, 'leaflet-marker-draggable');
+	},
+
+	moved: function () {
+		return this._draggable && this._draggable._moved;
+	},
+
+	_onDragStart: function () {
+		this._marker
+		    .closePopup()
+		    .fire('movestart')
+		    .fire('dragstart');
+	},
+
+	_onDrag: function () {
+		var marker = this._marker,
+		    shadow = marker._shadow,
+		    iconPos = L.DomUtil.getPosition(marker._icon),
+		    latlng = marker._map.layerPointToLatLng(iconPos);
+
+		// update shadow position
+		if (shadow) {
+			L.DomUtil.setPosition(shadow, iconPos);
+		}
+
+		marker._latlng = latlng;
+
+		marker
+		    .fire('move', {latlng: latlng})
+		    .fire('drag');
+	},
+
+	_onDragEnd: function (e) {
+		this._marker
+		    .fire('moveend')
+		    .fire('dragend', e);
+	}
+});
+
+
+/*
+ * L.Control is a base class for implementing map controls. Handles positioning.
+ * All other controls extend from this class.
+ */
+
+L.Control = L.Class.extend({
+	options: {
+		position: 'topright'
+	},
+
+	initialize: function (options) {
+		L.setOptions(this, options);
+	},
+
+	getPosition: function () {
+		return this.options.position;
+	},
+
+	setPosition: function (position) {
+		var map = this._map;
+
+		if (map) {
+			map.removeControl(this);
+		}
+
+		this.options.position = position;
+
+		if (map) {
+			map.addControl(this);
+		}
+
+		return this;
+	},
+
+	getContainer: function () {
+		return this._container;
+	},
+
+	addTo: function (map) {
+		this._map = map;
+
+		var container = this._container = this.onAdd(map),
+		    pos = this.getPosition(),
+		    corner = map._controlCorners[pos];
+
+		L.DomUtil.addClass(container, 'leaflet-control');
+
+		if (pos.indexOf('bottom') !== -1) {
+			corner.insertBefore(container, corner.firstChild);
+		} else {
+			corner.appendChild(container);
+		}
+
+		return this;
+	},
+
+	removeFrom: function (map) {
+		var pos = this.getPosition(),
+		    corner = map._controlCorners[pos];
+
+		corner.removeChild(this._container);
+		this._map = null;
+
+		if (this.onRemove) {
+			this.onRemove(map);
+		}
+
+		return this;
+	},
+
+	_refocusOnMap: function () {
+		if (this._map) {
+			this._map.getContainer().focus();
+		}
+	}
+});
+
+L.control = function (options) {
+	return new L.Control(options);
+};
+
+
+// adds control-related methods to L.Map
+
+L.Map.include({
+	addControl: function (control) {
+		control.addTo(this);
+		return this;
+	},
+
+	removeControl: function (control) {
+		control.removeFrom(this);
+		return this;
+	},
+
+	_initControlPos: function () {
+		var corners = this._controlCorners = {},
+		    l = 'leaflet-',
+		    container = this._controlContainer =
+		            L.DomUtil.create('div', l + 'control-container', this._container);
+
+		function createCorner(vSide, hSide) {
+			var className = l + vSide + ' ' + l + hSide;
+
+			corners[vSide + hSide] = L.DomUtil.create('div', className, container);
+		}
+
+		createCorner('top', 'left');
+		createCorner('top', 'right');
+		createCorner('bottom', 'left');
+		createCorner('bottom', 'right');
+	},
+
+	_clearControlPos: function () {
+		this._container.removeChild(this._controlContainer);
+	}
+});
+
+
+/*
+ * L.Control.Zoom is used for the default zoom buttons on the map.
+ */
+
+L.Control.Zoom = L.Control.extend({
+	options: {
+		position: 'topleft',
+		zoomInText: '+',
+		zoomInTitle: 'Zoom in',
+		zoomOutText: '-',
+		zoomOutTitle: 'Zoom out'
+	},
+
+	onAdd: function (map) {
+		var zoomName = 'leaflet-control-zoom',
+		    container = L.DomUtil.create('div', zoomName + ' leaflet-bar');
+
+		this._map = map;
+
+		this._zoomInButton  = this._createButton(
+		        this.options.zoomInText, this.options.zoomInTitle,
+		        zoomName + '-in',  container, this._zoomIn,  this);
+		this._zoomOutButton = this._createButton(
+		        this.options.zoomOutText, this.options.zoomOutTitle,
+		        zoomName + '-out', container, this._zoomOut, this);
+
+		this._updateDisabled();
+		map.on('zoomend zoomlevelschange', this._updateDisabled, this);
+
+		return container;
+	},
+
+	onRemove: function (map) {
+		map.off('zoomend zoomlevelschange', this._updateDisabled, this);
+	},
+
+	_zoomIn: function (e) {
+		this._map.zoomIn(e.shiftKey ? 3 : 1);
+	},
+
+	_zoomOut: function (e) {
+		this._map.zoomOut(e.shiftKey ? 3 : 1);
+	},
+
+	_createButton: function (html, title, className, container, fn, context) {
+		var link = L.DomUtil.create('a', className, container);
+		link.innerHTML = html;
+		link.href = '#';
+		link.title = title;
+
+		var stop = L.DomEvent.stopPropagation;
+
+		L.DomEvent
+		    .on(link, 'click', stop)
+		    .on(link, 'mousedown', stop)
+		    .on(link, 'dblclick', stop)
+		    .on(link, 'click', L.DomEvent.preventDefault)
+		    .on(link, 'click', fn, context)
+		    .on(link, 'click', this._refocusOnMap, context);
+
+		return link;
+	},
+
+	_updateDisabled: function () {
+		var map = this._map,
+			className = 'leaflet-disabled';
+
+		L.DomUtil.removeClass(this._zoomInButton, className);
+		L.DomUtil.removeClass(this._zoomOutButton, className);
+
+		if (map._zoom === map.getMinZoom()) {
+			L.DomUtil.addClass(this._zoomOutButton, className);
+		}
+		if (map._zoom === map.getMaxZoom()) {
+			L.DomUtil.addClass(this._zoomInButton, className);
+		}
+	}
+});
+
+L.Map.mergeOptions({
+	zoomControl: true
+});
+
+L.Map.addInitHook(function () {
+	if (this.options.zoomControl) {
+		this.zoomControl = new L.Control.Zoom();
+		this.addControl(this.zoomControl);
+	}
+});
+
+L.control.zoom = function (options) {
+	return new L.Control.Zoom(options);
+};
+
+
+
+/*
+ * L.Control.Attribution is used for displaying attribution on the map (added by default).
+ */
+
+L.Control.Attribution = L.Control.extend({
+	options: {
+		position: 'bottomright',
+		prefix: '<a href="http://leafletjs.com" title="A JS library for interactive maps">Leaflet</a>'
+	},
+
+	initialize: function (options) {
+		L.setOptions(this, options);
+
+		this._attributions = {};
+	},
+
+	onAdd: function (map) {
+		this._container = L.DomUtil.create('div', 'leaflet-control-attribution');
+		L.DomEvent.disableClickPropagation(this._container);
+
+		for (var i in map._layers) {
+			if (map._layers[i].getAttribution) {
+				this.addAttribution(map._layers[i].getAttribution());
+			}
+		}
+		
+		map
+		    .on('layeradd', this._onLayerAdd, this)
+		    .on('layerremove', this._onLayerRemove, this);
+
+		this._update();
+
+		return this._container;
+	},
+
+	onRemove: function (map) {
+		map
+		    .off('layeradd', this._onLayerAdd)
+		    .off('layerremove', this._onLayerRemove);
+
+	},
+
+	setPrefix: function (prefix) {
+		this.options.prefix = prefix;
+		this._update();
+		return this;
+	},
+
+	addAttribution: function (text) {
+		if (!text) { return; }
+
+		if (!this._attributions[text]) {
+			this._attributions[text] = 0;
+		}
+		this._attributions[text]++;
+
+		this._update();
+
+		return this;
+	},
+
+	removeAttribution: function (text) {
+		if (!text) { return; }
+
+		if (this._attributions[text]) {
+			this._attributions[text]--;
+			this._update();
+		}
+
+		return this;
+	},
+
+	_update: function () {
+		if (!this._map) { return; }
+
+		var attribs = [];
+
+		for (var i in this._attributions) {
+			if (this._attributions[i]) {
+				attribs.push(i);
+			}
+		}
+
+		var prefixAndAttribs = [];
+
+		if (this.options.prefix) {
+			prefixAndAttribs.push(this.options.prefix);
+		}
+		if (attribs.length) {
+			prefixAndAttribs.push(attribs.join(', '));
+		}
+
+		this._container.innerHTML = prefixAndAttribs.join(' | ');
+	},
+
+	_onLayerAdd: function (e) {
+		if (e.layer.getAttribution) {
+			this.addAttribution(e.layer.getAttribution());
+		}
+	},
+
+	_onLayerRemove: function (e) {
+		if (e.layer.getAttribution) {
+			this.removeAttribution(e.layer.getAttribution());
+		}
+	}
+});
+
+L.Map.mergeOptions({
+	attributionControl: true
+});
+
+L.Map.addInitHook(function () {
+	if (this.options.attributionControl) {
+		this.attributionControl = (new L.Control.Attribution()).addTo(this);
+	}
+});
+
+L.control.attribution = function (options) {
+	return new L.Control.Attribution(options);
+};
+
+
+/*
+ * L.Control.Scale is used for displaying metric/imperial scale on the map.
+ */
+
+L.Control.Scale = L.Control.extend({
+	options: {
+		position: 'bottomleft',
+		maxWidth: 100,
+		metric: true,
+		imperial: true,
+		updateWhenIdle: false
+	},
+
+	onAdd: function (map) {
+		this._map = map;
+
+		var className = 'leaflet-control-scale',
+		    container = L.DomUtil.create('div', className),
+		    options = this.options;
+
+		this._addScales(options, className, container);
+
+		map.on(options.updateWhenIdle ? 'moveend' : 'move', this._update, this);
+		map.whenReady(this._update, this);
+
+		return container;
+	},
+
+	onRemove: function (map) {
+		map.off(this.options.updateWhenIdle ? 'moveend' : 'move', this._update, this);
+	},
+
+	_addScales: function (options, className, container) {
+		if (options.metric) {
+			this._mScale = L.DomUtil.create('div', className + '-line', container);
+		}
+		if (options.imperial) {
+			this._iScale = L.DomUtil.create('div', className + '-line', container);
+		}
+	},
+
+	_update: function () {
+		var bounds = this._map.getBounds(),
+		    centerLat = bounds.getCenter().lat,
+		    halfWorldMeters = 6378137 * Math.PI * Math.cos(centerLat * Math.PI / 180),
+		    dist = halfWorldMeters * (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / 180,
+
+		    size = this._map.getSize(),
+		    options = this.options,
+		    maxMeters = 0;
+
+		if (size.x > 0) {
+			maxMeters = dist * (options.maxWidth / size.x);
+		}
+
+		this._updateScales(options, maxMeters);
+	},
+
+	_updateScales: function (options, maxMeters) {
+		if (options.metric && maxMeters) {
+			this._updateMetric(maxMeters);
+		}
+
+		if (options.imperial && maxMeters) {
+			this._updateImperial(maxMeters);
+		}
+	},
+
+	_updateMetric: function (maxMeters) {
+		var meters = this._getRoundNum(maxMeters);
+
+		this._mScale.style.width = this._getScaleWidth(meters / maxMeters) + 'px';
+		this._mScale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
+	},
+
+	_updateImperial: function (maxMeters) {
+		var maxFeet = maxMeters * 3.2808399,
+		    scale = this._iScale,
+		    maxMiles, miles, feet;
+
+		if (maxFeet > 5280) {
+			maxMiles = maxFeet / 5280;
+			miles = this._getRoundNum(maxMiles);
+
+			scale.style.width = this._getScaleWidth(miles / maxMiles) + 'px';
+			scale.innerHTML = miles + ' mi';
+
+		} else {
+			feet = this._getRoundNum(maxFeet);
+
+			scale.style.width = this._getScaleWidth(feet / maxFeet) + 'px';
+			scale.innerHTML = feet + ' ft';
+		}
+	},
+
+	_getScaleWidth: function (ratio) {
+		return Math.round(this.options.maxWidth * ratio) - 10;
+	},
+
+	_getRoundNum: function (num) {
+		var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
+		    d = num / pow10;
+
+		d = d >= 10 ? 10 : d >= 5 ? 5 : d >= 3 ? 3 : d >= 2 ? 2 : 1;
+
+		return pow10 * d;
+	}
+});
+
+L.control.scale = function (options) {
+	return new L.Control.Scale(options);
+};
+
+
+/*
+ * L.Control.Layers is a control to allow users to switch between different layers on the map.
+ */
+
+L.Control.Layers = L.Control.extend({
+	options: {
+		collapsed: true,
+		position: 'topright',
+		autoZIndex: true
+	},
+
+	initialize: function (baseLayers, overlays, options) {
+		L.setOptions(this, options);
+
+		this._layers = {};
+		this._lastZIndex = 0;
+		this._handlingClick = false;
+
+		for (var i in baseLayers) {
+			this._addLayer(baseLayers[i], i);
+		}
+
+		for (i in overlays) {
+			this._addLayer(overlays[i], i, true);
+		}
+	},
+
+	onAdd: function (map) {
+		this._initLayout();
+		this._update();
+
+		map
+		    .on('layeradd', this._onLayerChange, this)
+		    .on('layerremove', this._onLayerChange, this);
+
+		return this._container;
+	},
+
+	onRemove: function (map) {
+		map
+		    .off('layeradd', this._onLayerChange, this)
+		    .off('layerremove', this._onLayerChange, this);
+	},
+
+	addBaseLayer: function (layer, name) {
+		this._addLayer(layer, name);
+		this._update();
+		return this;
+	},
+
+	addOverlay: function (layer, name) {
+		this._addLayer(layer, name, true);
+		this._update();
+		return this;
+	},
+
+	removeLayer: function (layer) {
+		var id = L.stamp(layer);
+		delete this._layers[id];
+		this._update();
+		return this;
+	},
+
+	_initLayout: function () {
+		var className = 'leaflet-control-layers',
+		    container = this._container = L.DomUtil.create('div', className);
+
+		//Makes this work on IE10 Touch devices by stopping it from firing a mouseout event when the touch is released
+		container.setAttribute('aria-haspopup', true);
+
+		if (!L.Browser.touch) {
+			L.DomEvent
+				.disableClickPropagation(container)
+				.disableScrollPropagation(container);
+		} else {
+			L.DomEvent.on(container, 'click', L.DomEvent.stopPropagation);
+		}
+
+		var form = this._form = L.DomUtil.create('form', className + '-list');
+
+		if (this.options.collapsed) {
+			if (!L.Browser.android) {
+				L.DomEvent
+				    .on(container, 'mouseover', this._expand, this)
+				    .on(container, 'mouseout', this._collapse, this);
+			}
+			var link = this._layersLink = L.DomUtil.create('a', className + '-toggle', container);
+			link.href = '#';
+			link.title = 'Layers';
+
+			if (L.Browser.touch) {
+				L.DomEvent
+				    .on(link, 'click', L.DomEvent.stop)
+				    .on(link, 'click', this._expand, this);
+			}
+			else {
+				L.DomEvent.on(link, 'focus', this._expand, this);
+			}
+			//Work around for Firefox android issue https://github.com/Leaflet/Leaflet/issues/2033
+			L.DomEvent.on(form, 'click', function () {
+				setTimeout(L.bind(this._onInputClick, this), 0);
+			}, this);
+
+			this._map.on('click', this._collapse, this);
+			// TODO keyboard accessibility
+		} else {
+			this._expand();
+		}
+
+		this._baseLayersList = L.DomUtil.create('div', className + '-base', form);
+		this._separator = L.DomUtil.create('div', className + '-separator', form);
+		this._overlaysList = L.DomUtil.create('div', className + '-overlays', form);
+
+		container.appendChild(form);
+	},
+
+	_addLayer: function (layer, name, overlay) {
+		var id = L.stamp(layer);
+
+		this._layers[id] = {
+			layer: layer,
+			name: name,
+			overlay: overlay
+		};
+
+		if (this.options.autoZIndex && layer.setZIndex) {
+			this._lastZIndex++;
+			layer.setZIndex(this._lastZIndex);
+		}
+	},
+
+	_update: function () {
+		if (!this._container) {
+			return;
+		}
+
+		this._baseLayersList.innerHTML = '';
+		this._overlaysList.innerHTML = '';
+
+		var baseLayersPresent = false,
+		    overlaysPresent = false,
+		    i, obj;
+
+		for (i in this._layers) {
+			obj = this._layers[i];
+			this._addItem(obj);
+			overlaysPresent = overlaysPresent || obj.overlay;
+			baseLayersPresent = baseLayersPresent || !obj.overlay;
+		}
+
+		this._separator.style.display = overlaysPresent && baseLayersPresent ? '' : 'none';
+	},
+
+	_onLayerChange: function (e) {
+		var obj = this._layers[L.stamp(e.layer)];
+
+		if (!obj) { return; }
+
+		if (!this._handlingClick) {
+			this._update();
+		}
+
+		var type = obj.overlay ?
+			(e.type === 'layeradd' ? 'overlayadd' : 'overlayremove') :
+			(e.type === 'layeradd' ? 'baselayerchange' : null);
+
+		if (type) {
+			this._map.fire(type, obj);
+		}
+	},
+
+	// IE7 bugs out if you create a radio dynamically, so you have to do it this hacky way (see http://bit.ly/PqYLBe)
+	_createRadioElement: function (name, checked) {
+
+		var radioHtml = '<input type="radio" class="leaflet-control-layers-selector" name="' + name + '"';
+		if (checked) {
+			radioHtml += ' checked="checked"';
+		}
+		radioHtml += '/>';
+
+		var radioFragment = document.createElement('div');
+		radioFragment.innerHTML = radioHtml;
+
+		return radioFragment.firstChild;
+	},
+
+	_addItem: function (obj) {
+		var label = document.createElement('label'),
+		    input,
+		    checked = this._map.hasLayer(obj.layer);
+
+		if (obj.overlay) {
+			input = document.createElement('input');
+			input.type = 'checkbox';
+			input.className = 'leaflet-control-layers-selector';
+			input.defaultChecked = checked;
+		} else {
+			input = this._createRadioElement('leaflet-base-layers', checked);
+		}
+
+		input.layerId = L.stamp(obj.layer);
+
+		L.DomEvent.on(input, 'click', this._onInputClick, this);
+
+		var name = document.createElement('span');
+		name.innerHTML = ' ' + obj.name;
+
+		label.appendChild(input);
+		label.appendChild(name);
+
+		var container = obj.overlay ? this._overlaysList : this._baseLayersList;
+		container.appendChild(label);
+
+		return label;
+	},
+
+	_onInputClick: function () {
+		var i, input, obj,
+		    inputs = this._form.getElementsByTagName('input'),
+		    inputsLen = inputs.length;
+
+		this._handlingClick = true;
+
+		for (i = 0; i < inputsLen; i++) {
+			input = inputs[i];
+			obj = this._layers[input.layerId];
+
+			if (input.checked && !this._map.hasLayer(obj.layer)) {
+				this._map.addLayer(obj.layer);
+
+			} else if (!input.checked && this._map.hasLayer(obj.layer)) {
+				this._map.removeLayer(obj.layer);
+			}
+		}
+
+		this._handlingClick = false;
+
+		this._refocusOnMap();
+	},
+
+	_expand: function () {
+		L.DomUtil.addClass(this._container, 'leaflet-control-layers-expanded');
+	},
+
+	_collapse: function () {
+		this._container.className = this._container.className.replace(' leaflet-control-layers-expanded', '');
+	}
+});
+
+L.control.layers = function (baseLayers, overlays, options) {
+	return new L.Control.Layers(baseLayers, overlays, options);
+};
+
+
+/*
+ * L.PosAnimation is used by Leaflet internally for pan animations.
+ */
+
+L.PosAnimation = L.Class.extend({
+	includes: L.Mixin.Events,
+
+	run: function (el, newPos, duration, easeLinearity) { // (HTMLElement, Point[, Number, Number])
+		this.stop();
+
+		this._el = el;
+		this._inProgress = true;
+		this._newPos = newPos;
+
+		this.fire('start');
+
+		el.style[L.DomUtil.TRANSITION] = 'all ' + (duration || 0.25) +
+		        's cubic-bezier(0,0,' + (easeLinearity || 0.5) + ',1)';
+
+		L.DomEvent.on(el, L.DomUtil.TRANSITION_END, this._onTransitionEnd, this);
+		L.DomUtil.setPosition(el, newPos);
+
+		// toggle reflow, Chrome flickers for some reason if you don't do this
+		L.Util.falseFn(el.offsetWidth);
+
+		// there's no native way to track value updates of transitioned properties, so we imitate this
+		this._stepTimer = setInterval(L.bind(this._onStep, this), 50);
+	},
+
+	stop: function () {
+		if (!this._inProgress) { return; }
+
+		// if we just removed the transition property, the element would jump to its final position,
+		// so we need to make it stay at the current position
+
+		L.DomUtil.setPosition(this._el, this._getPos());
+		this._onTransitionEnd();
+		L.Util.falseFn(this._el.offsetWidth); // force reflow in case we are about to start a new animation
+	},
+
+	_onStep: function () {
+		var stepPos = this._getPos();
+		if (!stepPos) {
+			this._onTransitionEnd();
+			return;
+		}
+		// jshint camelcase: false
+		// make L.DomUtil.getPosition return intermediate position value during animation
+		this._el._leaflet_pos = stepPos;
+
+		this.fire('step');
+	},
+
+	// you can't easily get intermediate values of properties animated with CSS3 Transitions,
+	// we need to parse computed style (in case of transform it returns matrix string)
+
+	_transformRe: /([-+]?(?:\d*\.)?\d+)\D*, ([-+]?(?:\d*\.)?\d+)\D*\)/,
+
+	_getPos: function () {
+		var left, top, matches,
+		    el = this._el,
+		    style = window.getComputedStyle(el);
+
+		if (L.Browser.any3d) {
+			matches = style[L.DomUtil.TRANSFORM].match(this._transformRe);
+			if (!matches) { return; }
+			left = parseFloat(matches[1]);
+			top  = parseFloat(matches[2]);
+		} else {
+			left = parseFloat(style.left);
+			top  = parseFloat(style.top);
+		}
+
+		return new L.Point(left, top, true);
+	},
+
+	_onTransitionEnd: function () {
+		L.DomEvent.off(this._el, L.DomUtil.TRANSITION_END, this._onTransitionEnd, this);
+
+		if (!this._inProgress) { return; }
+		this._inProgress = false;
+
+		this._el.style[L.DomUtil.TRANSITION] = '';
+
+		// jshint camelcase: false
+		// make sure L.DomUtil.getPosition returns the final position value after animation
+		this._el._leaflet_pos = this._newPos;
+
+		clearInterval(this._stepTimer);
+
+		this.fire('step').fire('end');
+	}
+
+});
+
+
+/*
+ * Extends L.Map to handle panning animations.
+ */
+
+L.Map.include({
+
+	setView: function (center, zoom, options) {
+
+		zoom = zoom === undefined ? this._zoom : this._limitZoom(zoom);
+		center = this._limitCenter(L.latLng(center), zoom, this.options.maxBounds);
+		options = options || {};
+
+		if (this._panAnim) {
+			this._panAnim.stop();
+		}
+
+		if (this._loaded && !options.reset && options !== true) {
+
+			if (options.animate !== undefined) {
+				options.zoom = L.extend({animate: options.animate}, options.zoom);
+				options.pan = L.extend({animate: options.animate}, options.pan);
+			}
+
+			// try animating pan or zoom
+			var animated = (this._zoom !== zoom) ?
+				this._tryAnimatedZoom && this._tryAnimatedZoom(center, zoom, options.zoom) :
+				this._tryAnimatedPan(center, options.pan);
+
+			if (animated) {
+				// prevent resize handler call, the view will refresh after animation anyway
+				clearTimeout(this._sizeTimer);
+				return this;
+			}
+		}
+
+		// animation didn't start, just reset the map view
+		this._resetView(center, zoom);
+
+		return this;
+	},
+
+	panBy: function (offset, options) {
+		offset = L.point(offset).round();
+		options = options || {};
+
+		if (!offset.x && !offset.y) {
+			return this;
+		}
+
+		if (!this._panAnim) {
+			this._panAnim = new L.PosAnimation();
+
+			this._panAnim.on({
+				'step': this._onPanTransitionStep,
+				'end': this._onPanTransitionEnd
+			}, this);
+		}
+
+		// don't fire movestart if animating inertia
+		if (!options.noMoveStart) {
+			this.fire('movestart');
+		}
+
+		// animate pan unless animate: false specified
+		if (options.animate !== false) {
+			L.DomUtil.addClass(this._mapPane, 'leaflet-pan-anim');
+
+			var newPos = this._getMapPanePos().subtract(offset);
+			this._panAnim.run(this._mapPane, newPos, options.duration || 0.25, options.easeLinearity);
+		} else {
+			this._rawPanBy(offset);
+			this.fire('move').fire('moveend');
+		}
+
+		return this;
+	},
+
+	_onPanTransitionStep: function () {
+		this.fire('move');
+	},
+
+	_onPanTransitionEnd: function () {
+		L.DomUtil.removeClass(this._mapPane, 'leaflet-pan-anim');
+		this.fire('moveend');
+	},
+
+	_tryAnimatedPan: function (center, options) {
+		// difference between the new and current centers in pixels
+		var offset = this._getCenterOffset(center)._floor();
+
+		// don't animate too far unless animate: true specified in options
+		if ((options && options.animate) !== true && !this.getSize().contains(offset)) { return false; }
+
+		this.panBy(offset, options);
+
+		return true;
+	}
+});
+
+
+/*
+ * L.PosAnimation fallback implementation that powers Leaflet pan animations
+ * in browsers that don't support CSS3 Transitions.
+ */
+
+L.PosAnimation = L.DomUtil.TRANSITION ? L.PosAnimation : L.PosAnimation.extend({
+
+	run: function (el, newPos, duration, easeLinearity) { // (HTMLElement, Point[, Number, Number])
+		this.stop();
+
+		this._el = el;
+		this._inProgress = true;
+		this._duration = duration || 0.25;
+		this._easeOutPower = 1 / Math.max(easeLinearity || 0.5, 0.2);
+
+		this._startPos = L.DomUtil.getPosition(el);
+		this._offset = newPos.subtract(this._startPos);
+		this._startTime = +new Date();
+
+		this.fire('start');
+
+		this._animate();
+	},
+
+	stop: function () {
+		if (!this._inProgress) { return; }
+
+		this._step();
+		this._complete();
+	},
+
+	_animate: function () {
+		// animation loop
+		this._animId = L.Util.requestAnimFrame(this._animate, this);
+		this._step();
+	},
+
+	_step: function () {
+		var elapsed = (+new Date()) - this._startTime,
+		    duration = this._duration * 1000;
+
+		if (elapsed < duration) {
+			this._runFrame(this._easeOut(elapsed / duration));
+		} else {
+			this._runFrame(1);
+			this._complete();
+		}
+	},
+
+	_runFrame: function (progress) {
+		var pos = this._startPos.add(this._offset.multiplyBy(progress));
+		L.DomUtil.setPosition(this._el, pos);
+
+		this.fire('step');
+	},
+
+	_complete: function () {
+		L.Util.cancelAnimFrame(this._animId);
+
+		this._inProgress = false;
+		this.fire('end');
+	},
+
+	_easeOut: function (t) {
+		return 1 - Math.pow(1 - t, this._easeOutPower);
+	}
+});
+
+
+/*
+ * Extends L.Map to handle zoom animations.
+ */
+
+L.Map.mergeOptions({
+	zoomAnimation: true,
+	zoomAnimationThreshold: 4
+});
+
+if (L.DomUtil.TRANSITION) {
+
+	L.Map.addInitHook(function () {
+		// don't animate on browsers without hardware-accelerated transitions or old Android/Opera
+		this._zoomAnimated = this.options.zoomAnimation && L.DomUtil.TRANSITION &&
+				L.Browser.any3d && !L.Browser.android23 && !L.Browser.mobileOpera;
+
+		// zoom transitions run with the same duration for all layers, so if one of transitionend events
+		// happens after starting zoom animation (propagating to the map pane), we know that it ended globally
+		if (this._zoomAnimated) {
+			L.DomEvent.on(this._mapPane, L.DomUtil.TRANSITION_END, this._catchTransitionEnd, this);
+		}
+	});
+}
+
+L.Map.include(!L.DomUtil.TRANSITION ? {} : {
+
+	_catchTransitionEnd: function (e) {
+		if (this._animatingZoom && e.propertyName.indexOf('transform') >= 0) {
+			this._onZoomTransitionEnd();
+		}
+	},
+
+	_nothingToAnimate: function () {
+		return !this._container.getElementsByClassName('leaflet-zoom-animated').length;
+	},
+
+	_tryAnimatedZoom: function (center, zoom, options) {
+
+		if (this._animatingZoom) { return true; }
+
+		options = options || {};
+
+		// don't animate if disabled, not supported or zoom difference is too large
+		if (!this._zoomAnimated || options.animate === false || this._nothingToAnimate() ||
+		        Math.abs(zoom - this._zoom) > this.options.zoomAnimationThreshold) { return false; }
+
+		// offset is the pixel coords of the zoom origin relative to the current center
+		var scale = this.getZoomScale(zoom),
+		    offset = this._getCenterOffset(center)._divideBy(1 - 1 / scale),
+			origin = this._getCenterLayerPoint()._add(offset);
+
+		// don't animate if the zoom origin isn't within one screen from the current center, unless forced
+		if (options.animate !== true && !this.getSize().contains(offset)) { return false; }
+
+		this
+		    .fire('movestart')
+		    .fire('zoomstart');
+
+		this._animateZoom(center, zoom, origin, scale, null, true);
+
+		return true;
+	},
+
+	_animateZoom: function (center, zoom, origin, scale, delta, backwards, forTouchZoom) {
+
+		if (!forTouchZoom) {
+			this._animatingZoom = true;
+		}
+
+		// put transform transition on all layers with leaflet-zoom-animated class
+		L.DomUtil.addClass(this._mapPane, 'leaflet-zoom-anim');
+
+		// remember what center/zoom to set after animation
+		this._animateToCenter = center;
+		this._animateToZoom = zoom;
+
+		// disable any dragging during animation
+		if (L.Draggable) {
+			L.Draggable._disabled = true;
+		}
+
+		L.Util.requestAnimFrame(function () {
+			this.fire('zoomanim', {
+				center: center,
+				zoom: zoom,
+				origin: origin,
+				scale: scale,
+				delta: delta,
+				backwards: backwards
+			});
+			// horrible hack to work around a Chrome bug https://github.com/Leaflet/Leaflet/issues/3689
+			setTimeout(L.bind(this._onZoomTransitionEnd, this), 250);
+		}, this);
+	},
+
+	_onZoomTransitionEnd: function () {
+		if (!this._animatingZoom) { return; }
+
+		this._animatingZoom = false;
+
+		L.DomUtil.removeClass(this._mapPane, 'leaflet-zoom-anim');
+
+		L.Util.requestAnimFrame(function () {
+			this._resetView(this._animateToCenter, this._animateToZoom, true, true);
+
+			if (L.Draggable) {
+				L.Draggable._disabled = false;
+			}
+		}, this);
+	}
+});
+
+
+/*
+	Zoom animation logic for L.TileLayer.
+*/
+
+L.TileLayer.include({
+	_animateZoom: function (e) {
+		if (!this._animating) {
+			this._animating = true;
+			this._prepareBgBuffer();
+		}
+
+		var bg = this._bgBuffer,
+		    transform = L.DomUtil.TRANSFORM,
+		    initialTransform = e.delta ? L.DomUtil.getTranslateString(e.delta) : bg.style[transform],
+		    scaleStr = L.DomUtil.getScaleString(e.scale, e.origin);
+
+		bg.style[transform] = e.backwards ?
+				scaleStr + ' ' + initialTransform :
+				initialTransform + ' ' + scaleStr;
+	},
+
+	_endZoomAnim: function () {
+		var front = this._tileContainer,
+		    bg = this._bgBuffer;
+
+		front.style.visibility = '';
+		front.parentNode.appendChild(front); // Bring to fore
+
+		// force reflow
+		L.Util.falseFn(bg.offsetWidth);
+
+		var zoom = this._map.getZoom();
+		if (zoom > this.options.maxZoom || zoom < this.options.minZoom) {
+			this._clearBgBuffer();
+		}
+
+		this._animating = false;
+	},
+
+	_clearBgBuffer: function () {
+		var map = this._map;
+
+		if (map && !map._animatingZoom && !map.touchZoom._zooming) {
+			this._bgBuffer.innerHTML = '';
+			this._bgBuffer.style[L.DomUtil.TRANSFORM] = '';
+		}
+	},
+
+	_prepareBgBuffer: function () {
+
+		var front = this._tileContainer,
+		    bg = this._bgBuffer;
+
+		// if foreground layer doesn't have many tiles but bg layer does,
+		// keep the existing bg layer and just zoom it some more
+
+		var bgLoaded = this._getLoadedTilesPercentage(bg),
+		    frontLoaded = this._getLoadedTilesPercentage(front);
+
+		if (bg && bgLoaded > 0.5 && frontLoaded < 0.5) {
+
+			front.style.visibility = 'hidden';
+			this._stopLoadingImages(front);
+			return;
+		}
+
+		// prepare the buffer to become the front tile pane
+		bg.style.visibility = 'hidden';
+		bg.style[L.DomUtil.TRANSFORM] = '';
+
+		// switch out the current layer to be the new bg layer (and vice-versa)
+		this._tileContainer = bg;
+		bg = this._bgBuffer = front;
+
+		this._stopLoadingImages(bg);
+
+		//prevent bg buffer from clearing right after zoom
+		clearTimeout(this._clearBgBufferTimer);
+	},
+
+	_getLoadedTilesPercentage: function (container) {
+		var tiles = container.getElementsByTagName('img'),
+		    i, len, count = 0;
+
+		for (i = 0, len = tiles.length; i < len; i++) {
+			if (tiles[i].complete) {
+				count++;
+			}
+		}
+		return count / len;
+	},
+
+	// stops loading all tiles in the background layer
+	_stopLoadingImages: function (container) {
+		var tiles = Array.prototype.slice.call(container.getElementsByTagName('img')),
+		    i, len, tile;
+
+		for (i = 0, len = tiles.length; i < len; i++) {
+			tile = tiles[i];
+
+			if (!tile.complete) {
+				tile.onload = L.Util.falseFn;
+				tile.onerror = L.Util.falseFn;
+				tile.src = L.Util.emptyImageUrl;
+
+				tile.parentNode.removeChild(tile);
+			}
+		}
+	}
+});
+
+
+/*
+ * Provides L.Map with convenient shortcuts for using browser geolocation features.
+ */
+
+L.Map.include({
+	_defaultLocateOptions: {
+		watch: false,
+		setView: false,
+		maxZoom: Infinity,
+		timeout: 10000,
+		maximumAge: 0,
+		enableHighAccuracy: false
+	},
+
+	locate: function (/*Object*/ options) {
+
+		options = this._locateOptions = L.extend(this._defaultLocateOptions, options);
+
+		if (!navigator.geolocation) {
+			this._handleGeolocationError({
+				code: 0,
+				message: 'Geolocation not supported.'
+			});
+			return this;
+		}
+
+		var onResponse = L.bind(this._handleGeolocationResponse, this),
+			onError = L.bind(this._handleGeolocationError, this);
+
+		if (options.watch) {
+			this._locationWatchId =
+			        navigator.geolocation.watchPosition(onResponse, onError, options);
+		} else {
+			navigator.geolocation.getCurrentPosition(onResponse, onError, options);
+		}
+		return this;
+	},
+
+	stopLocate: function () {
+		if (navigator.geolocation) {
+			navigator.geolocation.clearWatch(this._locationWatchId);
+		}
+		if (this._locateOptions) {
+			this._locateOptions.setView = false;
+		}
+		return this;
+	},
+
+	_handleGeolocationError: function (error) {
+		var c = error.code,
+		    message = error.message ||
+		            (c === 1 ? 'permission denied' :
+		            (c === 2 ? 'position unavailable' : 'timeout'));
+
+		if (this._locateOptions.setView && !this._loaded) {
+			this.fitWorld();
+		}
+
+		this.fire('locationerror', {
+			code: c,
+			message: 'Geolocation error: ' + message + '.'
+		});
+	},
+
+	_handleGeolocationResponse: function (pos) {
+		var lat = pos.coords.latitude,
+		    lng = pos.coords.longitude,
+		    latlng = new L.LatLng(lat, lng),
+
+		    latAccuracy = 180 * pos.coords.accuracy / 40075017,
+		    lngAccuracy = latAccuracy / Math.cos(L.LatLng.DEG_TO_RAD * lat),
+
+		    bounds = L.latLngBounds(
+		            [lat - latAccuracy, lng - lngAccuracy],
+		            [lat + latAccuracy, lng + lngAccuracy]),
+
+		    options = this._locateOptions;
+
+		if (options.setView) {
+			var zoom = Math.min(this.getBoundsZoom(bounds), options.maxZoom);
+			this.setView(latlng, zoom);
+		}
+
+		var data = {
+			latlng: latlng,
+			bounds: bounds,
+			timestamp: pos.timestamp
+		};
+
+		for (var i in pos.coords) {
+			if (typeof pos.coords[i] === 'number') {
+				data[i] = pos.coords[i];
+			}
+		}
+
+		this.fire('locationfound', data);
+	}
+});
+
+
+}(window, document));
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/livinglots.parcels/src/index.js":[function(require,module,exports){
 //
 // Add parcel functionality to a leaflet map
@@ -29779,7 +43895,2524 @@ module.exports = {
     setView: setView
 };
 
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-tilelayer-vector":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-tilelayer-vector/src/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js":[function(require,module,exports){
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js","leaflet-tilelayer-vector":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-tilelayer-vector/src/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map.js":[function(require,module,exports){
+arguments[4]["/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/node_modules/source-map/lib/source-map.js"][0].apply(exports,arguments)
+},{"./source-map/source-map-consumer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-map-consumer.js","./source-map/source-map-generator":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-map-generator.js","./source-map/source-node":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-node.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/array-set.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var util = require('./util');
+
+  /**
+   * A data structure which is a combination of an array and a set. Adding a new
+   * member is O(1), testing for membership is O(1), and finding the index of an
+   * element is O(1). Removing elements from the set is not supported. Only
+   * strings are supported for membership.
+   */
+  function ArraySet() {
+    this._array = [];
+    this._set = {};
+  }
+
+  /**
+   * Static method for creating ArraySet instances from an existing array.
+   */
+  ArraySet.fromArray = function ArraySet_fromArray(aArray, aAllowDuplicates) {
+    var set = new ArraySet();
+    for (var i = 0, len = aArray.length; i < len; i++) {
+      set.add(aArray[i], aAllowDuplicates);
+    }
+    return set;
+  };
+
+  /**
+   * Return how many unique items are in this ArraySet. If duplicates have been
+   * added, than those do not count towards the size.
+   *
+   * @returns Number
+   */
+  ArraySet.prototype.size = function ArraySet_size() {
+    return Object.getOwnPropertyNames(this._set).length;
+  };
+
+  /**
+   * Add the given string to this set.
+   *
+   * @param String aStr
+   */
+  ArraySet.prototype.add = function ArraySet_add(aStr, aAllowDuplicates) {
+    var isDuplicate = this.has(aStr);
+    var idx = this._array.length;
+    if (!isDuplicate || aAllowDuplicates) {
+      this._array.push(aStr);
+    }
+    if (!isDuplicate) {
+      this._set[util.toSetString(aStr)] = idx;
+    }
+  };
+
+  /**
+   * Is the given string a member of this set?
+   *
+   * @param String aStr
+   */
+  ArraySet.prototype.has = function ArraySet_has(aStr) {
+    return Object.prototype.hasOwnProperty.call(this._set,
+                                                util.toSetString(aStr));
+  };
+
+  /**
+   * What is the index of the given string in the array?
+   *
+   * @param String aStr
+   */
+  ArraySet.prototype.indexOf = function ArraySet_indexOf(aStr) {
+    if (this.has(aStr)) {
+      return this._set[util.toSetString(aStr)];
+    }
+    throw new Error('"' + aStr + '" is not in the set.');
+  };
+
+  /**
+   * What is the element at the given index?
+   *
+   * @param Number aIdx
+   */
+  ArraySet.prototype.at = function ArraySet_at(aIdx) {
+    if (aIdx >= 0 && aIdx < this._array.length) {
+      return this._array[aIdx];
+    }
+    throw new Error('No element indexed by ' + aIdx);
+  };
+
+  /**
+   * Returns the array representation of this set (which has the proper indices
+   * indicated by indexOf). Note that this is a copy of the internal array used
+   * for storing the members so that no one can mess with internal state.
+   */
+  ArraySet.prototype.toArray = function ArraySet_toArray() {
+    return this._array.slice();
+  };
+
+  exports.ArraySet = ArraySet;
+
+});
+
+},{"./util":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/base64-vlq.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ *
+ * Based on the Base 64 VLQ implementation in Closure Compiler:
+ * https://code.google.com/p/closure-compiler/source/browse/trunk/src/com/google/debugging/sourcemap/Base64VLQ.java
+ *
+ * Copyright 2011 The Closure Compiler Authors. All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above
+ *    copyright notice, this list of conditions and the following
+ *    disclaimer in the documentation and/or other materials provided
+ *    with the distribution.
+ *  * Neither the name of Google Inc. nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var base64 = require('./base64');
+
+  // A single base 64 digit can contain 6 bits of data. For the base 64 variable
+  // length quantities we use in the source map spec, the first bit is the sign,
+  // the next four bits are the actual value, and the 6th bit is the
+  // continuation bit. The continuation bit tells us whether there are more
+  // digits in this value following this digit.
+  //
+  //   Continuation
+  //   |    Sign
+  //   |    |
+  //   V    V
+  //   101011
+
+  var VLQ_BASE_SHIFT = 5;
+
+  // binary: 100000
+  var VLQ_BASE = 1 << VLQ_BASE_SHIFT;
+
+  // binary: 011111
+  var VLQ_BASE_MASK = VLQ_BASE - 1;
+
+  // binary: 100000
+  var VLQ_CONTINUATION_BIT = VLQ_BASE;
+
+  /**
+   * Converts from a two-complement value to a value where the sign bit is
+   * placed in the least significant bit.  For example, as decimals:
+   *   1 becomes 2 (10 binary), -1 becomes 3 (11 binary)
+   *   2 becomes 4 (100 binary), -2 becomes 5 (101 binary)
+   */
+  function toVLQSigned(aValue) {
+    return aValue < 0
+      ? ((-aValue) << 1) + 1
+      : (aValue << 1) + 0;
+  }
+
+  /**
+   * Converts to a two-complement value from a value where the sign bit is
+   * placed in the least significant bit.  For example, as decimals:
+   *   2 (10 binary) becomes 1, 3 (11 binary) becomes -1
+   *   4 (100 binary) becomes 2, 5 (101 binary) becomes -2
+   */
+  function fromVLQSigned(aValue) {
+    var isNegative = (aValue & 1) === 1;
+    var shifted = aValue >> 1;
+    return isNegative
+      ? -shifted
+      : shifted;
+  }
+
+  /**
+   * Returns the base 64 VLQ encoded value.
+   */
+  exports.encode = function base64VLQ_encode(aValue) {
+    var encoded = "";
+    var digit;
+
+    var vlq = toVLQSigned(aValue);
+
+    do {
+      digit = vlq & VLQ_BASE_MASK;
+      vlq >>>= VLQ_BASE_SHIFT;
+      if (vlq > 0) {
+        // There are still more digits in this value, so we must make sure the
+        // continuation bit is marked.
+        digit |= VLQ_CONTINUATION_BIT;
+      }
+      encoded += base64.encode(digit);
+    } while (vlq > 0);
+
+    return encoded;
+  };
+
+  /**
+   * Decodes the next base 64 VLQ value from the given string and returns the
+   * value and the rest of the string via the out parameter.
+   */
+  exports.decode = function base64VLQ_decode(aStr, aIndex, aOutParam) {
+    var strLen = aStr.length;
+    var result = 0;
+    var shift = 0;
+    var continuation, digit;
+
+    do {
+      if (aIndex >= strLen) {
+        throw new Error("Expected more digits in base 64 VLQ value.");
+      }
+
+      digit = base64.decode(aStr.charCodeAt(aIndex++));
+      if (digit === -1) {
+        throw new Error("Invalid base64 digit: " + aStr.charAt(aIndex - 1));
+      }
+
+      continuation = !!(digit & VLQ_CONTINUATION_BIT);
+      digit &= VLQ_BASE_MASK;
+      result = result + (digit << shift);
+      shift += VLQ_BASE_SHIFT;
+    } while (continuation);
+
+    aOutParam.value = fromVLQSigned(result);
+    aOutParam.rest = aIndex;
+  };
+
+});
+
+},{"./base64":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/base64.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/base64.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var intToCharMap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
+
+  /**
+   * Encode an integer in the range of 0 to 63 to a single base 64 digit.
+   */
+  exports.encode = function (number) {
+    if (0 <= number && number < intToCharMap.length) {
+      return intToCharMap[number];
+    }
+    throw new TypeError("Must be between 0 and 63: " + aNumber);
+  };
+
+  /**
+   * Decode a single base 64 character code digit to an integer. Returns -1 on
+   * failure.
+   */
+  exports.decode = function (charCode) {
+    var bigA = 65;     // 'A'
+    var bigZ = 90;     // 'Z'
+
+    var littleA = 97;  // 'a'
+    var littleZ = 122; // 'z'
+
+    var zero = 48;     // '0'
+    var nine = 57;     // '9'
+
+    var plus = 43;     // '+'
+    var slash = 47;    // '/'
+
+    var littleOffset = 26;
+    var numberOffset = 52;
+
+    // 0 - 25: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    if (bigA <= charCode && charCode <= bigZ) {
+      return (charCode - bigA);
+    }
+
+    // 26 - 51: abcdefghijklmnopqrstuvwxyz
+    if (littleA <= charCode && charCode <= littleZ) {
+      return (charCode - littleA + littleOffset);
+    }
+
+    // 52 - 61: 0123456789
+    if (zero <= charCode && charCode <= nine) {
+      return (charCode - zero + numberOffset);
+    }
+
+    // 62: +
+    if (charCode == plus) {
+      return 62;
+    }
+
+    // 63: /
+    if (charCode == slash) {
+      return 63;
+    }
+
+    // Invalid base64 digit.
+    return -1;
+  };
+
+});
+
+},{"amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/binary-search.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  exports.GREATEST_LOWER_BOUND = 1;
+  exports.LEAST_UPPER_BOUND = 2;
+
+  /**
+   * Recursive implementation of binary search.
+   *
+   * @param aLow Indices here and lower do not contain the needle.
+   * @param aHigh Indices here and higher do not contain the needle.
+   * @param aNeedle The element being searched for.
+   * @param aHaystack The non-empty array being searched.
+   * @param aCompare Function which takes two elements and returns -1, 0, or 1.
+   * @param aBias Either 'binarySearch.GREATEST_LOWER_BOUND' or
+   *     'binarySearch.LEAST_UPPER_BOUND'. Specifies whether to return the
+   *     closest element that is smaller than or greater than the one we are
+   *     searching for, respectively, if the exact element cannot be found.
+   */
+  function recursiveSearch(aLow, aHigh, aNeedle, aHaystack, aCompare, aBias) {
+    // This function terminates when one of the following is true:
+    //
+    //   1. We find the exact element we are looking for.
+    //
+    //   2. We did not find the exact element, but we can return the index of
+    //      the next-closest element.
+    //
+    //   3. We did not find the exact element, and there is no next-closest
+    //      element than the one we are searching for, so we return -1.
+    var mid = Math.floor((aHigh - aLow) / 2) + aLow;
+    var cmp = aCompare(aNeedle, aHaystack[mid], true);
+    if (cmp === 0) {
+      // Found the element we are looking for.
+      return mid;
+    }
+    else if (cmp > 0) {
+      // Our needle is greater than aHaystack[mid].
+      if (aHigh - mid > 1) {
+        // The element is in the upper half.
+        return recursiveSearch(mid, aHigh, aNeedle, aHaystack, aCompare, aBias);
+      }
+
+      // The exact needle element was not found in this haystack. Determine if
+      // we are in termination case (3) or (2) and return the appropriate thing.
+      if (aBias == exports.LEAST_UPPER_BOUND) {
+        return aHigh < aHaystack.length ? aHigh : -1;
+      } else {
+        return mid;
+      }
+    }
+    else {
+      // Our needle is less than aHaystack[mid].
+      if (mid - aLow > 1) {
+        // The element is in the lower half.
+        return recursiveSearch(aLow, mid, aNeedle, aHaystack, aCompare, aBias);
+      }
+
+      // we are in termination case (3) or (2) and return the appropriate thing.
+      if (aBias == exports.LEAST_UPPER_BOUND) {
+        return mid;
+      } else {
+        return aLow < 0 ? -1 : aLow;
+      }
+    }
+  }
+
+  /**
+   * This is an implementation of binary search which will always try and return
+   * the index of the closest element if there is no exact hit. This is because
+   * mappings between original and generated line/col pairs are single points,
+   * and there is an implicit region between each of them, so a miss just means
+   * that you aren't on the very start of a region.
+   *
+   * @param aNeedle The element you are looking for.
+   * @param aHaystack The array that is being searched.
+   * @param aCompare A function which takes the needle and an element in the
+   *     array and returns -1, 0, or 1 depending on whether the needle is less
+   *     than, equal to, or greater than the element, respectively.
+   * @param aBias Either 'binarySearch.GREATEST_LOWER_BOUND' or
+   *     'binarySearch.LEAST_UPPER_BOUND'. Specifies whether to return the
+   *     closest element that is smaller than or greater than the one we are
+   *     searching for, respectively, if the exact element cannot be found.
+   *     Defaults to 'binarySearch.GREATEST_LOWER_BOUND'.
+   */
+  exports.search = function search(aNeedle, aHaystack, aCompare, aBias) {
+    if (aHaystack.length === 0) {
+      return -1;
+    }
+
+    var index = recursiveSearch(-1, aHaystack.length, aNeedle, aHaystack,
+                                aCompare, aBias || exports.GREATEST_LOWER_BOUND);
+    if (index < 0) {
+      return -1;
+    }
+
+    // We have found either the exact element, or the next-closest element than
+    // the one we are searching for. However, there may be more than one such
+    // element. Make sure we always return the smallest of these.
+    while (index - 1 >= 0) {
+      if (aCompare(aHaystack[index], aHaystack[index - 1], true) !== 0) {
+        break;
+      }
+      --index;
+    }
+
+    return index;
+  };
+
+});
+
+},{"amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/mapping-list.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2014 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var util = require('./util');
+
+  /**
+   * Determine whether mappingB is after mappingA with respect to generated
+   * position.
+   */
+  function generatedPositionAfter(mappingA, mappingB) {
+    // Optimized for most common case
+    var lineA = mappingA.generatedLine;
+    var lineB = mappingB.generatedLine;
+    var columnA = mappingA.generatedColumn;
+    var columnB = mappingB.generatedColumn;
+    return lineB > lineA || lineB == lineA && columnB >= columnA ||
+           util.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
+  }
+
+  /**
+   * A data structure to provide a sorted view of accumulated mappings in a
+   * performance conscious manner. It trades a neglibable overhead in general
+   * case for a large speedup in case of mappings being added in order.
+   */
+  function MappingList() {
+    this._array = [];
+    this._sorted = true;
+    // Serves as infimum
+    this._last = {generatedLine: -1, generatedColumn: 0};
+  }
+
+  /**
+   * Iterate through internal items. This method takes the same arguments that
+   * `Array.prototype.forEach` takes.
+   *
+   * NOTE: The order of the mappings is NOT guaranteed.
+   */
+  MappingList.prototype.unsortedForEach =
+    function MappingList_forEach(aCallback, aThisArg) {
+      this._array.forEach(aCallback, aThisArg);
+    };
+
+  /**
+   * Add the given source mapping.
+   *
+   * @param Object aMapping
+   */
+  MappingList.prototype.add = function MappingList_add(aMapping) {
+    var mapping;
+    if (generatedPositionAfter(this._last, aMapping)) {
+      this._last = aMapping;
+      this._array.push(aMapping);
+    } else {
+      this._sorted = false;
+      this._array.push(aMapping);
+    }
+  };
+
+  /**
+   * Returns the flat, sorted array of mappings. The mappings are sorted by
+   * generated position.
+   *
+   * WARNING: This method returns internal data without copying, for
+   * performance. The return value must NOT be mutated, and should be treated as
+   * an immutable borrow. If you want to take ownership, you must make your own
+   * copy.
+   */
+  MappingList.prototype.toArray = function MappingList_toArray() {
+    if (!this._sorted) {
+      this._array.sort(util.compareByGeneratedPositionsInflated);
+      this._sorted = true;
+    }
+    return this._array;
+  };
+
+  exports.MappingList = MappingList;
+
+});
+
+},{"./util":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/quick-sort.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  // It turns out that some (most?) JavaScript engines don't self-host
+  // `Array.prototype.sort`. This makes sense because C++ will likely remain
+  // faster than JS when doing raw CPU-intensive sorting. However, when using a
+  // custom comparator function, calling back and forth between the VM's C++ and
+  // JIT'd JS is rather slow *and* loses JIT type information, resulting in
+  // worse generated code for the comparator function than would be optimal. In
+  // fact, when sorting with a comparator, these costs outweigh the benefits of
+  // sorting in C++. By using our own JS-implemented Quick Sort (below), we get
+  // a ~3500ms mean speed-up in `bench/bench.html`.
+
+  /**
+   * Swap the elements indexed by `x` and `y` in the array `ary`.
+   *
+   * @param {Array} ary
+   *        The array.
+   * @param {Number} x
+   *        The index of the first item.
+   * @param {Number} y
+   *        The index of the second item.
+   */
+  function swap(ary, x, y) {
+    var temp = ary[x];
+    ary[x] = ary[y];
+    ary[y] = temp;
+  }
+
+  /**
+   * Returns a random integer within the range `low .. high` inclusive.
+   *
+   * @param {Number} low
+   *        The lower bound on the range.
+   * @param {Number} high
+   *        The upper bound on the range.
+   */
+  function randomIntInRange(low, high) {
+    return Math.round(low + (Math.random() * (high - low)));
+  }
+
+  /**
+   * The Quick Sort algorithm.
+   *
+   * @param {Array} ary
+   *        An array to sort.
+   * @param {function} comparator
+   *        Function to use to compare two items.
+   * @param {Number} p
+   *        Start index of the array
+   * @param {Number} r
+   *        End index of the array
+   */
+  function doQuickSort(ary, comparator, p, r) {
+    // If our lower bound is less than our upper bound, we (1) partition the
+    // array into two pieces and (2) recurse on each half. If it is not, this is
+    // the empty array and our base case.
+
+    if (p < r) {
+      // (1) Partitioning.
+      //
+      // The partitioning chooses a pivot between `p` and `r` and moves all
+      // elements that are less than or equal to the pivot to the before it, and
+      // all the elements that are greater than it after it. The effect is that
+      // once partition is done, the pivot is in the exact place it will be when
+      // the array is put in sorted order, and it will not need to be moved
+      // again. This runs in O(n) time.
+
+      // Always choose a random pivot so that an input array which is reverse
+      // sorted does not cause O(n^2) running time.
+      var pivotIndex = randomIntInRange(p, r);
+      var i = p - 1;
+
+      swap(ary, pivotIndex, r);
+      var pivot = ary[r];
+
+      // Immediately after `j` is incremented in this loop, the following hold
+      // true:
+      //
+      //   * Every element in `ary[p .. i]` is less than or equal to the pivot.
+      //
+      //   * Every element in `ary[i+1 .. j-1]` is greater than the pivot.
+      for (var j = p; j < r; j++) {
+        if (comparator(ary[j], pivot) <= 0) {
+          i += 1;
+          swap(ary, i, j);
+        }
+      }
+
+      swap(ary, i + 1, j);
+      var q = i + 1;
+
+      // (2) Recurse on each half.
+
+      doQuickSort(ary, comparator, p, q - 1);
+      doQuickSort(ary, comparator, q + 1, r);
+    }
+  }
+
+  /**
+   * Sort the given array in-place with the given comparator function.
+   *
+   * @param {Array} ary
+   *        An array to sort.
+   * @param {function} comparator
+   *        Function to use to compare two items.
+   */
+  exports.quickSort = function (ary, comparator) {
+    doQuickSort(ary, comparator, 0, ary.length - 1);
+  };
+
+});
+
+},{"amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-map-consumer.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var util = require('./util');
+  var binarySearch = require('./binary-search');
+  var ArraySet = require('./array-set').ArraySet;
+  var base64VLQ = require('./base64-vlq');
+  var quickSort = require('./quick-sort').quickSort;
+
+  function SourceMapConsumer(aSourceMap) {
+    var sourceMap = aSourceMap;
+    if (typeof aSourceMap === 'string') {
+      sourceMap = JSON.parse(aSourceMap.replace(/^\)\]\}'/, ''));
+    }
+
+    return sourceMap.sections != null
+      ? new IndexedSourceMapConsumer(sourceMap)
+      : new BasicSourceMapConsumer(sourceMap);
+  }
+
+  SourceMapConsumer.fromSourceMap = function(aSourceMap) {
+    return BasicSourceMapConsumer.fromSourceMap(aSourceMap);
+  }
+
+  /**
+   * The version of the source mapping spec that we are consuming.
+   */
+  SourceMapConsumer.prototype._version = 3;
+
+  // `__generatedMappings` and `__originalMappings` are arrays that hold the
+  // parsed mapping coordinates from the source map's "mappings" attribute. They
+  // are lazily instantiated, accessed via the `_generatedMappings` and
+  // `_originalMappings` getters respectively, and we only parse the mappings
+  // and create these arrays once queried for a source location. We jump through
+  // these hoops because there can be many thousands of mappings, and parsing
+  // them is expensive, so we only want to do it if we must.
+  //
+  // Each object in the arrays is of the form:
+  //
+  //     {
+  //       generatedLine: The line number in the generated code,
+  //       generatedColumn: The column number in the generated code,
+  //       source: The path to the original source file that generated this
+  //               chunk of code,
+  //       originalLine: The line number in the original source that
+  //                     corresponds to this chunk of generated code,
+  //       originalColumn: The column number in the original source that
+  //                       corresponds to this chunk of generated code,
+  //       name: The name of the original symbol which generated this chunk of
+  //             code.
+  //     }
+  //
+  // All properties except for `generatedLine` and `generatedColumn` can be
+  // `null`.
+  //
+  // `_generatedMappings` is ordered by the generated positions.
+  //
+  // `_originalMappings` is ordered by the original positions.
+
+  SourceMapConsumer.prototype.__generatedMappings = null;
+  Object.defineProperty(SourceMapConsumer.prototype, '_generatedMappings', {
+    get: function () {
+      if (!this.__generatedMappings) {
+        this._parseMappings(this._mappings, this.sourceRoot);
+      }
+
+      return this.__generatedMappings;
+    }
+  });
+
+  SourceMapConsumer.prototype.__originalMappings = null;
+  Object.defineProperty(SourceMapConsumer.prototype, '_originalMappings', {
+    get: function () {
+      if (!this.__originalMappings) {
+        this._parseMappings(this._mappings, this.sourceRoot);
+      }
+
+      return this.__originalMappings;
+    }
+  });
+
+  SourceMapConsumer.prototype._charIsMappingSeparator =
+    function SourceMapConsumer_charIsMappingSeparator(aStr, index) {
+      var c = aStr.charAt(index);
+      return c === ";" || c === ",";
+    };
+
+  /**
+   * Parse the mappings in a string in to a data structure which we can easily
+   * query (the ordered arrays in the `this.__generatedMappings` and
+   * `this.__originalMappings` properties).
+   */
+  SourceMapConsumer.prototype._parseMappings =
+    function SourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      throw new Error("Subclasses must implement _parseMappings");
+    };
+
+  SourceMapConsumer.GENERATED_ORDER = 1;
+  SourceMapConsumer.ORIGINAL_ORDER = 2;
+
+  SourceMapConsumer.GREATEST_LOWER_BOUND = 1;
+  SourceMapConsumer.LEAST_UPPER_BOUND = 2;
+
+  /**
+   * Iterate over each mapping between an original source/line/column and a
+   * generated line/column in this source map.
+   *
+   * @param Function aCallback
+   *        The function that is called with each mapping.
+   * @param Object aContext
+   *        Optional. If specified, this object will be the value of `this` every
+   *        time that `aCallback` is called.
+   * @param aOrder
+   *        Either `SourceMapConsumer.GENERATED_ORDER` or
+   *        `SourceMapConsumer.ORIGINAL_ORDER`. Specifies whether you want to
+   *        iterate over the mappings sorted by the generated file's line/column
+   *        order or the original's source/line/column order, respectively. Defaults to
+   *        `SourceMapConsumer.GENERATED_ORDER`.
+   */
+  SourceMapConsumer.prototype.eachMapping =
+    function SourceMapConsumer_eachMapping(aCallback, aContext, aOrder) {
+      var context = aContext || null;
+      var order = aOrder || SourceMapConsumer.GENERATED_ORDER;
+
+      var mappings;
+      switch (order) {
+      case SourceMapConsumer.GENERATED_ORDER:
+        mappings = this._generatedMappings;
+        break;
+      case SourceMapConsumer.ORIGINAL_ORDER:
+        mappings = this._originalMappings;
+        break;
+      default:
+        throw new Error("Unknown order of iteration.");
+      }
+
+      var sourceRoot = this.sourceRoot;
+      mappings.map(function (mapping) {
+        var source = mapping.source === null ? null : this._sources.at(mapping.source);
+        if (source != null && sourceRoot != null) {
+          source = util.join(sourceRoot, source);
+        }
+        return {
+          source: source,
+          generatedLine: mapping.generatedLine,
+          generatedColumn: mapping.generatedColumn,
+          originalLine: mapping.originalLine,
+          originalColumn: mapping.originalColumn,
+          name: mapping.name === null ? null : this._names.at(mapping.name)
+        };
+      }, this).forEach(aCallback, context);
+    };
+
+  /**
+   * Returns all generated line and column information for the original source,
+   * line, and column provided. If no column is provided, returns all mappings
+   * corresponding to a either the line we are searching for or the next
+   * closest line that has any mappings. Otherwise, returns all mappings
+   * corresponding to the given line and either the column we are searching for
+   * or the next closest column that has any offsets.
+   *
+   * The only argument is an object with the following properties:
+   *
+   *   - source: The filename of the original source.
+   *   - line: The line number in the original source.
+   *   - column: Optional. the column number in the original source.
+   *
+   * and an array of objects is returned, each with the following properties:
+   *
+   *   - line: The line number in the generated source, or null.
+   *   - column: The column number in the generated source, or null.
+   */
+  SourceMapConsumer.prototype.allGeneratedPositionsFor =
+    function SourceMapConsumer_allGeneratedPositionsFor(aArgs) {
+      var line = util.getArg(aArgs, 'line');
+
+      // When there is no exact match, BasicSourceMapConsumer.prototype._findMapping
+      // returns the index of the closest mapping less than the needle. By
+      // setting needle.originalColumn to 0, we thus find the last mapping for
+      // the given line, provided such a mapping exists.
+      var needle = {
+        source: util.getArg(aArgs, 'source'),
+        originalLine: line,
+        originalColumn: util.getArg(aArgs, 'column', 0)
+      };
+
+      if (this.sourceRoot != null) {
+        needle.source = util.relative(this.sourceRoot, needle.source);
+      }
+      if (!this._sources.has(needle.source)) {
+        return [];
+      }
+      needle.source = this._sources.indexOf(needle.source);
+
+      var mappings = [];
+
+      var index = this._findMapping(needle,
+                                    this._originalMappings,
+                                    "originalLine",
+                                    "originalColumn",
+                                    util.compareByOriginalPositions,
+                                    binarySearch.LEAST_UPPER_BOUND);
+      if (index >= 0) {
+        var mapping = this._originalMappings[index];
+
+        if (aArgs.column === undefined) {
+          var originalLine = mapping.originalLine;
+
+          // Iterate until either we run out of mappings, or we run into
+          // a mapping for a different line than the one we found. Since
+          // mappings are sorted, this is guaranteed to find all mappings for
+          // the line we found.
+          while (mapping && mapping.originalLine === originalLine) {
+            mappings.push({
+              line: util.getArg(mapping, 'generatedLine', null),
+              column: util.getArg(mapping, 'generatedColumn', null),
+              lastColumn: util.getArg(mapping, 'lastGeneratedColumn', null)
+            });
+
+            mapping = this._originalMappings[++index];
+          }
+        } else {
+          var originalColumn = mapping.originalColumn;
+
+          // Iterate until either we run out of mappings, or we run into
+          // a mapping for a different line than the one we were searching for.
+          // Since mappings are sorted, this is guaranteed to find all mappings for
+          // the line we are searching for.
+          while (mapping &&
+                 mapping.originalLine === line &&
+                 mapping.originalColumn == originalColumn) {
+            mappings.push({
+              line: util.getArg(mapping, 'generatedLine', null),
+              column: util.getArg(mapping, 'generatedColumn', null),
+              lastColumn: util.getArg(mapping, 'lastGeneratedColumn', null)
+            });
+
+            mapping = this._originalMappings[++index];
+          }
+        }
+      }
+
+      return mappings;
+    };
+
+  exports.SourceMapConsumer = SourceMapConsumer;
+
+  /**
+   * A BasicSourceMapConsumer instance represents a parsed source map which we can
+   * query for information about the original file positions by giving it a file
+   * position in the generated source.
+   *
+   * The only parameter is the raw source map (either as a JSON string, or
+   * already parsed to an object). According to the spec, source maps have the
+   * following attributes:
+   *
+   *   - version: Which version of the source map spec this map is following.
+   *   - sources: An array of URLs to the original source files.
+   *   - names: An array of identifiers which can be referrenced by individual mappings.
+   *   - sourceRoot: Optional. The URL root from which all sources are relative.
+   *   - sourcesContent: Optional. An array of contents of the original source files.
+   *   - mappings: A string of base64 VLQs which contain the actual mappings.
+   *   - file: Optional. The generated file this source map is associated with.
+   *
+   * Here is an example source map, taken from the source map spec[0]:
+   *
+   *     {
+   *       version : 3,
+   *       file: "out.js",
+   *       sourceRoot : "",
+   *       sources: ["foo.js", "bar.js"],
+   *       names: ["src", "maps", "are", "fun"],
+   *       mappings: "AA,AB;;ABCDE;"
+   *     }
+   *
+   * [0]: https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit?pli=1#
+   */
+  function BasicSourceMapConsumer(aSourceMap) {
+    var sourceMap = aSourceMap;
+    if (typeof aSourceMap === 'string') {
+      sourceMap = JSON.parse(aSourceMap.replace(/^\)\]\}'/, ''));
+    }
+
+    var version = util.getArg(sourceMap, 'version');
+    var sources = util.getArg(sourceMap, 'sources');
+    // Sass 3.3 leaves out the 'names' array, so we deviate from the spec (which
+    // requires the array) to play nice here.
+    var names = util.getArg(sourceMap, 'names', []);
+    var sourceRoot = util.getArg(sourceMap, 'sourceRoot', null);
+    var sourcesContent = util.getArg(sourceMap, 'sourcesContent', null);
+    var mappings = util.getArg(sourceMap, 'mappings');
+    var file = util.getArg(sourceMap, 'file', null);
+
+    // Once again, Sass deviates from the spec and supplies the version as a
+    // string rather than a number, so we use loose equality checking here.
+    if (version != this._version) {
+      throw new Error('Unsupported version: ' + version);
+    }
+
+    // Some source maps produce relative source paths like "./foo.js" instead of
+    // "foo.js".  Normalize these first so that future comparisons will succeed.
+    // See bugzil.la/1090768.
+    sources = sources.map(util.normalize);
+
+    // Pass `true` below to allow duplicate names and sources. While source maps
+    // are intended to be compressed and deduplicated, the TypeScript compiler
+    // sometimes generates source maps with duplicates in them. See Github issue
+    // #72 and bugzil.la/889492.
+    this._names = ArraySet.fromArray(names, true);
+    this._sources = ArraySet.fromArray(sources, true);
+
+    this.sourceRoot = sourceRoot;
+    this.sourcesContent = sourcesContent;
+    this._mappings = mappings;
+    this.file = file;
+  }
+
+  BasicSourceMapConsumer.prototype = Object.create(SourceMapConsumer.prototype);
+  BasicSourceMapConsumer.prototype.consumer = SourceMapConsumer;
+
+  /**
+   * Create a BasicSourceMapConsumer from a SourceMapGenerator.
+   *
+   * @param SourceMapGenerator aSourceMap
+   *        The source map that will be consumed.
+   * @returns BasicSourceMapConsumer
+   */
+  BasicSourceMapConsumer.fromSourceMap =
+    function SourceMapConsumer_fromSourceMap(aSourceMap) {
+      var smc = Object.create(BasicSourceMapConsumer.prototype);
+
+      var names = smc._names = ArraySet.fromArray(aSourceMap._names.toArray(), true);
+      var sources = smc._sources = ArraySet.fromArray(aSourceMap._sources.toArray(), true);
+      smc.sourceRoot = aSourceMap._sourceRoot;
+      smc.sourcesContent = aSourceMap._generateSourcesContent(smc._sources.toArray(),
+                                                              smc.sourceRoot);
+      smc.file = aSourceMap._file;
+
+      // Because we are modifying the entries (by converting string sources and
+      // names to indices into the sources and names ArraySets), we have to make
+      // a copy of the entry or else bad things happen. Shared mutable state
+      // strikes again! See github issue #191.
+
+      var generatedMappings = aSourceMap._mappings.toArray().slice();
+      var destGeneratedMappings = smc.__generatedMappings = [];
+      var destOriginalMappings = smc.__originalMappings = [];
+
+      for (var i = 0, length = generatedMappings.length; i < length; i++) {
+        var srcMapping = generatedMappings[i];
+        var destMapping = new Mapping;
+        destMapping.generatedLine = srcMapping.generatedLine;
+        destMapping.generatedColumn = srcMapping.generatedColumn;
+
+        if (srcMapping.source) {
+          destMapping.source = sources.indexOf(srcMapping.source);
+          destMapping.originalLine = srcMapping.originalLine;
+          destMapping.originalColumn = srcMapping.originalColumn;
+
+          if (srcMapping.name) {
+            destMapping.name = names.indexOf(srcMapping.name);
+          }
+
+          destOriginalMappings.push(destMapping);
+        }
+
+        destGeneratedMappings.push(destMapping);
+      }
+
+      quickSort(smc.__originalMappings, util.compareByOriginalPositions);
+
+      return smc;
+    };
+
+  /**
+   * The version of the source mapping spec that we are consuming.
+   */
+  BasicSourceMapConsumer.prototype._version = 3;
+
+  /**
+   * The list of original sources.
+   */
+  Object.defineProperty(BasicSourceMapConsumer.prototype, 'sources', {
+    get: function () {
+      return this._sources.toArray().map(function (s) {
+        return this.sourceRoot != null ? util.join(this.sourceRoot, s) : s;
+      }, this);
+    }
+  });
+
+  /**
+   * Provide the JIT with a nice shape / hidden class.
+   */
+  function Mapping() {
+    this.generatedLine = 0;
+    this.generatedColumn = 0;
+    this.source = null;
+    this.originalLine = null;
+    this.originalColumn = null;
+    this.name = null;
+  }
+
+  /**
+   * Parse the mappings in a string in to a data structure which we can easily
+   * query (the ordered arrays in the `this.__generatedMappings` and
+   * `this.__originalMappings` properties).
+   */
+  BasicSourceMapConsumer.prototype._parseMappings =
+    function SourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      var generatedLine = 1;
+      var previousGeneratedColumn = 0;
+      var previousOriginalLine = 0;
+      var previousOriginalColumn = 0;
+      var previousSource = 0;
+      var previousName = 0;
+      var length = aStr.length;
+      var index = 0;
+      var cachedSegments = {};
+      var temp = {};
+      var originalMappings = [];
+      var generatedMappings = [];
+      var mapping, str, segment, end, value;
+
+      while (index < length) {
+        if (aStr.charAt(index) === ';') {
+          generatedLine++;
+          index++;
+          previousGeneratedColumn = 0;
+        }
+        else if (aStr.charAt(index) === ',') {
+          index++;
+        }
+        else {
+          mapping = new Mapping();
+          mapping.generatedLine = generatedLine;
+
+          // Because each offset is encoded relative to the previous one,
+          // many segments often have the same encoding. We can exploit this
+          // fact by caching the parsed variable length fields of each segment,
+          // allowing us to avoid a second parse if we encounter the same
+          // segment again.
+          for (end = index; end < length; end++) {
+            if (this._charIsMappingSeparator(aStr, end)) {
+              break;
+            }
+          }
+          str = aStr.slice(index, end);
+
+          segment = cachedSegments[str];
+          if (segment) {
+            index += str.length;
+          } else {
+            segment = [];
+            while (index < end) {
+              base64VLQ.decode(aStr, index, temp);
+              value = temp.value;
+              index = temp.rest;
+              segment.push(value);
+            }
+
+            if (segment.length === 2) {
+              throw new Error('Found a source, but no line and column');
+            }
+
+            if (segment.length === 3) {
+              throw new Error('Found a source and line, but no column');
+            }
+
+            cachedSegments[str] = segment;
+          }
+
+          // Generated column.
+          mapping.generatedColumn = previousGeneratedColumn + segment[0];
+          previousGeneratedColumn = mapping.generatedColumn;
+
+          if (segment.length > 1) {
+            // Original source.
+            mapping.source = previousSource + segment[1];
+            previousSource += segment[1];
+
+            // Original line.
+            mapping.originalLine = previousOriginalLine + segment[2];
+            previousOriginalLine = mapping.originalLine;
+            // Lines are stored 0-based
+            mapping.originalLine += 1;
+
+            // Original column.
+            mapping.originalColumn = previousOriginalColumn + segment[3];
+            previousOriginalColumn = mapping.originalColumn;
+
+            if (segment.length > 4) {
+              // Original name.
+              mapping.name = previousName + segment[4];
+              previousName += segment[4];
+            }
+          }
+
+          generatedMappings.push(mapping);
+          if (typeof mapping.originalLine === 'number') {
+            originalMappings.push(mapping);
+          }
+        }
+      }
+
+      quickSort(generatedMappings, util.compareByGeneratedPositionsDeflated);
+      this.__generatedMappings = generatedMappings;
+
+      quickSort(originalMappings, util.compareByOriginalPositions);
+      this.__originalMappings = originalMappings;
+    };
+
+  /**
+   * Find the mapping that best matches the hypothetical "needle" mapping that
+   * we are searching for in the given "haystack" of mappings.
+   */
+  BasicSourceMapConsumer.prototype._findMapping =
+    function SourceMapConsumer_findMapping(aNeedle, aMappings, aLineName,
+                                           aColumnName, aComparator, aBias) {
+      // To return the position we are searching for, we must first find the
+      // mapping for the given position and then return the opposite position it
+      // points to. Because the mappings are sorted, we can use binary search to
+      // find the best mapping.
+
+      if (aNeedle[aLineName] <= 0) {
+        throw new TypeError('Line must be greater than or equal to 1, got '
+                            + aNeedle[aLineName]);
+      }
+      if (aNeedle[aColumnName] < 0) {
+        throw new TypeError('Column must be greater than or equal to 0, got '
+                            + aNeedle[aColumnName]);
+      }
+
+      return binarySearch.search(aNeedle, aMappings, aComparator, aBias);
+    };
+
+  /**
+   * Compute the last column for each generated mapping. The last column is
+   * inclusive.
+   */
+  BasicSourceMapConsumer.prototype.computeColumnSpans =
+    function SourceMapConsumer_computeColumnSpans() {
+      for (var index = 0; index < this._generatedMappings.length; ++index) {
+        var mapping = this._generatedMappings[index];
+
+        // Mappings do not contain a field for the last generated columnt. We
+        // can come up with an optimistic estimate, however, by assuming that
+        // mappings are contiguous (i.e. given two consecutive mappings, the
+        // first mapping ends where the second one starts).
+        if (index + 1 < this._generatedMappings.length) {
+          var nextMapping = this._generatedMappings[index + 1];
+
+          if (mapping.generatedLine === nextMapping.generatedLine) {
+            mapping.lastGeneratedColumn = nextMapping.generatedColumn - 1;
+            continue;
+          }
+        }
+
+        // The last mapping for each line spans the entire line.
+        mapping.lastGeneratedColumn = Infinity;
+      }
+    };
+
+  /**
+   * Returns the original source, line, and column information for the generated
+   * source's line and column positions provided. The only argument is an object
+   * with the following properties:
+   *
+   *   - line: The line number in the generated source.
+   *   - column: The column number in the generated source.
+   *   - bias: Either 'SourceMapConsumer.GREATEST_LOWER_BOUND' or
+   *     'SourceMapConsumer.LEAST_UPPER_BOUND'. Specifies whether to return the
+   *     closest element that is smaller than or greater than the one we are
+   *     searching for, respectively, if the exact element cannot be found.
+   *     Defaults to 'SourceMapConsumer.GREATEST_LOWER_BOUND'.
+   *
+   * and an object is returned with the following properties:
+   *
+   *   - source: The original source file, or null.
+   *   - line: The line number in the original source, or null.
+   *   - column: The column number in the original source, or null.
+   *   - name: The original identifier, or null.
+   */
+  BasicSourceMapConsumer.prototype.originalPositionFor =
+    function SourceMapConsumer_originalPositionFor(aArgs) {
+      var needle = {
+        generatedLine: util.getArg(aArgs, 'line'),
+        generatedColumn: util.getArg(aArgs, 'column')
+      };
+
+      var index = this._findMapping(
+        needle,
+        this._generatedMappings,
+        "generatedLine",
+        "generatedColumn",
+        util.compareByGeneratedPositionsDeflated,
+        util.getArg(aArgs, 'bias', SourceMapConsumer.GREATEST_LOWER_BOUND)
+      );
+
+      if (index >= 0) {
+        var mapping = this._generatedMappings[index];
+
+        if (mapping.generatedLine === needle.generatedLine) {
+          var source = util.getArg(mapping, 'source', null);
+          if (source !== null) {
+            source = this._sources.at(source);
+            if (this.sourceRoot != null) {
+              source = util.join(this.sourceRoot, source);
+            }
+          }
+          var name = util.getArg(mapping, 'name', null);
+          if (name !== null) {
+            name = this._names.at(name);
+          }
+          return {
+            source: source,
+            line: util.getArg(mapping, 'originalLine', null),
+            column: util.getArg(mapping, 'originalColumn', null),
+            name: name
+          };
+        }
+      }
+
+      return {
+        source: null,
+        line: null,
+        column: null,
+        name: null
+      };
+    };
+
+  /**
+   * Return true if we have the source content for every source in the source
+   * map, false otherwise.
+   */
+  BasicSourceMapConsumer.prototype.hasContentsOfAllSources =
+    function BasicSourceMapConsumer_hasContentsOfAllSources() {
+      if (!this.sourcesContent) {
+        return false;
+      }
+      return this.sourcesContent.length >= this._sources.size() &&
+        !this.sourcesContent.some(function (sc) { return sc == null; });
+    };
+
+  /**
+   * Returns the original source content. The only argument is the url of the
+   * original source file. Returns null if no original source content is
+   * availible.
+   */
+  BasicSourceMapConsumer.prototype.sourceContentFor =
+    function SourceMapConsumer_sourceContentFor(aSource, nullOnMissing) {
+      if (!this.sourcesContent) {
+        return null;
+      }
+
+      if (this.sourceRoot != null) {
+        aSource = util.relative(this.sourceRoot, aSource);
+      }
+
+      if (this._sources.has(aSource)) {
+        return this.sourcesContent[this._sources.indexOf(aSource)];
+      }
+
+      var url;
+      if (this.sourceRoot != null
+          && (url = util.urlParse(this.sourceRoot))) {
+        // XXX: file:// URIs and absolute paths lead to unexpected behavior for
+        // many users. We can help them out when they expect file:// URIs to
+        // behave like it would if they were running a local HTTP server. See
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=885597.
+        var fileUriAbsPath = aSource.replace(/^file:\/\//, "");
+        if (url.scheme == "file"
+            && this._sources.has(fileUriAbsPath)) {
+          return this.sourcesContent[this._sources.indexOf(fileUriAbsPath)]
+        }
+
+        if ((!url.path || url.path == "/")
+            && this._sources.has("/" + aSource)) {
+          return this.sourcesContent[this._sources.indexOf("/" + aSource)];
+        }
+      }
+
+      // This function is used recursively from
+      // IndexedSourceMapConsumer.prototype.sourceContentFor. In that case, we
+      // don't want to throw if we can't find the source - we just want to
+      // return null, so we provide a flag to exit gracefully.
+      if (nullOnMissing) {
+        return null;
+      }
+      else {
+        throw new Error('"' + aSource + '" is not in the SourceMap.');
+      }
+    };
+
+  /**
+   * Returns the generated line and column information for the original source,
+   * line, and column positions provided. The only argument is an object with
+   * the following properties:
+   *
+   *   - source: The filename of the original source.
+   *   - line: The line number in the original source.
+   *   - column: The column number in the original source.
+   *   - bias: Either 'SourceMapConsumer.GREATEST_LOWER_BOUND' or
+   *     'SourceMapConsumer.LEAST_UPPER_BOUND'. Specifies whether to return the
+   *     closest element that is smaller than or greater than the one we are
+   *     searching for, respectively, if the exact element cannot be found.
+   *     Defaults to 'SourceMapConsumer.GREATEST_LOWER_BOUND'.
+   *
+   * and an object is returned with the following properties:
+   *
+   *   - line: The line number in the generated source, or null.
+   *   - column: The column number in the generated source, or null.
+   */
+  BasicSourceMapConsumer.prototype.generatedPositionFor =
+    function SourceMapConsumer_generatedPositionFor(aArgs) {
+      var source = util.getArg(aArgs, 'source');
+      if (this.sourceRoot != null) {
+        source = util.relative(this.sourceRoot, source);
+      }
+      if (!this._sources.has(source)) {
+        return {
+          line: null,
+          column: null,
+          lastColumn: null
+        };
+      }
+      source = this._sources.indexOf(source);
+
+      var needle = {
+        source: source,
+        originalLine: util.getArg(aArgs, 'line'),
+        originalColumn: util.getArg(aArgs, 'column')
+      };
+
+      var index = this._findMapping(
+        needle,
+        this._originalMappings,
+        "originalLine",
+        "originalColumn",
+        util.compareByOriginalPositions,
+        util.getArg(aArgs, 'bias', SourceMapConsumer.GREATEST_LOWER_BOUND)
+      );
+
+      if (index >= 0) {
+        var mapping = this._originalMappings[index];
+
+        if (mapping.source === needle.source) {
+          return {
+            line: util.getArg(mapping, 'generatedLine', null),
+            column: util.getArg(mapping, 'generatedColumn', null),
+            lastColumn: util.getArg(mapping, 'lastGeneratedColumn', null)
+          };
+        }
+      }
+
+      return {
+        line: null,
+        column: null,
+        lastColumn: null
+      };
+    };
+
+  exports.BasicSourceMapConsumer = BasicSourceMapConsumer;
+
+  /**
+   * An IndexedSourceMapConsumer instance represents a parsed source map which
+   * we can query for information. It differs from BasicSourceMapConsumer in
+   * that it takes "indexed" source maps (i.e. ones with a "sections" field) as
+   * input.
+   *
+   * The only parameter is a raw source map (either as a JSON string, or already
+   * parsed to an object). According to the spec for indexed source maps, they
+   * have the following attributes:
+   *
+   *   - version: Which version of the source map spec this map is following.
+   *   - file: Optional. The generated file this source map is associated with.
+   *   - sections: A list of section definitions.
+   *
+   * Each value under the "sections" field has two fields:
+   *   - offset: The offset into the original specified at which this section
+   *       begins to apply, defined as an object with a "line" and "column"
+   *       field.
+   *   - map: A source map definition. This source map could also be indexed,
+   *       but doesn't have to be.
+   *
+   * Instead of the "map" field, it's also possible to have a "url" field
+   * specifying a URL to retrieve a source map from, but that's currently
+   * unsupported.
+   *
+   * Here's an example source map, taken from the source map spec[0], but
+   * modified to omit a section which uses the "url" field.
+   *
+   *  {
+   *    version : 3,
+   *    file: "app.js",
+   *    sections: [{
+   *      offset: {line:100, column:10},
+   *      map: {
+   *        version : 3,
+   *        file: "section.js",
+   *        sources: ["foo.js", "bar.js"],
+   *        names: ["src", "maps", "are", "fun"],
+   *        mappings: "AAAA,E;;ABCDE;"
+   *      }
+   *    }],
+   *  }
+   *
+   * [0]: https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit#heading=h.535es3xeprgt
+   */
+  function IndexedSourceMapConsumer(aSourceMap) {
+    var sourceMap = aSourceMap;
+    if (typeof aSourceMap === 'string') {
+      sourceMap = JSON.parse(aSourceMap.replace(/^\)\]\}'/, ''));
+    }
+
+    var version = util.getArg(sourceMap, 'version');
+    var sections = util.getArg(sourceMap, 'sections');
+
+    if (version != this._version) {
+      throw new Error('Unsupported version: ' + version);
+    }
+
+    this._sources = new ArraySet();
+    this._names = new ArraySet();
+
+    var lastOffset = {
+      line: -1,
+      column: 0
+    };
+    this._sections = sections.map(function (s) {
+      if (s.url) {
+        // The url field will require support for asynchronicity.
+        // See https://github.com/mozilla/source-map/issues/16
+        throw new Error('Support for url field in sections not implemented.');
+      }
+      var offset = util.getArg(s, 'offset');
+      var offsetLine = util.getArg(offset, 'line');
+      var offsetColumn = util.getArg(offset, 'column');
+
+      if (offsetLine < lastOffset.line ||
+          (offsetLine === lastOffset.line && offsetColumn < lastOffset.column)) {
+        throw new Error('Section offsets must be ordered and non-overlapping.');
+      }
+      lastOffset = offset;
+
+      return {
+        generatedOffset: {
+          // The offset fields are 0-based, but we use 1-based indices when
+          // encoding/decoding from VLQ.
+          generatedLine: offsetLine + 1,
+          generatedColumn: offsetColumn + 1
+        },
+        consumer: new SourceMapConsumer(util.getArg(s, 'map'))
+      }
+    });
+  }
+
+  IndexedSourceMapConsumer.prototype = Object.create(SourceMapConsumer.prototype);
+  IndexedSourceMapConsumer.prototype.constructor = SourceMapConsumer;
+
+  /**
+   * The version of the source mapping spec that we are consuming.
+   */
+  IndexedSourceMapConsumer.prototype._version = 3;
+
+  /**
+   * The list of original sources.
+   */
+  Object.defineProperty(IndexedSourceMapConsumer.prototype, 'sources', {
+    get: function () {
+      var sources = [];
+      for (var i = 0; i < this._sections.length; i++) {
+        for (var j = 0; j < this._sections[i].consumer.sources.length; j++) {
+          sources.push(this._sections[i].consumer.sources[j]);
+        }
+      };
+      return sources;
+    }
+  });
+
+  /**
+   * Returns the original source, line, and column information for the generated
+   * source's line and column positions provided. The only argument is an object
+   * with the following properties:
+   *
+   *   - line: The line number in the generated source.
+   *   - column: The column number in the generated source.
+   *
+   * and an object is returned with the following properties:
+   *
+   *   - source: The original source file, or null.
+   *   - line: The line number in the original source, or null.
+   *   - column: The column number in the original source, or null.
+   *   - name: The original identifier, or null.
+   */
+  IndexedSourceMapConsumer.prototype.originalPositionFor =
+    function IndexedSourceMapConsumer_originalPositionFor(aArgs) {
+      var needle = {
+        generatedLine: util.getArg(aArgs, 'line'),
+        generatedColumn: util.getArg(aArgs, 'column')
+      };
+
+      // Find the section containing the generated position we're trying to map
+      // to an original position.
+      var sectionIndex = binarySearch.search(needle, this._sections,
+        function(needle, section) {
+          var cmp = needle.generatedLine - section.generatedOffset.generatedLine;
+          if (cmp) {
+            return cmp;
+          }
+
+          return (needle.generatedColumn -
+                  section.generatedOffset.generatedColumn);
+        });
+      var section = this._sections[sectionIndex];
+
+      if (!section) {
+        return {
+          source: null,
+          line: null,
+          column: null,
+          name: null
+        };
+      }
+
+      return section.consumer.originalPositionFor({
+        line: needle.generatedLine -
+          (section.generatedOffset.generatedLine - 1),
+        column: needle.generatedColumn -
+          (section.generatedOffset.generatedLine === needle.generatedLine
+           ? section.generatedOffset.generatedColumn - 1
+           : 0),
+        bias: aArgs.bias
+      });
+    };
+
+  /**
+   * Return true if we have the source content for every source in the source
+   * map, false otherwise.
+   */
+  IndexedSourceMapConsumer.prototype.hasContentsOfAllSources =
+    function IndexedSourceMapConsumer_hasContentsOfAllSources() {
+      return this._sections.every(function (s) {
+        return s.consumer.hasContentsOfAllSources();
+      });
+    };
+
+  /**
+   * Returns the original source content. The only argument is the url of the
+   * original source file. Returns null if no original source content is
+   * available.
+   */
+  IndexedSourceMapConsumer.prototype.sourceContentFor =
+    function IndexedSourceMapConsumer_sourceContentFor(aSource, nullOnMissing) {
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+
+        var content = section.consumer.sourceContentFor(aSource, true);
+        if (content) {
+          return content;
+        }
+      }
+      if (nullOnMissing) {
+        return null;
+      }
+      else {
+        throw new Error('"' + aSource + '" is not in the SourceMap.');
+      }
+    };
+
+  /**
+   * Returns the generated line and column information for the original source,
+   * line, and column positions provided. The only argument is an object with
+   * the following properties:
+   *
+   *   - source: The filename of the original source.
+   *   - line: The line number in the original source.
+   *   - column: The column number in the original source.
+   *
+   * and an object is returned with the following properties:
+   *
+   *   - line: The line number in the generated source, or null.
+   *   - column: The column number in the generated source, or null.
+   */
+  IndexedSourceMapConsumer.prototype.generatedPositionFor =
+    function IndexedSourceMapConsumer_generatedPositionFor(aArgs) {
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+
+        // Only consider this section if the requested source is in the list of
+        // sources of the consumer.
+        if (section.consumer.sources.indexOf(util.getArg(aArgs, 'source')) === -1) {
+          continue;
+        }
+        var generatedPosition = section.consumer.generatedPositionFor(aArgs);
+        if (generatedPosition) {
+          var ret = {
+            line: generatedPosition.line +
+              (section.generatedOffset.generatedLine - 1),
+            column: generatedPosition.column +
+              (section.generatedOffset.generatedLine === generatedPosition.line
+               ? section.generatedOffset.generatedColumn - 1
+               : 0)
+          };
+          return ret;
+        }
+      }
+
+      return {
+        line: null,
+        column: null
+      };
+    };
+
+  /**
+   * Parse the mappings in a string in to a data structure which we can easily
+   * query (the ordered arrays in the `this.__generatedMappings` and
+   * `this.__originalMappings` properties).
+   */
+  IndexedSourceMapConsumer.prototype._parseMappings =
+    function IndexedSourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      this.__generatedMappings = [];
+      this.__originalMappings = [];
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+        var sectionMappings = section.consumer._generatedMappings;
+        for (var j = 0; j < sectionMappings.length; j++) {
+          var mapping = sectionMappings[i];
+
+          var source = section.consumer._sources.at(mapping.source);
+          if (section.consumer.sourceRoot !== null) {
+            source = util.join(section.consumer.sourceRoot, source);
+          }
+          this._sources.add(source);
+          source = this._sources.indexOf(source);
+
+          var name = section.consumer._names.at(mapping.name);
+          this._names.add(name);
+          name = this._names.indexOf(name);
+
+          // The mappings coming from the consumer for the section have
+          // generated positions relative to the start of the section, so we
+          // need to offset them to be relative to the start of the concatenated
+          // generated file.
+          var adjustedMapping = {
+            source: source,
+            generatedLine: mapping.generatedLine +
+              (section.generatedOffset.generatedLine - 1),
+            generatedColumn: mapping.column +
+              (section.generatedOffset.generatedLine === mapping.generatedLine)
+              ? section.generatedOffset.generatedColumn - 1
+              : 0,
+            originalLine: mapping.originalLine,
+            originalColumn: mapping.originalColumn,
+            name: name
+          };
+
+          this.__generatedMappings.push(adjustedMapping);
+          if (typeof adjustedMapping.originalLine === 'number') {
+            this.__originalMappings.push(adjustedMapping);
+          }
+        };
+      };
+
+      quickSort(this.__generatedMappings, util.compareByGeneratedPositionsDeflated);
+      quickSort(this.__originalMappings, util.compareByOriginalPositions);
+    };
+
+  exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
+
+});
+
+},{"./array-set":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/array-set.js","./base64-vlq":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/base64-vlq.js","./binary-search":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/binary-search.js","./quick-sort":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/quick-sort.js","./util":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-map-generator.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  var base64VLQ = require('./base64-vlq');
+  var util = require('./util');
+  var ArraySet = require('./array-set').ArraySet;
+  var MappingList = require('./mapping-list').MappingList;
+
+  /**
+   * An instance of the SourceMapGenerator represents a source map which is
+   * being built incrementally. You may pass an object with the following
+   * properties:
+   *
+   *   - file: The filename of the generated source.
+   *   - sourceRoot: A root for all relative URLs in this source map.
+   */
+  function SourceMapGenerator(aArgs) {
+    if (!aArgs) {
+      aArgs = {};
+    }
+    this._file = util.getArg(aArgs, 'file', null);
+    this._sourceRoot = util.getArg(aArgs, 'sourceRoot', null);
+    this._skipValidation = util.getArg(aArgs, 'skipValidation', false);
+    this._sources = new ArraySet();
+    this._names = new ArraySet();
+    this._mappings = new MappingList();
+    this._sourcesContents = null;
+  }
+
+  SourceMapGenerator.prototype._version = 3;
+
+  /**
+   * Creates a new SourceMapGenerator based on a SourceMapConsumer
+   *
+   * @param aSourceMapConsumer The SourceMap.
+   */
+  SourceMapGenerator.fromSourceMap =
+    function SourceMapGenerator_fromSourceMap(aSourceMapConsumer) {
+      var sourceRoot = aSourceMapConsumer.sourceRoot;
+      var generator = new SourceMapGenerator({
+        file: aSourceMapConsumer.file,
+        sourceRoot: sourceRoot
+      });
+      aSourceMapConsumer.eachMapping(function (mapping) {
+        var newMapping = {
+          generated: {
+            line: mapping.generatedLine,
+            column: mapping.generatedColumn
+          }
+        };
+
+        if (mapping.source != null) {
+          newMapping.source = mapping.source;
+          if (sourceRoot != null) {
+            newMapping.source = util.relative(sourceRoot, newMapping.source);
+          }
+
+          newMapping.original = {
+            line: mapping.originalLine,
+            column: mapping.originalColumn
+          };
+
+          if (mapping.name != null) {
+            newMapping.name = mapping.name;
+          }
+        }
+
+        generator.addMapping(newMapping);
+      });
+      aSourceMapConsumer.sources.forEach(function (sourceFile) {
+        var content = aSourceMapConsumer.sourceContentFor(sourceFile);
+        if (content != null) {
+          generator.setSourceContent(sourceFile, content);
+        }
+      });
+      return generator;
+    };
+
+  /**
+   * Add a single mapping from original source line and column to the generated
+   * source's line and column for this source map being created. The mapping
+   * object should have the following properties:
+   *
+   *   - generated: An object with the generated line and column positions.
+   *   - original: An object with the original line and column positions.
+   *   - source: The original source file (relative to the sourceRoot).
+   *   - name: An optional original token name for this mapping.
+   */
+  SourceMapGenerator.prototype.addMapping =
+    function SourceMapGenerator_addMapping(aArgs) {
+      var generated = util.getArg(aArgs, 'generated');
+      var original = util.getArg(aArgs, 'original', null);
+      var source = util.getArg(aArgs, 'source', null);
+      var name = util.getArg(aArgs, 'name', null);
+
+      if (!this._skipValidation) {
+        this._validateMapping(generated, original, source, name);
+      }
+
+      if (source != null && !this._sources.has(source)) {
+        this._sources.add(source);
+      }
+
+      if (name != null && !this._names.has(name)) {
+        this._names.add(name);
+      }
+
+      this._mappings.add({
+        generatedLine: generated.line,
+        generatedColumn: generated.column,
+        originalLine: original != null && original.line,
+        originalColumn: original != null && original.column,
+        source: source,
+        name: name
+      });
+    };
+
+  /**
+   * Set the source content for a source file.
+   */
+  SourceMapGenerator.prototype.setSourceContent =
+    function SourceMapGenerator_setSourceContent(aSourceFile, aSourceContent) {
+      var source = aSourceFile;
+      if (this._sourceRoot != null) {
+        source = util.relative(this._sourceRoot, source);
+      }
+
+      if (aSourceContent != null) {
+        // Add the source content to the _sourcesContents map.
+        // Create a new _sourcesContents map if the property is null.
+        if (!this._sourcesContents) {
+          this._sourcesContents = {};
+        }
+        this._sourcesContents[util.toSetString(source)] = aSourceContent;
+      } else if (this._sourcesContents) {
+        // Remove the source file from the _sourcesContents map.
+        // If the _sourcesContents map is empty, set the property to null.
+        delete this._sourcesContents[util.toSetString(source)];
+        if (Object.keys(this._sourcesContents).length === 0) {
+          this._sourcesContents = null;
+        }
+      }
+    };
+
+  /**
+   * Applies the mappings of a sub-source-map for a specific source file to the
+   * source map being generated. Each mapping to the supplied source file is
+   * rewritten using the supplied source map. Note: The resolution for the
+   * resulting mappings is the minimium of this map and the supplied map.
+   *
+   * @param aSourceMapConsumer The source map to be applied.
+   * @param aSourceFile Optional. The filename of the source file.
+   *        If omitted, SourceMapConsumer's file property will be used.
+   * @param aSourceMapPath Optional. The dirname of the path to the source map
+   *        to be applied. If relative, it is relative to the SourceMapConsumer.
+   *        This parameter is needed when the two source maps aren't in the same
+   *        directory, and the source map to be applied contains relative source
+   *        paths. If so, those relative source paths need to be rewritten
+   *        relative to the SourceMapGenerator.
+   */
+  SourceMapGenerator.prototype.applySourceMap =
+    function SourceMapGenerator_applySourceMap(aSourceMapConsumer, aSourceFile, aSourceMapPath) {
+      var sourceFile = aSourceFile;
+      // If aSourceFile is omitted, we will use the file property of the SourceMap
+      if (aSourceFile == null) {
+        if (aSourceMapConsumer.file == null) {
+          throw new Error(
+            'SourceMapGenerator.prototype.applySourceMap requires either an explicit source file, ' +
+            'or the source map\'s "file" property. Both were omitted.'
+          );
+        }
+        sourceFile = aSourceMapConsumer.file;
+      }
+      var sourceRoot = this._sourceRoot;
+      // Make "sourceFile" relative if an absolute Url is passed.
+      if (sourceRoot != null) {
+        sourceFile = util.relative(sourceRoot, sourceFile);
+      }
+      // Applying the SourceMap can add and remove items from the sources and
+      // the names array.
+      var newSources = new ArraySet();
+      var newNames = new ArraySet();
+
+      // Find mappings for the "sourceFile"
+      this._mappings.unsortedForEach(function (mapping) {
+        if (mapping.source === sourceFile && mapping.originalLine != null) {
+          // Check if it can be mapped by the source map, then update the mapping.
+          var original = aSourceMapConsumer.originalPositionFor({
+            line: mapping.originalLine,
+            column: mapping.originalColumn
+          });
+          if (original.source != null) {
+            // Copy mapping
+            mapping.source = original.source;
+            if (aSourceMapPath != null) {
+              mapping.source = util.join(aSourceMapPath, mapping.source)
+            }
+            if (sourceRoot != null) {
+              mapping.source = util.relative(sourceRoot, mapping.source);
+            }
+            mapping.originalLine = original.line;
+            mapping.originalColumn = original.column;
+            if (original.name != null) {
+              mapping.name = original.name;
+            }
+          }
+        }
+
+        var source = mapping.source;
+        if (source != null && !newSources.has(source)) {
+          newSources.add(source);
+        }
+
+        var name = mapping.name;
+        if (name != null && !newNames.has(name)) {
+          newNames.add(name);
+        }
+
+      }, this);
+      this._sources = newSources;
+      this._names = newNames;
+
+      // Copy sourcesContents of applied map.
+      aSourceMapConsumer.sources.forEach(function (sourceFile) {
+        var content = aSourceMapConsumer.sourceContentFor(sourceFile);
+        if (content != null) {
+          if (aSourceMapPath != null) {
+            sourceFile = util.join(aSourceMapPath, sourceFile);
+          }
+          if (sourceRoot != null) {
+            sourceFile = util.relative(sourceRoot, sourceFile);
+          }
+          this.setSourceContent(sourceFile, content);
+        }
+      }, this);
+    };
+
+  /**
+   * A mapping can have one of the three levels of data:
+   *
+   *   1. Just the generated position.
+   *   2. The Generated position, original position, and original source.
+   *   3. Generated and original position, original source, as well as a name
+   *      token.
+   *
+   * To maintain consistency, we validate that any new mapping being added falls
+   * in to one of these categories.
+   */
+  SourceMapGenerator.prototype._validateMapping =
+    function SourceMapGenerator_validateMapping(aGenerated, aOriginal, aSource,
+                                                aName) {
+      if (aGenerated && 'line' in aGenerated && 'column' in aGenerated
+          && aGenerated.line > 0 && aGenerated.column >= 0
+          && !aOriginal && !aSource && !aName) {
+        // Case 1.
+        return;
+      }
+      else if (aGenerated && 'line' in aGenerated && 'column' in aGenerated
+               && aOriginal && 'line' in aOriginal && 'column' in aOriginal
+               && aGenerated.line > 0 && aGenerated.column >= 0
+               && aOriginal.line > 0 && aOriginal.column >= 0
+               && aSource) {
+        // Cases 2 and 3.
+        return;
+      }
+      else {
+        throw new Error('Invalid mapping: ' + JSON.stringify({
+          generated: aGenerated,
+          source: aSource,
+          original: aOriginal,
+          name: aName
+        }));
+      }
+    };
+
+  /**
+   * Serialize the accumulated mappings in to the stream of base 64 VLQs
+   * specified by the source map format.
+   */
+  SourceMapGenerator.prototype._serializeMappings =
+    function SourceMapGenerator_serializeMappings() {
+      var previousGeneratedColumn = 0;
+      var previousGeneratedLine = 1;
+      var previousOriginalColumn = 0;
+      var previousOriginalLine = 0;
+      var previousName = 0;
+      var previousSource = 0;
+      var result = '';
+      var mapping;
+
+      var mappings = this._mappings.toArray();
+      for (var i = 0, len = mappings.length; i < len; i++) {
+        mapping = mappings[i];
+
+        if (mapping.generatedLine !== previousGeneratedLine) {
+          previousGeneratedColumn = 0;
+          while (mapping.generatedLine !== previousGeneratedLine) {
+            result += ';';
+            previousGeneratedLine++;
+          }
+        }
+        else {
+          if (i > 0) {
+            if (!util.compareByGeneratedPositionsInflated(mapping, mappings[i - 1])) {
+              continue;
+            }
+            result += ',';
+          }
+        }
+
+        result += base64VLQ.encode(mapping.generatedColumn
+                                   - previousGeneratedColumn);
+        previousGeneratedColumn = mapping.generatedColumn;
+
+        if (mapping.source != null) {
+          result += base64VLQ.encode(this._sources.indexOf(mapping.source)
+                                     - previousSource);
+          previousSource = this._sources.indexOf(mapping.source);
+
+          // lines are stored 0-based in SourceMap spec version 3
+          result += base64VLQ.encode(mapping.originalLine - 1
+                                     - previousOriginalLine);
+          previousOriginalLine = mapping.originalLine - 1;
+
+          result += base64VLQ.encode(mapping.originalColumn
+                                     - previousOriginalColumn);
+          previousOriginalColumn = mapping.originalColumn;
+
+          if (mapping.name != null) {
+            result += base64VLQ.encode(this._names.indexOf(mapping.name)
+                                       - previousName);
+            previousName = this._names.indexOf(mapping.name);
+          }
+        }
+      }
+
+      return result;
+    };
+
+  SourceMapGenerator.prototype._generateSourcesContent =
+    function SourceMapGenerator_generateSourcesContent(aSources, aSourceRoot) {
+      return aSources.map(function (source) {
+        if (!this._sourcesContents) {
+          return null;
+        }
+        if (aSourceRoot != null) {
+          source = util.relative(aSourceRoot, source);
+        }
+        var key = util.toSetString(source);
+        return Object.prototype.hasOwnProperty.call(this._sourcesContents,
+                                                    key)
+          ? this._sourcesContents[key]
+          : null;
+      }, this);
+    };
+
+  /**
+   * Externalize the source map.
+   */
+  SourceMapGenerator.prototype.toJSON =
+    function SourceMapGenerator_toJSON() {
+      var map = {
+        version: this._version,
+        sources: this._sources.toArray(),
+        names: this._names.toArray(),
+        mappings: this._serializeMappings()
+      };
+      if (this._file != null) {
+        map.file = this._file;
+      }
+      if (this._sourceRoot != null) {
+        map.sourceRoot = this._sourceRoot;
+      }
+      if (this._sourcesContents) {
+        map.sourcesContent = this._generateSourcesContent(map.sources, map.sourceRoot);
+      }
+
+      return map;
+    };
+
+  /**
+   * Render the source map being generated to a string.
+   */
+  SourceMapGenerator.prototype.toString =
+    function SourceMapGenerator_toString() {
+      return JSON.stringify(this.toJSON());
+    };
+
+  exports.SourceMapGenerator = SourceMapGenerator;
+
+});
+
+},{"./array-set":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/array-set.js","./base64-vlq":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/base64-vlq.js","./mapping-list":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/mapping-list.js","./util":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-node.js":[function(require,module,exports){
+arguments[4]["/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/node_modules/source-map/lib/source-map/source-node.js"][0].apply(exports,arguments)
+},{"./source-map-generator":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/source-map-generator.js","./util":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js","amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/source-map/lib/source-map/util.js":[function(require,module,exports){
+/* -*- Mode: js; js-indent-level: 2; -*- */
+/*
+ * Copyright 2011 Mozilla Foundation and contributors
+ * Licensed under the New BSD license. See LICENSE or:
+ * http://opensource.org/licenses/BSD-3-Clause
+ */
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module, require);
+}
+define(function (require, exports, module) {
+
+  /**
+   * This is a helper function for getting values from parameter/options
+   * objects.
+   *
+   * @param args The object we are extracting values from
+   * @param name The name of the property we are getting.
+   * @param defaultValue An optional value to return if the property is missing
+   * from the object. If this is not specified and the property is missing, an
+   * error will be thrown.
+   */
+  function getArg(aArgs, aName, aDefaultValue) {
+    if (aName in aArgs) {
+      return aArgs[aName];
+    } else if (arguments.length === 3) {
+      return aDefaultValue;
+    } else {
+      throw new Error('"' + aName + '" is a required argument.');
+    }
+  }
+  exports.getArg = getArg;
+
+  var urlRegexp = /^(?:([\w+\-.]+):)?\/\/(?:(\w+:\w+)@)?([\w.]*)(?::(\d+))?(\S*)$/;
+  var dataUrlRegexp = /^data:.+\,.+$/;
+
+  function urlParse(aUrl) {
+    var match = aUrl.match(urlRegexp);
+    if (!match) {
+      return null;
+    }
+    return {
+      scheme: match[1],
+      auth: match[2],
+      host: match[3],
+      port: match[4],
+      path: match[5]
+    };
+  }
+  exports.urlParse = urlParse;
+
+  function urlGenerate(aParsedUrl) {
+    var url = '';
+    if (aParsedUrl.scheme) {
+      url += aParsedUrl.scheme + ':';
+    }
+    url += '//';
+    if (aParsedUrl.auth) {
+      url += aParsedUrl.auth + '@';
+    }
+    if (aParsedUrl.host) {
+      url += aParsedUrl.host;
+    }
+    if (aParsedUrl.port) {
+      url += ":" + aParsedUrl.port
+    }
+    if (aParsedUrl.path) {
+      url += aParsedUrl.path;
+    }
+    return url;
+  }
+  exports.urlGenerate = urlGenerate;
+
+  /**
+   * Normalizes a path, or the path portion of a URL:
+   *
+   * - Replaces consequtive slashes with one slash.
+   * - Removes unnecessary '.' parts.
+   * - Removes unnecessary '<dir>/..' parts.
+   *
+   * Based on code in the Node.js 'path' core module.
+   *
+   * @param aPath The path or url to normalize.
+   */
+  function normalize(aPath) {
+    var path = aPath;
+    var url = urlParse(aPath);
+    if (url) {
+      if (!url.path) {
+        return aPath;
+      }
+      path = url.path;
+    }
+    var isAbsolute = (path.charAt(0) === '/');
+
+    var parts = path.split(/\/+/);
+    for (var part, up = 0, i = parts.length - 1; i >= 0; i--) {
+      part = parts[i];
+      if (part === '.') {
+        parts.splice(i, 1);
+      } else if (part === '..') {
+        up++;
+      } else if (up > 0) {
+        if (part === '') {
+          // The first part is blank if the path is absolute. Trying to go
+          // above the root is a no-op. Therefore we can remove all '..' parts
+          // directly after the root.
+          parts.splice(i + 1, up);
+          up = 0;
+        } else {
+          parts.splice(i, 2);
+          up--;
+        }
+      }
+    }
+    path = parts.join('/');
+
+    if (path === '') {
+      path = isAbsolute ? '/' : '.';
+    }
+
+    if (url) {
+      url.path = path;
+      return urlGenerate(url);
+    }
+    return path;
+  }
+  exports.normalize = normalize;
+
+  /**
+   * Joins two paths/URLs.
+   *
+   * @param aRoot The root path or URL.
+   * @param aPath The path or URL to be joined with the root.
+   *
+   * - If aPath is a URL or a data URI, aPath is returned, unless aPath is a
+   *   scheme-relative URL: Then the scheme of aRoot, if any, is prepended
+   *   first.
+   * - Otherwise aPath is a path. If aRoot is a URL, then its path portion
+   *   is updated with the result and aRoot is returned. Otherwise the result
+   *   is returned.
+   *   - If aPath is absolute, the result is aPath.
+   *   - Otherwise the two paths are joined with a slash.
+   * - Joining for example 'http://' and 'www.example.com' is also supported.
+   */
+  function join(aRoot, aPath) {
+    if (aRoot === "") {
+      aRoot = ".";
+    }
+    if (aPath === "") {
+      aPath = ".";
+    }
+    var aPathUrl = urlParse(aPath);
+    var aRootUrl = urlParse(aRoot);
+    if (aRootUrl) {
+      aRoot = aRootUrl.path || '/';
+    }
+
+    // `join(foo, '//www.example.org')`
+    if (aPathUrl && !aPathUrl.scheme) {
+      if (aRootUrl) {
+        aPathUrl.scheme = aRootUrl.scheme;
+      }
+      return urlGenerate(aPathUrl);
+    }
+
+    if (aPathUrl || aPath.match(dataUrlRegexp)) {
+      return aPath;
+    }
+
+    // `join('http://', 'www.example.com')`
+    if (aRootUrl && !aRootUrl.host && !aRootUrl.path) {
+      aRootUrl.host = aPath;
+      return urlGenerate(aRootUrl);
+    }
+
+    var joined = aPath.charAt(0) === '/'
+      ? aPath
+      : normalize(aRoot.replace(/\/+$/, '') + '/' + aPath);
+
+    if (aRootUrl) {
+      aRootUrl.path = joined;
+      return urlGenerate(aRootUrl);
+    }
+    return joined;
+  }
+  exports.join = join;
+
+  /**
+   * Make a path relative to a URL or another path.
+   *
+   * @param aRoot The root path or URL.
+   * @param aPath The path or URL to be made relative to aRoot.
+   */
+  function relative(aRoot, aPath) {
+    if (aRoot === "") {
+      aRoot = ".";
+    }
+
+    aRoot = aRoot.replace(/\/$/, '');
+
+    // It is possible for the path to be above the root. In this case, simply
+    // checking whether the root is a prefix of the path won't work. Instead, we
+    // need to remove components from the root one by one, until either we find
+    // a prefix that fits, or we run out of components to remove.
+    var level = 0;
+    while (aPath.indexOf(aRoot + '/') !== 0) {
+      var index = aRoot.lastIndexOf("/");
+      if (index < 0) {
+        return aPath;
+      }
+
+      // If the only part of the root that is left is the scheme (i.e. http://,
+      // file:///, etc.), one or more slashes (/), or simply nothing at all, we
+      // have exhausted all components, so the path is not relative to the root.
+      aRoot = aRoot.slice(0, index);
+      if (aRoot.match(/^([^\/]+:\/)?\/*$/)) {
+        return aPath;
+      }
+
+      ++level;
+    }
+
+    // Make sure we add a "../" for each component we removed from the root.
+    return Array(level + 1).join("../") + aPath.substr(aRoot.length + 1);
+  }
+  exports.relative = relative;
+
+  /**
+   * Because behavior goes wacky when you set `__proto__` on objects, we
+   * have to prefix all the strings in our set with an arbitrary character.
+   *
+   * See https://github.com/mozilla/source-map/pull/31 and
+   * https://github.com/mozilla/source-map/issues/30
+   *
+   * @param String aStr
+   */
+  function toSetString(aStr) {
+    return '$' + aStr;
+  }
+  exports.toSetString = toSetString;
+
+  function fromSetString(aStr) {
+    return aStr.substr(1);
+  }
+  exports.fromSetString = fromSetString;
+
+  /**
+   * Comparator between two mappings where the original positions are compared.
+   *
+   * Optionally pass in `true` as `onlyCompareGenerated` to consider two
+   * mappings with the same original source/line/column, but different generated
+   * line and column the same. Useful when searching for a mapping with a
+   * stubbed out mapping.
+   */
+  function compareByOriginalPositions(mappingA, mappingB, onlyCompareOriginal) {
+    var cmp = mappingA.source - mappingB.source;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalLine - mappingB.originalLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalColumn - mappingB.originalColumn;
+    if (cmp !== 0 || onlyCompareOriginal) {
+      return cmp;
+    }
+
+    cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.generatedLine - mappingB.generatedLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    return mappingA.name - mappingB.name;
+  };
+  exports.compareByOriginalPositions = compareByOriginalPositions;
+
+  /**
+   * Comparator between two mappings with deflated source and name indices where
+   * the generated positions are compared.
+   *
+   * Optionally pass in `true` as `onlyCompareGenerated` to consider two
+   * mappings with the same generated line and column, but different
+   * source/name/original line and column the same. Useful when searching for a
+   * mapping with a stubbed out mapping.
+   */
+  function compareByGeneratedPositionsDeflated(mappingA, mappingB, onlyCompareGenerated) {
+    var cmp = mappingA.generatedLine - mappingB.generatedLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+    if (cmp !== 0 || onlyCompareGenerated) {
+      return cmp;
+    }
+
+    cmp = mappingA.source - mappingB.source;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalLine - mappingB.originalLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalColumn - mappingB.originalColumn;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    return mappingA.name - mappingB.name;
+  };
+  exports.compareByGeneratedPositionsDeflated = compareByGeneratedPositionsDeflated;
+
+  function strcmp(aStr1, aStr2) {
+    if (aStr1 === aStr2) {
+      return 0;
+    }
+
+    if (aStr1 > aStr2) {
+      return 1;
+    }
+
+    return -1;
+  }
+
+  /**
+   * Comparator between two mappings with inflated source and name strings where
+   * the generated positions are compared.
+   */
+  function compareByGeneratedPositionsInflated(mappingA, mappingB) {
+    var cmp = mappingA.generatedLine - mappingB.generatedLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = strcmp(mappingA.source, mappingB.source);
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalLine - mappingB.originalLine;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    cmp = mappingA.originalColumn - mappingB.originalColumn;
+    if (cmp !== 0) {
+      return cmp;
+    }
+
+    return strcmp(mappingA.name, mappingB.name);
+  };
+  exports.compareByGeneratedPositionsInflated = compareByGeneratedPositionsInflated;
+
+});
+
+},{"amdefine":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/amdefine/amdefine.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js":[function(require,module,exports){
 var L = require('leaflet');
 var Handlebars = require('handlebars');
 var _ = require('underscore');
@@ -30050,7 +46683,7 @@ L.Map.addInitHook(function () {
     });
 });
 
-},{"./templates":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/templates.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-draw":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-draw/dist/leaflet.draw.js","livinglots.parcels":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/livinglots.parcels/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/templates.js":[function(require,module,exports){
+},{"./templates":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/templates.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet/dist/leaflet-src.js","leaflet-draw":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/leaflet-draw/dist/leaflet.draw.js","livinglots.parcels":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/node_modules/livinglots.parcels/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/templates.js":[function(require,module,exports){
 module.exports = function(Handlebars) {
 
 return Handlebars.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -41370,7 +58003,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

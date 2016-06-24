@@ -244,7 +244,7 @@ module.exports = {
         /*
          * Boundaries
          */
-        if (boundariesLayer.getLayers().length > 0) {
+        if (boundariesLayer && boundariesLayer.getLayers().length > 0) {
             var centroid;
             try {
                 centroid = lot.getBounds().getCenter();
