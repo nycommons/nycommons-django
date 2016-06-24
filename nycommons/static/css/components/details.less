@@ -1,4 +1,26 @@
 .details-section {
+    .details-header {
+        .make-row(0);
+
+        &-actions {
+            .make-md-column(6);
+            a {
+                float: right;
+                padding: 0 5px;
+            }
+        }
+    }
+
+    .details-body {
+        min-height: 400px;
+        min-width: 800px;
+    }
+    .details-header-text {
+        .make-md-column(6);
+        font-size: 18px;
+        padding: 0;
+    }
+
     .details-organizer-layer-list,
     .details-owner-priority-list,
     .details-owner-layer-list {
