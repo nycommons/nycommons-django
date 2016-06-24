@@ -6010,6 +6010,12 @@ footer .footer-right {
 .legend-marker-public_housing {
   background: #f5a623;
 }
+.legend-marker-priority {
+  background: transparent;
+  border: 2px solid #bf1e2d;
+  height: 12px;
+  width: 12px;
+}
 .legend-marker-project {
   background: #e64c9b;
 }
