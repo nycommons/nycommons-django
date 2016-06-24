@@ -5,6 +5,7 @@ from operator import itemgetter
 from pint import UnitRegistry
 from random import shuffle
 
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, Sum
 
 from caching.base import cached
@@ -18,6 +19,7 @@ from livinglots_lots.views import LotDetailView as BaseLotDetailView
 from livinglots_lots.views import LotsCSV as BaseLotsCSV
 from livinglots_lots.views import LotsKML as BaseLotsKML
 from livinglots_lots.views import LotsGeoJSON as BaseLotsGeoJSON
+from organize.models import Organizer
 from .models import Lot
 
 
@@ -215,6 +217,12 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
         'post_office': 'post office',
     }
 
+    def count_organizers(self, lots_qs):
+        return Organizer.objects.filter(
+            content_type=ContentType.objects.get_for_model(Lot),
+            object_id__in=lots_qs.values_list('pk', flat=True)
+        ).count()
+
     def get_owners(self, lots_qs):
         owners = []
         for row in lots_qs.values('owner__name').annotate(count=Count('pk'), area=Sum('polygon_area')).order_by():
@@ -246,6 +254,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
                 counts.append({
                     'count': sum([o['count'] for o in owners]),
                     'label': self.layer_labels[layer],
+                    'organizers_count': self.count_organizers(qs),
                     'owners': owners,
                     'priority': layer in ('community_project', 'priority',),
                     'type': layer,

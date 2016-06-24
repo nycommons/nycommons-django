@@ -6806,6 +6806,7 @@ section.collapsible > h6.collapsed::before {
   -o-transform: rotate(0deg);
   transform: rotate(0deg);
 }
+.details-section .details-organizer-layer-list,
 .details-section .details-owner-priority-list,
 .details-section .details-owner-layer-list {
   list-style: none;
@@ -6815,12 +6816,17 @@ section.collapsible > h6.collapsed::before {
   border-bottom: 3px solid #bf1e2d;
   padding-bottom: 14px;
 }
+.details-section .details-organizer-list,
 .details-section .details-owner-list {
   display: none;
   list-style: none;
   -moz-column-count: 2;
   -webkit-column-count: 2;
   column-count: 2;
+}
+.details-section .details-toggle-organizer-list-wrapper {
+  display: inline-block;
+  margin-left: 15px;
 }
 .details-section .details-toggle-owner-list-wrapper {
   display: inline-block;
