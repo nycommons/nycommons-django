@@ -20,15 +20,14 @@ function getLotLayerOptions(lotPk) {
             return L.circleMarker(latlng);
         },
         style: function (feature) {
-            var style = {
-                fillOpacity: 0.2,
-                stroke: false
-            };
-            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
+            var style = mapstyles.getStyle(feature);
 
             // Style this lot distinctly
             if (feature.id === lotPk) {
                 style.fillOpacity = 1;
+            }
+            else {
+                style.fillOpacity = 0.2;
             }
             return style;
         }

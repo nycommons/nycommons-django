@@ -797,13 +797,7 @@ L.LotMap = L.Map.extend({
             return L.lotMarker(latlng, {});
         },
         style: function (feature) {
-            var style = {
-                fillColor: '#000000',
-                fillOpacity: 1,
-                stroke: 0
-            };
-            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
-            return style;
+            return mapstyles.getStyle(feature);
         },
         popupOptions: {
             autoPan: false,
@@ -1072,49 +1066,38 @@ module.exports = {
 //
 // Lot map styles by layer for maps
 //
-var _ = require('underscore');
 
 var fillColors = {
     library: '#00AEEF',
-    nycha: '#F5A623',
-    post_office: '#662D91',
-    default: '#000000',
-    in_use: '#e64c9b',
-    private: '#b4d0d1',
-    public: '#1f9e48',
-    gutterspace: '#1f9e48'
+    'public housing': '#F5A623',
+    'post office': '#662D91',
+    default: '#000000'
 };
+
+function getLayerColor (layer) {
+    if (fillColors[layer] !== undefined) {
+        return fillColors[layer];
+    }
+    return fillColors.default;
+}
 
 module.exports = {
     fillColors: fillColors,
 
-    getLayerColor: function (layers) {
-        if (_.contains(layers, 'library')) {
-            return fillColors.library;
-        }
-        if (_.contains(layers, 'public housing')) {
-            return fillColors.nycha;
-        }
-        if (_.contains(layers, 'post office')) {
-            return fillColors.post_office;
-        }
-        if (_.contains(layers, 'in_use')) {
-            return fillColors.in_use;
-        }
-        if (_.contains(layers, 'public')) {
-            return fillColors.public;
-        }
-        if (_.contains(layers, 'private')) {
-            return fillColors.private;
-        }
-        if (_.contains(layers, 'gutterspace')) {
-            return fillColors.gutterspace;
-        }
-        return fillColors.default;
+    getLayerColor: getLayerColor,
+
+    getStyle: function (feature) {
+        var style = {
+            fillColor: '#000000',
+            fillOpacity: 1,
+            stroke: 0
+        };
+        style.fillColor = getLayerColor(feature.properties.commons_type);
+        return style;
     }
 };
 
-},{"underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
 var _ = require('underscore');
 var proj4 = require('proj4');
 require('./proj4.defs');
@@ -1501,15 +1484,14 @@ function getLotLayerOptions(lotPk) {
             return L.circleMarker(latlng);
         },
         style: function (feature) {
-            var style = {
-                fillOpacity: 0.2,
-                stroke: false
-            };
-            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
+            var style = mapstyles.getStyle(feature);
 
             // Style this lot distinctly
             if (feature.id === lotPk) {
                 style.fillOpacity = 1;
+            }
+            else {
+                style.fillOpacity = 0.2;
             }
             return style;
         }
@@ -58034,7 +58016,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

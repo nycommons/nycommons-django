@@ -64,13 +64,7 @@ L.LotMap = L.Map.extend({
             return L.lotMarker(latlng, {});
         },
         style: function (feature) {
-            var style = {
-                fillColor: '#000000',
-                fillOpacity: 1,
-                stroke: 0
-            };
-            style.fillColor = mapstyles.getLayerColor([feature.properties.commons_type]);
-            return style;
+            return mapstyles.getStyle(feature);
         },
         popupOptions: {
             autoPan: false,
