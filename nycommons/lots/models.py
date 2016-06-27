@@ -20,12 +20,6 @@ ureg = UnitRegistry()
 
 class LotManager(BaseLotManager):
 
-    def get_visible(self):
-        # Lots are either public or private with an opt-in
-        return super(LotManager, self).get_visible().filter(
-            lotlayer__name__in=('public', 'private_opt_in', 'in_use')
-        ).distinct()
-
     def find_nearby(self, lot, **kwargs):
         qs = super(LotManager, self).find_nearby(lot, **kwargs)
 
@@ -389,26 +383,6 @@ class LotLayer(BaseLotLayer):
             'organizing': Q(
                 known_use=None,
                 organizers__post_publicly=True
-            ),
-            'public': Q(
-                Q(known_use=None) | Q(known_use__visible=True),
-                Q(
-                    Q(owner__owner_type='public') |
-                    Q(group=None, lotgroup__lot__owner__owner_type='public')
-                ),
-                known_use_certainty__gt=3,
-            ),
-            'private': Q(
-                Q(known_use=None) | Q(known_use__visible=True),
-                Q(
-                    Q(owner__owner_type='private') |
-                    Q(group=None, lotgroup__lot__owner__owner_type='private')
-                ),
-                known_use_certainty__gt=3,
-            ),
-            'private_opt_in': Q(
-                Q(owner__owner_type='private'),
-                Q(owner_opt_in=True)
             ),
             'hidden': Q(known_use__visible=False),
             'gutterspace': Q(gutterspace=True),
