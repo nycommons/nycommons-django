@@ -143,6 +143,7 @@ class LotMixin(models.Model):
     gutterspace = models.BooleanField(default=False)
     lot_number = models.IntegerField(blank=True, null=True)
     organizers = GenericRelation(Organizer)
+    organizing = models.BooleanField(default=False)
     parcel = models.ForeignKey('parcels.Parcel',
         blank=True,
         null=True,
