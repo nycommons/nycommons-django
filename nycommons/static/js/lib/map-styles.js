@@ -9,6 +9,8 @@ var fillColors = {
     default: '#000000'
 };
 
+var priorityColor = '#bf1e2d';
+
 function getLayerColor (layer) {
     if (fillColors[layer] !== undefined) {
         return fillColors[layer];
@@ -25,9 +27,14 @@ module.exports = {
         var style = {
             fillColor: '#000000',
             fillOpacity: 1,
-            stroke: 0
+            stroke: false
         };
         style.fillColor = getLayerColor(feature.properties.commons_type);
+
+        if (feature.properties.priority) {
+            style.color = priorityColor;
+            style.stroke = true;
+        }
         return style;
     }
 };
