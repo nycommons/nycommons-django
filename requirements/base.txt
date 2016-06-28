@@ -32,6 +32,7 @@ django-filter==0.13.0
 git+git://github.com/funkybob/django-flatblocks/@205eb81435
 django-honeypot==0.4.0
 django-imagekit==3.3
+django-inline-svg==0.1.0
 git+git://github.com/ebrelsford/django-inplace/@master
 git+git://github.com/ebrelsford/django-inplace-activity-stream/@master
 

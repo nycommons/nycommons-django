@@ -730,7 +730,114 @@ Handlebars.registerHelper('pick-area', function (acres, sqft) {
     return sqft + ' sq ft';
 });
 
-},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js":[function(require,module,exports){
+},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js":[function(require,module,exports){
+var L = require('leaflet');
+var _ = require('underscore');
+
+require('./leaflet.lotmultipolygon');
+require('./leaflet.lotpolygon');
+
+
+L.LotGeoJson = L.GeoJSON.extend({
+    initialize: function (geojson, options) {
+        L.GeoJSON.prototype.initialize.call(this, geojson, options);
+    },
+
+    addData: function (geojson) {
+        var features = L.Util.isArray(geojson) ? geojson : geojson.features,
+            i, len, feature;
+
+        if (features) {
+            for (i = 0, len = features.length; i < len; i++) {
+                // Only add this if geometry or geometries are set and not null
+                feature = features[i];
+                if (feature.geometries || feature.geometry || feature.features || feature.coordinates) {
+                    this.addData(features[i]);
+                }
+            }
+            return this;
+        }
+
+        var options = this.options;
+
+        if (options.filter && !options.filter(geojson)) { return; }
+
+        var layer = this.geometryToLotLayer(geojson, options.pointToLayer, options.coordsToLatLng, options);
+        layer.feature = L.GeoJSON.asFeature(geojson);
+
+        layer.defaultOptions = layer.options;
+        this.resetStyle(layer);
+
+        if (options.onEachFeature) {
+            options.onEachFeature(geojson, layer);
+        }
+
+        return this.addLayer(layer);
+    },
+
+    geometryToLotLayer: function (geojson, pointToLayer, coordsToLatLng, vectorOptions) {
+        var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
+            coords = geometry.coordinates,
+            layers = [],
+            latlng, latlngs, i, len,
+            options = L.extend({}, vectorOptions);
+
+        coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
+
+        switch (geometry.type) {
+        case 'Point':
+            latlng = coordsToLatLng(coords);
+            return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
+
+        case 'MultiPoint':
+            for (i = 0, len = coords.length; i < len; i++) {
+                latlng = coordsToLatLng(coords[i]);
+                layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
+            }
+            return new L.FeatureGroup(layers);
+
+        case 'LineString':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 0, coordsToLatLng);
+            return new L.Polyline(latlngs, options);
+
+        case 'Polygon':
+            if (coords.length === 2 && !coords[1].length) {
+                throw new Error('Invalid GeoJSON object.');
+            }
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
+            return L.lotPolygon(latlngs, options);
+
+        case 'MultiLineString':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
+            return new L.MultiPolyline(latlngs, options);
+
+        case 'MultiPolygon':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 2, coordsToLatLng);
+            return L.lotMultiPolygon(latlngs, options);
+
+        case 'GeometryCollection':
+            for (i = 0, len = geometry.geometries.length; i < len; i++) {
+
+                layers.push(L.GeoJSON.geometryToLayer({
+                    geometry: geometry.geometries[i],
+                    type: 'Feature',
+                    properties: geojson.properties
+                }, pointToLayer, coordsToLatLng, options));
+            }
+            return new L.FeatureGroup(layers);
+
+        default:
+            throw new Error('Invalid GeoJSON object.');
+        }
+    }
+
+});
+
+L.lotGeoJson = function (geojson, options) {
+    return new L.LotGeoJson(geojson, options);
+};
+
+},{"./leaflet.lotmultipolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js","./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js":[function(require,module,exports){
 var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
@@ -746,6 +853,7 @@ require('leaflet-geojsongridlayer');
 require('leaflet-usermarker');
 
 var filters = require('./components/filters');
+require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 
 
@@ -861,7 +969,8 @@ L.LotMap = L.Map.extend({
             layers: {
                 'lots-centroids': centroidsOptions,
                 'lots-polygons': polygonsOptions
-            }
+            },
+            geoJsonClass: L.LotGeoJson
         }).addTo(this);
     },
 
@@ -915,19 +1024,13 @@ L.lotMap = function (id, options) {
     return new L.LotMap(id, options);
 };
 
-},{"./components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js":[function(require,module,exports){
+},{"./components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js":[function(require,module,exports){
 var L = require('leaflet');
 
 require('./leaflet.lotpath');
 
 
 L.LotMarker = L.CircleMarker.extend({
-
-    onZoomEnd: function () {
-        if (this._map && this.feature.properties.has_organizers) {
-            this.bringToFront();
-        }
-    },
 
     _pickRadius: function (zoom) {
         var radius = 4;   
@@ -952,7 +1055,6 @@ L.LotMarker = L.CircleMarker.extend({
         // Update the circle's radius according to the map's zoom level
         this.options.radius = this._radius = this._pickRadius(zoom);
 
-        this.updateActionPathScale();
         L.CircleMarker.prototype._updatePath.call(this);
     }
 
@@ -964,17 +1066,9 @@ L.LotMarker.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
-
-            if (this.feature && this.feature.properties.has_organizers) {
-                var layer = this;
-                this._map.on('zoomend', this.onZoomEnd, layer);
-            }
         },
         'remove': function () {
-            if (this.feature && this.feature.properties.has_organizers) {
-                var layer = this;
-                this._map.off('zoomend', this.onZoomEnd, layer);
-            }
+            this.removeActionPath();
         }
     });
 });
@@ -983,69 +1077,176 @@ L.lotMarker = function (latlng, options) {
     return new L.LotMarker(latlng, options);
 };
 
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js":[function(require,module,exports){
+},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js":[function(require,module,exports){
 var L = require('leaflet');
 
+require('./leaflet.lotpolygon');
 
-L.LotPathMixin = {
+L.LotMultiPolygon = L.FeatureGroup.extend({
 
-    hide: function () {
-        if (!this._path) return;
-        this._path.style.display = 'none';
-        if (this._actionPath) {
-            this._actionPath.style.display = 'none';
+    initialize: function (latlngs, options) {
+        this._layers = {};
+        this._options = options;
+        this.setLatLngs(latlngs);
+    },
+
+    setLatLngs: function (latlngs) {
+        var i = 0,
+            len = latlngs.length;
+
+        this.eachLayer(function (layer) {
+            if (i < len) {
+                layer.setLatLngs(latlngs[i++]);
+            } else {
+                this.removeLayer(layer);
+            }
+        }, this);
+
+        while (i < len) {
+            this.addLayer(new L.LotPolygon(latlngs[i++], this._options));
         }
+
+        return this;
+    },
+
+    getLatLngs: function () {
+        var latlngs = [];
+
+        this.eachLayer(function (layer) {
+            latlngs.push(layer.getLatLngs());
+        });
+
+        return latlngs;
     },
 
     show: function () {
-        if (!this._path) return;
-        this._path.style.display = 'block';
-        if (this._actionPath) {
-            this._actionPath.style.display = 'block';
-        }
+        this.eachLayer(function (layer) {
+            layer.show();
+        });
     },
+
+    hide: function () {
+        this.eachLayer(function (layer) {
+            layer.hide();
+        });
+    }
+});
+
+L.LotMultiPolygon.include(L.LotPathMixin);
+
+L.LotMultiPolygon.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        }
+    });
+});
+
+L.lotMultiPolygon = function (latlngs, options) {
+    return new L.LotMultiPolygon(latlngs, options);
+};
+
+},{"./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.LotPathMixin = {
 
     initActionPath: function() {
-        if (this.options.hasOrganizers) {
-            this._actionPath = this._createElement('path');
-            this._actionPath.setAttribute('style', 'fill:#CFB933; fill-opacity:1;');
-            this._actionPath.setAttribute('d', this.getActionPathSvgStr());
-            this._container.insertBefore(this._actionPath, this._path);
-
+        if (this.feature && this.feature.properties.organizing && !this._actionPath) {
+            this._actionPath = $('.map-icon-organizing svg polygon').clone().get()[0];
+            if (this._path) {
+                this._container = this._path.parentNode;
+            }
+            if (this.getLayers) {
+                this._container = this.getLayers()[0]._path.parentNode;
+            }
             this.updateActionPathScale();
+
+            this._map.on('zoomend', this.updateActionPathScale.bind(this));
+            this.on('remove', this.removeActionPath.bind(this));
         }
     },
 
-    getActionPathSvgStr: function () {
-        return 'M 0,-39 c -0.6 0 -2.2 3.4 -3.5 7.6 -1.3 4.2 -3 7.8 -3.7 8.1 -0.7 0.3 -4.2 -1.6 -7.7 -4.1 -5.8 -4.1 -8.6 -5.5 -8.6 -4.2 0 0.2 1.1 4.1 2.6 8.6 1.4 4.5 2.4 8.3 2.1 8.6 -0.2 0.2 -4.3 0.7 -9.1 1.1 -4.7 0.3 -8.6 1 -8.6 1.5 0 0.5 2.9 3 6.5 5.5 3.6 2.6 6.5 5.2 6.5 5.8 0 0.6 -2.9 3.2 -6.5 5.8 -3.6 2.6 -6.5 5.1 -6.5 5.5 0 0.5 3.9 1.1 8.6 1.5 4.7 0.3 8.8 0.8 9.1 1.1 0.2 0.2 -0.7 4.1 -2.1 8.6 -1.4 4.5 -2.6 8.3 -2.6 8.6 0 1.3 2.8 -0 8.6 -4.2 3.5 -2.5 7 -4.4 7.7 -4.1 0.7 0.3 2.3 3.9 3.7 8.1 1.3 4.2 2.9 7.6 3.5 7.6 0.6 0 2.2 -3.4 3.5 -7.6 1.3 -4.2 3 -7.8 3.7 -8.1 0.7 -0.3 4.2 1.6 7.7 4.1 5.8 4.1 8.6 5.5 8.6 4.2 0 -0.2 -1.1 -4.1 -2.6 -8.6 -1.4 -4.5 -2.4 -8.3 -2.1 -8.6 0.2 -0.2 4.3 -0.7 9.1 -1.1 4.7 -0.3 8.6 -1 8.6 -1.5 0 -0.5 -2.9 -3 -6.5 -5.5 -3.6 -2.6 -6.5 -5.2 -6.5 -5.8 0 -0.6 2.9 -3.2 6.5 -5.8 3.6 -2.6 6.5 -5.1 6.5 -5.5 0 -0.5 -3.9 -1.1 -8.6 -1.5 -4.7 -0.3 -8.8 -0.8 -9.1 -1.1 -0.2 -0.2 0.7 -4.1 2.1 -8.6 1.4 -4.5 2.6 -8.3 2.6 -8.6 0 -1.3 -2.8 0 -8.6 4.2 -3.5 2.5 -7 4.4 -7.7 4.1 -0.7 -0.3 -2.3 -3.9 -3.7 -8.1 -1.3 -4.2 -2.9 -7.6 -3.5 -7.6 z';
+    removeActionPath: function() {
+        if (this._actionPath && this._actionPath.parentNode) {
+            this._actionPath.parentNode.removeChild(this._actionPath);
+        }
     },
 
     updateActionPathScale: function () {
-        if (this._actionPath) {
-            var point = this._map.latLngToLayerPoint(this.getBounds().getCenter()),
+        if (this._actionPath && this._map) {
+            this._container.appendChild(this._actionPath);
+
+            var latlng = (this.getBounds ? this.getBounds().getCenter() : this.getLatLng());
+            var bbox = this._actionPath.getBBox(),
+                point = this._map.latLngToLayerPoint(latlng),
                 zoom = this._map.getZoom(),
-                scale = 0.25;
+                scale = 0.5;
 
             // Translate and scale around the layer's point
-            if (zoom >= 18) {
+            if (zoom >= 16) {
                 scale = 1.5;
             }
             else if (zoom >= 15) {
-                scale = 0.75;
+                scale = 1.5;
             }
             else if (zoom >= 14) {
-                scale = 0.5;
+                scale = 1.2;
             }
             else if (zoom >= 13) {
-                scale = 0.4;
+                scale = 1;
             }
-            this._actionPath.setAttribute('transform', 'translate(' + point.x + ',' + point.y + ') scale(' + scale + ')');
+            var x = point.x - ((bbox.width * scale) / 2),
+                y = point.y - bbox.height * scale;
+            this._actionPath.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')');
         }
     }
 
 };
 
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js":[function(require,module,exports){
+var L = require('leaflet');
+
+require('./leaflet.lotpath');
+
+
+L.LotPolygon = L.Polygon.extend({
+
+    _pickOpacity: function (zoom) {
+        if (zoom >= 18) {
+            return 0.65;
+        }
+        if (zoom >= 17) {
+            return 0.85;
+        }
+        return 1;
+    },
+
+    _updatePath: function () {
+        // Update opacity
+        this.options.fillOpacity = this._pickOpacity(this._map.getZoom());
+        //this._updateStyle();
+
+        L.Polygon.prototype._updatePath.call(this);
+    }
+
+});
+
+L.LotPolygon.include(L.LotPathMixin);
+
+L.LotPolygon.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        }
+    });
+});
+
+L.lotPolygon = function (latlngs, options) {
+    return new L.LotPolygon(latlngs, options);
+};
+
+},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
 var numeral = require('numeral');
 
 var squareFootPerAcre = 43560;
@@ -14677,6 +14878,7 @@ define(function (require, exports, module) {
                 this._url = url;
                 this._geojsons = {};
                 this._features = {};
+                this.geoJsonClass = (this.options.geoJsonClass ? this.options.geoJsonClass : L.GeoJSON);
             },
 
             onAdd: function (map) {
@@ -14706,7 +14908,6 @@ define(function (require, exports, module) {
             },
 
             fetchTile: function (coords, done) {
-                // TODO "cache" and only make extra requests as needed
                 var tileUrl = L.Util.template(this._url, coords);
                 var tileLayer = this;
 
@@ -14759,7 +14960,7 @@ define(function (require, exports, module) {
 
             addSubLayerData: function (sublayer, data) {
                 if (!this._geojsons[sublayer]) {
-                    this._geojsons[sublayer] = new L.geoJson(null, this.options.layers[sublayer]).addTo(this._map);
+                    this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);
                     this.checkZoomConditions(this._map.getZoom());
                 }
                 var toAdd = data.features.filter(function (feature) {
@@ -58023,7 +58224,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

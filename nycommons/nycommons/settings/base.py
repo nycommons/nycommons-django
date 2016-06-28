@@ -164,6 +164,7 @@ INSTALLED_APPS = (
     'jsonfield',
     'mptt',
     'reversion',
+    'svg',
     #'reversion_compare',
     'widget_tweaks',
 

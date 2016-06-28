@@ -1,16 +1,11 @@
 var L = require('leaflet');
 var _ = require('underscore');
 
-require('leaflet-tilelayer-vector');
-
-var ie = require('./ie');
-require('./leaflet.geojson.tile');
 require('./leaflet.lotmultipolygon');
 require('./leaflet.lotpolygon');
 
 
 L.LotGeoJson = L.GeoJSON.extend({
-
     initialize: function (geojson, options) {
         L.GeoJSON.prototype.initialize.call(this, geojson, options);
     },
@@ -52,12 +47,7 @@ L.LotGeoJson = L.GeoJSON.extend({
             coords = geometry.coordinates,
             layers = [],
             latlng, latlngs, i, len,
-            options = L.extend({}, vectorOptions),
-            lotLayers = geojson.properties.layers.split(',');
-
-        if (_.contains(lotLayers, 'organizing') || _.contains(lotLayers, 'in_use_started_here')) {
-            options.hasOrganizers = true;
-        }
+            options = L.extend({}, vectorOptions);
 
         coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
 
@@ -90,7 +80,7 @@ L.LotGeoJson = L.GeoJSON.extend({
 
         case 'MultiPolygon':
             latlngs = L.GeoJSON.coordsToLatLngs(coords, 2, coordsToLatLng);
-            return new L.LotMultiPolygon(latlngs, options);
+            return L.lotMultiPolygon(latlngs, options);
 
         case 'GeometryCollection':
             for (i = 0, len = geometry.geometries.length; i < len; i++) {
@@ -112,24 +102,4 @@ L.LotGeoJson = L.GeoJSON.extend({
 
 L.lotGeoJson = function (geojson, options) {
     return new L.LotGeoJson(geojson, options);
-};
-
-L.LotLayer = L.TileLayer.Vector.extend({
-
-    initialize: function (url, options, geojsonOptions) {
-        options.tileCacheFactory = L.tileCache;
-        options.layerFactory = L.lotGeoJson;
-
-        // Don't use web workers for IE
-        if (ie.detect()) {
-            options.workerFactory = L.noWorker;
-        }
-        L.TileLayer.Vector.prototype.initialize.call(this, url, options,
-                                                      geojsonOptions);
-    },
-
-});
-
-L.lotLayer = function (url, options, geojsonOptions) {
-    return new L.LotLayer(url, options, geojsonOptions);
 };

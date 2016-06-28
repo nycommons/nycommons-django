@@ -2,7 +2,6 @@ var L = require('leaflet');
 
 require('./leaflet.lotpolygon');
 
-
 L.LotMultiPolygon = L.FeatureGroup.extend({
 
     initialize: function (latlngs, options) {
@@ -52,3 +51,17 @@ L.LotMultiPolygon = L.FeatureGroup.extend({
         });
     }
 });
+
+L.LotMultiPolygon.include(L.LotPathMixin);
+
+L.LotMultiPolygon.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        }
+    });
+});
+
+L.lotMultiPolygon = function (latlngs, options) {
+    return new L.LotMultiPolygon(latlngs, options);
+};

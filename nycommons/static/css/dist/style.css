@@ -6236,6 +6236,9 @@ footer .footer-right {
     height: 10cm;
   }
 }
+.map-page .map-icon {
+  display: none;
+}
 .map-page #page-header {
   display: none;
 }

@@ -13,6 +13,7 @@ require('leaflet-geojsongridlayer');
 require('leaflet-usermarker');
 
 var filters = require('./components/filters');
+require('./leaflet.lotlayer');
 require('./leaflet.lotmarker');
 
 
@@ -128,7 +129,8 @@ L.LotMap = L.Map.extend({
             layers: {
                 'lots-centroids': centroidsOptions,
                 'lots-polygons': polygonsOptions
-            }
+            },
+            geoJsonClass: L.LotGeoJson
         }).addTo(this);
     },
 

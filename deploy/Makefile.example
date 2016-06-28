@@ -10,8 +10,8 @@ TILESTACHE_PORT = XXX
 TILESTACHE_WEBAPP_NAME = XXX
 WEBAPP_NAME = xxx
 
-centroid_view_sql = "CREATE OR REPLACE VIEW visible_centroids AS SELECT l.id AS id, l.commons_type, l.bbl, l.centroid, l.owner_id, l.priority FROM lots_lot l WHERE l.group_id IS NULL AND l.centroid IS NOT NULL"
-polygon_view_sql = "CREATE OR REPLACE VIEW visible_polygons AS SELECT l.id, l.commons_type, l.bbl, l.polygon, l.owner_id, l.priority FROM lots_lot l WHERE l.group_id IS NULL AND l.polygon IS NOT NULL"
+centroid_view_sql = "CREATE OR REPLACE VIEW visible_centroids AS SELECT l.id AS id, l.commons_type, l.bbl, l.centroid, l.owner_id, l.priority, l.organizing FROM lots_lot l WHERE l.group_id IS NULL AND l.centroid IS NOT NULL"
+polygon_view_sql = "CREATE OR REPLACE VIEW visible_polygons AS SELECT l.id, l.commons_type, l.bbl, l.polygon, l.owner_id, l.priority, l.organizing FROM lots_lot l WHERE l.group_id IS NULL AND l.polygon IS NOT NULL"
 
 env:
 	easy_install-2.7 pip

@@ -18,9 +18,8 @@ L.LotPolygon = L.Polygon.extend({
     _updatePath: function () {
         // Update opacity
         this.options.fillOpacity = this._pickOpacity(this._map.getZoom());
-        this._updateStyle();
+        //this._updateStyle();
 
-        this.updateActionPathScale();
         L.Polygon.prototype._updatePath.call(this);
     }
 
