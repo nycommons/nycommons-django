@@ -1,6 +1,6 @@
 var L = require('leaflet');
 
-require('./leaflet.lotpolygon');
+require('./lotpolygon');
 
 L.LotMultiPolygon = L.FeatureGroup.extend({
 

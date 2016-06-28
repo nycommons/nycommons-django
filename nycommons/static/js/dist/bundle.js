@@ -730,523 +730,7 @@ Handlebars.registerHelper('pick-area', function (acres, sqft) {
     return sqft + ' sq ft';
 });
 
-},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js":[function(require,module,exports){
-var L = require('leaflet');
-var _ = require('underscore');
-
-require('./leaflet.lotmultipolygon');
-require('./leaflet.lotpolygon');
-
-
-L.LotGeoJson = L.GeoJSON.extend({
-    initialize: function (geojson, options) {
-        L.GeoJSON.prototype.initialize.call(this, geojson, options);
-    },
-
-    addData: function (geojson) {
-        var features = L.Util.isArray(geojson) ? geojson : geojson.features,
-            i, len, feature;
-
-        if (features) {
-            for (i = 0, len = features.length; i < len; i++) {
-                // Only add this if geometry or geometries are set and not null
-                feature = features[i];
-                if (feature.geometries || feature.geometry || feature.features || feature.coordinates) {
-                    this.addData(features[i]);
-                }
-            }
-            return this;
-        }
-
-        var options = this.options;
-
-        if (options.filter && !options.filter(geojson)) { return; }
-
-        var layer = this.geometryToLotLayer(geojson, options.pointToLayer, options.coordsToLatLng, options);
-        layer.feature = L.GeoJSON.asFeature(geojson);
-
-        layer.defaultOptions = layer.options;
-        this.resetStyle(layer);
-
-        if (options.onEachFeature) {
-            options.onEachFeature(geojson, layer);
-        }
-
-        return this.addLayer(layer);
-    },
-
-    geometryToLotLayer: function (geojson, pointToLayer, coordsToLatLng, vectorOptions) {
-        var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
-            coords = geometry.coordinates,
-            layers = [],
-            latlng, latlngs, i, len,
-            options = L.extend({}, vectorOptions);
-
-        coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
-
-        switch (geometry.type) {
-        case 'Point':
-            latlng = coordsToLatLng(coords);
-            return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
-
-        case 'MultiPoint':
-            for (i = 0, len = coords.length; i < len; i++) {
-                latlng = coordsToLatLng(coords[i]);
-                layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
-            }
-            return new L.FeatureGroup(layers);
-
-        case 'LineString':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 0, coordsToLatLng);
-            return new L.Polyline(latlngs, options);
-
-        case 'Polygon':
-            if (coords.length === 2 && !coords[1].length) {
-                throw new Error('Invalid GeoJSON object.');
-            }
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
-            return L.lotPolygon(latlngs, options);
-
-        case 'MultiLineString':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
-            return new L.MultiPolyline(latlngs, options);
-
-        case 'MultiPolygon':
-            latlngs = L.GeoJSON.coordsToLatLngs(coords, 2, coordsToLatLng);
-            return L.lotMultiPolygon(latlngs, options);
-
-        case 'GeometryCollection':
-            for (i = 0, len = geometry.geometries.length; i < len; i++) {
-
-                layers.push(L.GeoJSON.geometryToLayer({
-                    geometry: geometry.geometries[i],
-                    type: 'Feature',
-                    properties: geojson.properties
-                }, pointToLayer, coordsToLatLng, options));
-            }
-            return new L.FeatureGroup(layers);
-
-        default:
-            throw new Error('Invalid GeoJSON object.');
-        }
-    }
-
-});
-
-L.lotGeoJson = function (geojson, options) {
-    return new L.LotGeoJson(geojson, options);
-};
-
-},{"./leaflet.lotmultipolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js","./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js":[function(require,module,exports){
-var _ = require('underscore');
-var Handlebars = require('handlebars');
-var L = require('leaflet');
-var mapstyles = require('./lib/map-styles');
-var Spinner = require('spin.js');
-
-require('livinglots.addlot');
-require('livinglots.emailparticipants');
-require('livinglots.boundaries');
-require('leaflet-plugins-bing');
-require('leaflet-dataoptions');
-require('leaflet-geojsongridlayer');
-require('leaflet-usermarker');
-
-var filters = require('./components/filters');
-require('./leaflet.lotlayer');
-require('./leaflet.lotmarker');
-
-
-L.LotMap = L.Map.extend({
-    lotsLayer: null,
-    currentFilters: {},
-    userLayer: null,
-    userLocationZoom: 16,
-
-    filters: null,
-
-    compiledPopupTemplate: null,
-
-    getPopupTemplate: function () {
-        if (this.compiledPopupTemplate) {
-            return this.compiledPopupTemplate;
-        }
-        var source = $("#popup-template").html();
-        this.compiledPopupTemplate = Handlebars.compile(source);
-        return this.compiledPopupTemplate;
-    },
-
-    lotLayerOptions: {
-        onEachFeature: function (feature, layer) {
-            layer.on({
-                'click': function (event) {
-                    var latlng = event.latlng,
-                        x = this._map.latLngToContainerPoint(latlng).x,
-                        y = this._map.latLngToContainerPoint(latlng).y - 100,
-                        point = this._map.containerPointToLatLng([x, y]),
-                        template = this._map.getPopupTemplate();
-                    this.bindPopup('<div id="popup"></div>').openPopup();
-                    var spinner = new Spinner().spin($('#popup')[0]);
-                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
-                        spinner.stop();
-                        layer.setPopupContent(template(data));
-                    });
-                    return this._map.setView(point, this._map._zoom);
-                },
-                'mouseover': function (event) {
-                    this._map.options.onMouseOverFeature(event.target.feature);
-                },
-                'mouseout': function (event) {
-                    this._map.options.onMouseOutFeature(event.target.feature);
-                }
-            });
-        },
-        pointToLayer: function (feature, latlng) {
-            return L.lotMarker(latlng, {});
-        },
-        style: function (feature) {
-            return mapstyles.getStyle(feature);
-        },
-        popupOptions: {
-            autoPan: false,
-            maxWidth: 300,
-            minWidth: 300,
-            offset: [0, 0]
-        }
-    },
-
-    initialize: function (id, options) {
-        L.Map.prototype.initialize.call(this, id, options);
-        this.addBaseLayer();
-
-        // When new lots are added ensure they should be displayed
-        var map = this;
-        this.on('layeradd', function (event) {
-            if (event.layer.feature) {
-                // We have something other than a layer (eg a boundary), add it
-                if (event.layer.feature.properties.commons_type === undefined) {
-                    event.layer.addTo(map);
-                    return;
-                }
-
-                var lot = event.layer;
-                if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
-                    lot.addTo(map);
-                }
-                else {
-                    lot.removeFrom(map);
-                }
-            }
-        });
-    },
-
-    buildLotFilterParams: function (options) {
-        return filters.filtersToParams(this, options);
-    },
-
-    getParamsQueryString: function (options, overrides) {
-        var params = this.buildLotFilterParams(options);
-        return $.param(_.extend(params, overrides));
-    },
-
-    addBaseLayer: function () {
-        var streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
-            attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
-        }).addTo(this);
-        var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
-
-        L.control.layers({
-            streets: streets,
-            satellite: bing,
-        }, null, { position: 'bottomright' }).addTo(this);
-    },
-
-    addLotsLayer: function () {
-        var url = this.options.lotCentroidsUrl;
-        var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
-        var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
-        this.lotsLayer = L.geoJsonGridLayer(url, {
-            layers: {
-                'lots-centroids': centroidsOptions,
-                'lots-polygons': polygonsOptions
-            },
-            geoJsonClass: L.LotGeoJson
-        }).addTo(this);
-    },
-
-    updateFilters: function (filters) {
-        this.currentFilters = filters;
-        this.updateDisplayedLots(filters);
-    },
-
-    updateDisplayedLots: function (currentFilters) {
-        if (!this.lotsLayer) return;
-        var layers = this.lotsLayer.getLayers();
-        var map = this,
-            zoom = map.getZoom();
-        layers.forEach(function (layer) {
-            var minZoom = layer.options.minZoom,
-                maxZoom = layer.options.maxZoom;
-            layer.eachLayer(function (lot) {
-                if ((minZoom && zoom < minZoom) || (maxZoom && zoom > maxZoom)) {
-                    lot.removeFrom(map);
-                    return;
-                }
-                if (filters.lotShouldAppear(lot, currentFilters, map.boundariesLayer)) {
-                    lot.addTo(map);
-                }
-                else {
-                    lot.removeFrom(map);
-                }
-            }, this);
-        }, this);
-    },
-
-    addUserLayer: function (latlng, opts) {
-        opts = opts || {};
-        this.userLayer = L.userMarker(latlng, {
-            smallIcon: true,
-        }).addTo(this);
-        if (opts.popupContent) {
-            this.userLayer.bindPopup(opts.popupContent).openPopup();
-        }
-        this.setView(latlng, this.userLocationZoom);
-    },
-
-    removeUserLayer: function () {
-        if (this.userLayer) {
-            this.removeLayer(this.userLayer);
-        }
-    }
-});
-
-L.lotMap = function (id, options) {
-    return new L.LotMap(id, options);
-};
-
-},{"./components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./leaflet.lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotlayer.js","./leaflet.lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js","./lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmarker.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('./leaflet.lotpath');
-
-
-L.LotMarker = L.CircleMarker.extend({
-
-    _pickRadius: function (zoom) {
-        var radius = 4;   
-        if (zoom >= 13) {
-            radius = 6;
-        }
-        if (zoom >= 14) {
-            radius = 9;
-        }
-        if (zoom >= 15) {
-            radius = 12;
-        }
-        if (zoom >= 16) {
-            radius = 15;
-        }
-        return radius;
-    },
-
-    _updatePath: function () {
-        var zoom = this._map.getZoom();
-
-        // Update the circle's radius according to the map's zoom level
-        this.options.radius = this._radius = this._pickRadius(zoom);
-
-        L.CircleMarker.prototype._updatePath.call(this);
-    }
-
-});
-
-L.LotMarker.include(L.LotPathMixin);
-
-L.LotMarker.addInitHook(function () {
-    this.on({
-        'add': function () {
-            this.initActionPath();
-        },
-        'remove': function () {
-            this.removeActionPath();
-        }
-    });
-});
-
-L.lotMarker = function (latlng, options) {
-    return new L.LotMarker(latlng, options);
-};
-
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmultipolygon.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('./leaflet.lotpolygon');
-
-L.LotMultiPolygon = L.FeatureGroup.extend({
-
-    initialize: function (latlngs, options) {
-        this._layers = {};
-        this._options = options;
-        this.setLatLngs(latlngs);
-    },
-
-    setLatLngs: function (latlngs) {
-        var i = 0,
-            len = latlngs.length;
-
-        this.eachLayer(function (layer) {
-            if (i < len) {
-                layer.setLatLngs(latlngs[i++]);
-            } else {
-                this.removeLayer(layer);
-            }
-        }, this);
-
-        while (i < len) {
-            this.addLayer(new L.LotPolygon(latlngs[i++], this._options));
-        }
-
-        return this;
-    },
-
-    getLatLngs: function () {
-        var latlngs = [];
-
-        this.eachLayer(function (layer) {
-            latlngs.push(layer.getLatLngs());
-        });
-
-        return latlngs;
-    },
-
-    show: function () {
-        this.eachLayer(function (layer) {
-            layer.show();
-        });
-    },
-
-    hide: function () {
-        this.eachLayer(function (layer) {
-            layer.hide();
-        });
-    }
-});
-
-L.LotMultiPolygon.include(L.LotPathMixin);
-
-L.LotMultiPolygon.addInitHook(function () {
-    this.on({
-        'add': function () {
-            this.initActionPath();
-        }
-    });
-});
-
-L.lotMultiPolygon = function (latlngs, options) {
-    return new L.LotMultiPolygon(latlngs, options);
-};
-
-},{"./leaflet.lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js":[function(require,module,exports){
-var L = require('leaflet');
-
-L.LotPathMixin = {
-
-    initActionPath: function() {
-        if (this.feature && this.feature.properties.organizing && !this._actionPath) {
-            this._actionPath = $('.map-icon-organizing svg polygon').clone().get()[0];
-            if (this._path) {
-                this._container = this._path.parentNode;
-            }
-            if (this.getLayers) {
-                this._container = this.getLayers()[0]._path.parentNode;
-            }
-            this.updateActionPathScale();
-
-            this._map.on('zoomend', this.updateActionPathScale.bind(this));
-            this.on('remove', this.removeActionPath.bind(this));
-        }
-    },
-
-    removeActionPath: function() {
-        if (this._actionPath && this._actionPath.parentNode) {
-            this._actionPath.parentNode.removeChild(this._actionPath);
-        }
-    },
-
-    updateActionPathScale: function () {
-        if (this._actionPath && this._map) {
-            this._container.appendChild(this._actionPath);
-
-            var latlng = (this.getBounds ? this.getBounds().getCenter() : this.getLatLng());
-            var bbox = this._actionPath.getBBox(),
-                point = this._map.latLngToLayerPoint(latlng),
-                zoom = this._map.getZoom(),
-                scale = 0.5;
-
-            // Translate and scale around the layer's point
-            if (zoom >= 16) {
-                scale = 1.5;
-            }
-            else if (zoom >= 15) {
-                scale = 1.5;
-            }
-            else if (zoom >= 14) {
-                scale = 1.2;
-            }
-            else if (zoom >= 13) {
-                scale = 1;
-            }
-            var x = point.x - ((bbox.width * scale) / 2),
-                y = point.y - bbox.height * scale;
-            this._actionPath.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')');
-        }
-    }
-
-};
-
-},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpolygon.js":[function(require,module,exports){
-var L = require('leaflet');
-
-require('./leaflet.lotpath');
-
-
-L.LotPolygon = L.Polygon.extend({
-
-    _pickOpacity: function (zoom) {
-        if (zoom >= 18) {
-            return 0.65;
-        }
-        if (zoom >= 17) {
-            return 0.85;
-        }
-        return 1;
-    },
-
-    _updatePath: function () {
-        // Update opacity
-        this.options.fillOpacity = this._pickOpacity(this._map.getZoom());
-        //this._updateStyle();
-
-        L.Polygon.prototype._updatePath.call(this);
-    }
-
-});
-
-L.LotPolygon.include(L.LotPathMixin);
-
-L.LotPolygon.addInitHook(function () {
-    this.on({
-        'add': function () {
-            this.initActionPath();
-        }
-    });
-});
-
-L.lotPolygon = function (latlngs, options) {
-    return new L.LotPolygon(latlngs, options);
-};
-
-},{"./leaflet.lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
+},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
 var numeral = require('numeral');
 
 var squareFootPerAcre = 43560;
@@ -1263,49 +747,7 @@ module.exports = {
     }
 };
 
-},{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js":[function(require,module,exports){
-//
-// Lot map styles by layer for maps
-//
-
-var fillColors = {
-    library: '#00AEEF',
-    'public housing': '#F5A623',
-    'post office': '#662D91',
-    default: '#000000'
-};
-
-var priorityColor = '#bf1e2d';
-
-function getLayerColor (layer) {
-    if (fillColors[layer] !== undefined) {
-        return fillColors[layer];
-    }
-    return fillColors.default;
-}
-
-module.exports = {
-    fillColors: fillColors,
-
-    getLayerColor: getLayerColor,
-
-    getStyle: function (feature) {
-        var style = {
-            fillColor: '#000000',
-            fillOpacity: 1,
-            stroke: false
-        };
-        style.fillColor = getLayerColor(feature.properties.commons_type);
-
-        if (feature.properties.priority) {
-            style.color = priorityColor;
-            style.stroke = true;
-        }
-        return style;
-    }
-};
-
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
+},{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
 var _ = require('underscore');
 var proj4 = require('proj4');
 require('./proj4.defs');
@@ -1612,7 +1054,565 @@ $.fn.mapsearch = function (options) {
     return this;
 };
 
-},{"./geocode":"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js":[function(require,module,exports){
+},{"./geocode":"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js":[function(require,module,exports){
+var L = require('leaflet');
+var _ = require('underscore');
+
+require('./lotmultipolygon');
+require('./lotpolygon');
+
+
+L.LotGeoJson = L.GeoJSON.extend({
+    initialize: function (geojson, options) {
+        L.GeoJSON.prototype.initialize.call(this, geojson, options);
+    },
+
+    addData: function (geojson) {
+        var features = L.Util.isArray(geojson) ? geojson : geojson.features,
+            i, len, feature;
+
+        if (features) {
+            for (i = 0, len = features.length; i < len; i++) {
+                // Only add this if geometry or geometries are set and not null
+                feature = features[i];
+                if (feature.geometries || feature.geometry || feature.features || feature.coordinates) {
+                    this.addData(features[i]);
+                }
+            }
+            return this;
+        }
+
+        var options = this.options;
+
+        if (options.filter && !options.filter(geojson)) { return; }
+
+        var layer = this.geometryToLotLayer(geojson, options.pointToLayer, options.coordsToLatLng, options);
+        layer.feature = L.GeoJSON.asFeature(geojson);
+
+        layer.defaultOptions = layer.options;
+        this.resetStyle(layer);
+
+        if (options.onEachFeature) {
+            options.onEachFeature(geojson, layer);
+        }
+
+        return this.addLayer(layer);
+    },
+
+    geometryToLotLayer: function (geojson, pointToLayer, coordsToLatLng, vectorOptions) {
+        var geometry = geojson.type === 'Feature' ? geojson.geometry : geojson,
+            coords = geometry.coordinates,
+            layers = [],
+            latlng, latlngs, i, len,
+            options = L.extend({}, vectorOptions);
+
+        coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
+
+        switch (geometry.type) {
+        case 'Point':
+            latlng = coordsToLatLng(coords);
+            return pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng);
+
+        case 'MultiPoint':
+            for (i = 0, len = coords.length; i < len; i++) {
+                latlng = coordsToLatLng(coords[i]);
+                layers.push(pointToLayer ? pointToLayer(geojson, latlng) : new L.Marker(latlng));
+            }
+            return new L.FeatureGroup(layers);
+
+        case 'LineString':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 0, coordsToLatLng);
+            return new L.Polyline(latlngs, options);
+
+        case 'Polygon':
+            if (coords.length === 2 && !coords[1].length) {
+                throw new Error('Invalid GeoJSON object.');
+            }
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
+            return L.lotPolygon(latlngs, options);
+
+        case 'MultiLineString':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 1, coordsToLatLng);
+            return new L.MultiPolyline(latlngs, options);
+
+        case 'MultiPolygon':
+            latlngs = L.GeoJSON.coordsToLatLngs(coords, 2, coordsToLatLng);
+            return L.lotMultiPolygon(latlngs, options);
+
+        case 'GeometryCollection':
+            for (i = 0, len = geometry.geometries.length; i < len; i++) {
+
+                layers.push(L.GeoJSON.geometryToLayer({
+                    geometry: geometry.geometries[i],
+                    type: 'Feature',
+                    properties: geojson.properties
+                }, pointToLayer, coordsToLatLng, options));
+            }
+            return new L.FeatureGroup(layers);
+
+        default:
+            throw new Error('Invalid GeoJSON object.');
+        }
+    }
+
+});
+
+L.lotGeoJson = function (geojson, options) {
+    return new L.LotGeoJson(geojson, options);
+};
+
+},{"./lotmultipolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmultipolygon.js","./lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js":[function(require,module,exports){
+var _ = require('underscore');
+var Handlebars = require('handlebars');
+var L = require('leaflet');
+var Spinner = require('spin.js');
+
+require('livinglots.addlot');
+require('livinglots.emailparticipants');
+require('livinglots.boundaries');
+require('leaflet-plugins-bing');
+require('leaflet-dataoptions');
+require('leaflet-geojsongridlayer');
+require('leaflet-usermarker');
+
+var filters = require('../components/filters');
+require('./lotlayer');
+require('./lotmarker');
+var mapstyles = require('./styles');
+
+
+L.LotMap = L.Map.extend({
+    lotsLayer: null,
+    currentFilters: {},
+    userLayer: null,
+    userLocationZoom: 16,
+
+    filters: null,
+
+    compiledPopupTemplate: null,
+
+    getPopupTemplate: function () {
+        if (this.compiledPopupTemplate) {
+            return this.compiledPopupTemplate;
+        }
+        var source = $("#popup-template").html();
+        this.compiledPopupTemplate = Handlebars.compile(source);
+        return this.compiledPopupTemplate;
+    },
+
+    lotLayerOptions: {
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                'click': function (event) {
+                    var latlng = event.latlng,
+                        x = this._map.latLngToContainerPoint(latlng).x,
+                        y = this._map.latLngToContainerPoint(latlng).y - 100,
+                        point = this._map.containerPointToLatLng([x, y]),
+                        template = this._map.getPopupTemplate();
+                    this.bindPopup('<div id="popup"></div>').openPopup();
+                    var spinner = new Spinner().spin($('#popup')[0]);
+                    $.getJSON(Django.url('lots:lot_detail_json', { pk: this.feature.id }), function (data) {
+                        spinner.stop();
+                        layer.setPopupContent(template(data));
+                    });
+                    return this._map.setView(point, this._map._zoom);
+                },
+                'mouseover': function (event) {
+                    this._map.options.onMouseOverFeature(event.target.feature);
+                },
+                'mouseout': function (event) {
+                    this._map.options.onMouseOutFeature(event.target.feature);
+                }
+            });
+        },
+        pointToLayer: function (feature, latlng) {
+            return L.lotMarker(latlng, {});
+        },
+        style: function (feature) {
+            return mapstyles.getStyle(feature);
+        },
+        popupOptions: {
+            autoPan: false,
+            maxWidth: 300,
+            minWidth: 300,
+            offset: [0, 0]
+        }
+    },
+
+    initialize: function (id, options) {
+        L.Map.prototype.initialize.call(this, id, options);
+        this.addBaseLayer();
+
+        // When new lots are added ensure they should be displayed
+        var map = this;
+        this.on('layeradd', function (event) {
+            if (event.layer.feature) {
+                // We have something other than a layer (eg a boundary), add it
+                if (event.layer.feature.properties.commons_type === undefined) {
+                    event.layer.addTo(map);
+                    return;
+                }
+
+                var lot = event.layer;
+                if (filters.lotShouldAppear(lot, map.currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
+                }
+                else {
+                    lot.removeFrom(map);
+                }
+            }
+        });
+    },
+
+    buildLotFilterParams: function (options) {
+        return filters.filtersToParams(this, options);
+    },
+
+    getParamsQueryString: function (options, overrides) {
+        var params = this.buildLotFilterParams(options);
+        return $.param(_.extend(params, overrides));
+    },
+
+    addBaseLayer: function () {
+        var streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+            attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+        }).addTo(this);
+        var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
+
+        L.control.layers({
+            streets: streets,
+            satellite: bing,
+        }, null, { position: 'bottomright' }).addTo(this);
+    },
+
+    addLotsLayer: function () {
+        var url = this.options.lotCentroidsUrl;
+        var centroidsOptions = _.extend({ maxZoom: 15 }, this.lotLayerOptions);
+        var polygonsOptions = _.extend({ minZoom: 15 }, this.lotLayerOptions);
+        this.lotsLayer = L.geoJsonGridLayer(url, {
+            layers: {
+                'lots-centroids': centroidsOptions,
+                'lots-polygons': polygonsOptions
+            },
+            geoJsonClass: L.LotGeoJson
+        }).addTo(this);
+    },
+
+    updateFilters: function (filters) {
+        this.currentFilters = filters;
+        this.updateDisplayedLots(filters);
+    },
+
+    updateDisplayedLots: function (currentFilters) {
+        if (!this.lotsLayer) return;
+        var layers = this.lotsLayer.getLayers();
+        var map = this,
+            zoom = map.getZoom();
+        layers.forEach(function (layer) {
+            var minZoom = layer.options.minZoom,
+                maxZoom = layer.options.maxZoom;
+            layer.eachLayer(function (lot) {
+                if ((minZoom && zoom < minZoom) || (maxZoom && zoom > maxZoom)) {
+                    lot.removeFrom(map);
+                    return;
+                }
+                if (filters.lotShouldAppear(lot, currentFilters, map.boundariesLayer)) {
+                    lot.addTo(map);
+                }
+                else {
+                    lot.removeFrom(map);
+                }
+            }, this);
+        }, this);
+    },
+
+    addUserLayer: function (latlng, opts) {
+        opts = opts || {};
+        this.userLayer = L.userMarker(latlng, {
+            smallIcon: true,
+        }).addTo(this);
+        if (opts.popupContent) {
+            this.userLayer.bindPopup(opts.popupContent).openPopup();
+        }
+        this.setView(latlng, this.userLocationZoom);
+    },
+
+    removeUserLayer: function () {
+        if (this.userLayer) {
+            this.removeLayer(this.userLayer);
+        }
+    }
+});
+
+L.lotMap = function (id, options) {
+    return new L.LotMap(id, options);
+};
+
+},{"../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js","./lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js","./styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js":[function(require,module,exports){
+var L = require('leaflet');
+
+require('./lotpath');
+
+
+L.LotMarker = L.CircleMarker.extend({
+
+    _pickRadius: function (zoom) {
+        var radius = 4;   
+        if (zoom >= 13) {
+            radius = 6;
+        }
+        if (zoom >= 14) {
+            radius = 9;
+        }
+        if (zoom >= 15) {
+            radius = 12;
+        }
+        if (zoom >= 16) {
+            radius = 15;
+        }
+        return radius;
+    },
+
+    _updatePath: function () {
+        var zoom = this._map.getZoom();
+
+        // Update the circle's radius according to the map's zoom level
+        this.options.radius = this._radius = this._pickRadius(zoom);
+
+        L.CircleMarker.prototype._updatePath.call(this);
+    }
+
+});
+
+L.LotMarker.include(L.LotPathMixin);
+
+L.LotMarker.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        },
+        'remove': function () {
+            this.removeActionPath();
+        }
+    });
+});
+
+L.lotMarker = function (latlng, options) {
+    return new L.LotMarker(latlng, options);
+};
+
+},{"./lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmultipolygon.js":[function(require,module,exports){
+var L = require('leaflet');
+
+require('./lotpolygon');
+
+L.LotMultiPolygon = L.FeatureGroup.extend({
+
+    initialize: function (latlngs, options) {
+        this._layers = {};
+        this._options = options;
+        this.setLatLngs(latlngs);
+    },
+
+    setLatLngs: function (latlngs) {
+        var i = 0,
+            len = latlngs.length;
+
+        this.eachLayer(function (layer) {
+            if (i < len) {
+                layer.setLatLngs(latlngs[i++]);
+            } else {
+                this.removeLayer(layer);
+            }
+        }, this);
+
+        while (i < len) {
+            this.addLayer(new L.LotPolygon(latlngs[i++], this._options));
+        }
+
+        return this;
+    },
+
+    getLatLngs: function () {
+        var latlngs = [];
+
+        this.eachLayer(function (layer) {
+            latlngs.push(layer.getLatLngs());
+        });
+
+        return latlngs;
+    },
+
+    show: function () {
+        this.eachLayer(function (layer) {
+            layer.show();
+        });
+    },
+
+    hide: function () {
+        this.eachLayer(function (layer) {
+            layer.hide();
+        });
+    }
+});
+
+L.LotMultiPolygon.include(L.LotPathMixin);
+
+L.LotMultiPolygon.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        }
+    });
+});
+
+L.lotMultiPolygon = function (latlngs, options) {
+    return new L.LotMultiPolygon(latlngs, options);
+};
+
+},{"./lotpolygon":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpolygon.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpath.js":[function(require,module,exports){
+var L = require('leaflet');
+
+L.LotPathMixin = {
+
+    initActionPath: function() {
+        if (this.feature && this.feature.properties.organizing && !this._actionPath) {
+            this._actionPath = $('.map-icon-organizing svg polygon').clone().get()[0];
+            if (this._path) {
+                this._container = this._path.parentNode;
+            }
+            if (this.getLayers) {
+                this._container = this.getLayers()[0]._path.parentNode;
+            }
+            this.updateActionPathScale();
+
+            this._map.on('zoomend', this.updateActionPathScale.bind(this));
+            this.on('remove', this.removeActionPath.bind(this));
+        }
+    },
+
+    removeActionPath: function() {
+        if (this._actionPath && this._actionPath.parentNode) {
+            this._actionPath.parentNode.removeChild(this._actionPath);
+        }
+    },
+
+    updateActionPathScale: function () {
+        if (this._actionPath && this._map) {
+            this._container.appendChild(this._actionPath);
+
+            var latlng = (this.getBounds ? this.getBounds().getCenter() : this.getLatLng());
+            var bbox = this._actionPath.getBBox(),
+                point = this._map.latLngToLayerPoint(latlng),
+                zoom = this._map.getZoom(),
+                scale = 0.5;
+
+            // Translate and scale around the layer's point
+            if (zoom >= 16) {
+                scale = 1.5;
+            }
+            else if (zoom >= 15) {
+                scale = 1.5;
+            }
+            else if (zoom >= 14) {
+                scale = 1.2;
+            }
+            else if (zoom >= 13) {
+                scale = 1;
+            }
+            var x = point.x - ((bbox.width * scale) / 2),
+                y = point.y - bbox.height * scale;
+            this._actionPath.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')');
+        }
+    }
+
+};
+
+},{"leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpolygon.js":[function(require,module,exports){
+var L = require('leaflet');
+
+require('./lotpath');
+
+
+L.LotPolygon = L.Polygon.extend({
+
+    _pickOpacity: function (zoom) {
+        if (zoom >= 18) {
+            return 0.65;
+        }
+        if (zoom >= 17) {
+            return 0.85;
+        }
+        return 1;
+    },
+
+    _updatePath: function () {
+        // Update opacity
+        this.options.fillOpacity = this._pickOpacity(this._map.getZoom());
+        //this._updateStyle();
+
+        L.Polygon.prototype._updatePath.call(this);
+    }
+
+});
+
+L.LotPolygon.include(L.LotPathMixin);
+
+L.LotPolygon.addInitHook(function () {
+    this.on({
+        'add': function () {
+            this.initActionPath();
+        }
+    });
+});
+
+L.lotPolygon = function (latlngs, options) {
+    return new L.LotPolygon(latlngs, options);
+};
+
+},{"./lotpath":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotpath.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js":[function(require,module,exports){
+//
+// Lot map styles by layer for maps
+//
+
+var fillColors = {
+    library: '#00AEEF',
+    'public housing': '#F5A623',
+    'post office': '#662D91',
+    default: '#000000'
+};
+
+var priorityColor = '#bf1e2d';
+
+function getLayerColor (layer) {
+    if (fillColors[layer] !== undefined) {
+        return fillColors[layer];
+    }
+    return fillColors.default;
+}
+
+module.exports = {
+    fillColors: fillColors,
+
+    getLayerColor: getLayerColor,
+
+    getStyle: function (feature) {
+        var style = {
+            fillColor: '#000000',
+            fillOpacity: 1,
+            stroke: false
+        };
+        style.fillColor = getLayerColor(feature.properties.commons_type);
+
+        if (feature.properties.priority) {
+            style.color = priorityColor;
+            style.stroke = true;
+        }
+        return style;
+    }
+};
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js":[function(require,module,exports){
 //
 // maplinks.js
 //
@@ -1682,7 +1682,7 @@ require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
 
 var collapsibleSection = require('../components/collapse').collapsibleSection;
-var mapstyles = require('../lib/map-styles');
+var mapstyles = require('../map/styles');
 var StreetView = require('../lib/streetview');
 
 
@@ -1802,7 +1802,7 @@ $(document).ready(function () {
     collapsibleSection.attachTo('section.collapsible');
 });
 
-},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/map-styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/map-styles.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map/styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -1813,7 +1813,7 @@ var _ = require('underscore');
 var L = require('leaflet');
 var Spinner = require('spin.js');
 
-require('../leaflet.lotmap');
+require('../map/lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
@@ -1983,7 +1983,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../leaflet.lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/leaflet.lotmap.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -58224,7 +58224,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

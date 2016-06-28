@@ -8,7 +8,7 @@ var _ = require('underscore');
 var L = require('leaflet');
 var Spinner = require('spin.js');
 
-require('../leaflet.lotmap');
+require('../map/lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
 require('jquery-infinite-scroll');

@@ -10,7 +10,7 @@ require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
 
 var collapsibleSection = require('../components/collapse').collapsibleSection;
-var mapstyles = require('../lib/map-styles');
+var mapstyles = require('../map/styles');
 var StreetView = require('../lib/streetview');
 
 

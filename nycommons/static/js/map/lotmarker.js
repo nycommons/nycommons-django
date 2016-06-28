@@ -1,6 +1,6 @@
 var L = require('leaflet');
 
-require('./leaflet.lotpath');
+require('./lotpath');
 
 
 L.LotMarker = L.CircleMarker.extend({

@@ -1,8 +1,8 @@
 var L = require('leaflet');
 var _ = require('underscore');
 
-require('./leaflet.lotmultipolygon');
-require('./leaflet.lotpolygon');
+require('./lotmultipolygon');
+require('./lotpolygon');
 
 
 L.LotGeoJson = L.GeoJSON.extend({

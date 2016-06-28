@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var Handlebars = require('handlebars');
 var L = require('leaflet');
-var mapstyles = require('./lib/map-styles');
 var Spinner = require('spin.js');
 
 require('livinglots.addlot');
@@ -12,9 +11,10 @@ require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
 require('leaflet-usermarker');
 
-var filters = require('./components/filters');
-require('./leaflet.lotlayer');
-require('./leaflet.lotmarker');
+var filters = require('../components/filters');
+require('./lotlayer');
+require('./lotmarker');
+var mapstyles = require('./styles');
 
 
 L.LotMap = L.Map.extend({
