@@ -24,7 +24,7 @@
     "leaflet-tilelayer-vector": "git://github.com/ebrelsford/leaflet-tilelayer-vector",
     "leaflet-usermarker": "^1.0.0",
     "livinglots.addlot": "git://github.com/596acres/livinglots.addlot#v1.0.0",
-    "livinglots.boundaries": "git://github.com/596acres/livinglots.boundaries#v0.1.1",
+    "livinglots.boundaries": "git://github.com/596acres/livinglots.boundaries#v1.0.0",
     "livinglots.emailparticipants": "git://github.com/596acres/livinglots.emailparticipants#v0.2.3",
     "numeral": "^1.5.3",
     "proj4": "^2.3.3",

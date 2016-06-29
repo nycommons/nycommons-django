@@ -5,7 +5,7 @@ var Spinner = require('spin.js');
 
 require('livinglots.addlot');
 require('livinglots.emailparticipants');
-require('livinglots.boundaries');
+var livinglotsBoundaries = require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
@@ -179,6 +179,8 @@ L.LotMap = L.Map.extend({
         }
     }
 });
+
+livinglotsBoundaries.initialize(L.LotMap);
 
 L.lotMap = function (id, options) {
     return new L.LotMap(id, options);

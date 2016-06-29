@@ -1169,7 +1169,7 @@ var Spinner = require('spin.js');
 
 require('livinglots.addlot');
 require('livinglots.emailparticipants');
-require('livinglots.boundaries');
+var livinglotsBoundaries = require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
 require('leaflet-geojsongridlayer');
@@ -1343,6 +1343,8 @@ L.LotMap = L.Map.extend({
         }
     }
 });
+
+livinglotsBoundaries.initialize(L.LotMap);
 
 L.lotMap = function (id, options) {
     return new L.LotMap(id, options);
@@ -46961,7 +46963,7 @@ return Handlebars.template({"1":function(container,depth0,helpers,partials,data)
 // (boundarieschange) when this layer changes.
 //
 
-L.Map.include({
+var mixin = {
     boundariesLayer: null,
 
     _initBoundaries: function () {
@@ -46986,9 +46988,17 @@ L.Map.include({
         }
     }
 
-});
+};
 
-L.Map.addInitHook('_initBoundaries');
+module.exports = {
+    initialize: function (mapClass) {
+        mapClass = mapClass || L.Map;
+        mapClass.include(mixin);
+        mapClass.addInitHook('_initBoundaries');
+    },
+
+    mixin: mixin
+};
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/node_modules/handlebars/dist/cjs/handlebars.js":[function(require,module,exports){
 "use strict";
