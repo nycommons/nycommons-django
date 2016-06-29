@@ -41,19 +41,26 @@ class GetOwnerMapUrl(AsTag):
     commons type that this lot is.
     """
     options = Options(
+        Argument('organizing', default=False, resolve=True, required=False),
+        Argument('priority', default=False,  resolve=True, required=False),
         'for',
         Argument('lot', resolve=True, required=True),
         'as',
         Argument('varname', resolve=False, required=False),
     )
 
-    def get_value(self, context, lot):
+    def get_value(self, context, organizing, priority, lot):
         owners = {}
         owners[lot.commons_type] = [lot.owner.pk,]
-        return '/#%s' % urlencode({
+        params = {
             'layers': json.dumps([lot.commons_type,]),
             'owners': json.dumps(owners),
-        })
+        }
+        if organizing:
+            params['organizing'] = 'true'
+        if priority:
+            params['priority'] = 'true'
+        return '/#%s' % urlencode(params)
 
 
 register.tag(GetOasisUrl)

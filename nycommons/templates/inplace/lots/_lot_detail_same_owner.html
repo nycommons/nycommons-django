@@ -39,6 +39,12 @@
             <div class="no-lots">
                 None yet.
             </div>
+            <div class="lots-exist">
+                {% get_owner_map_url False True for lot as owner_priority_map_url %}
+                <a class="btn btn-default" href="{{ owner_priority_map_url }}" target="_blank">
+                    {% trans "View Map" %}
+                </a>
+            </div>
         </div>
     </section>
 
@@ -58,6 +64,12 @@
             {% endspaceless %}
             <div class="no-lots">
                 None yet.
+            </div>
+            <div class="lots-exist">
+                {% get_owner_map_url True False for lot as owner_organizing_map_url %}
+                <a class="btn btn-default" href="{{ owner_organizing_map_url }}" target="_blank">
+                    {% trans "View Map" %}
+                </a>
             </div>
         </div>
     </section>

@@ -6115,6 +6115,10 @@ footer .footer-right {
 .lot-detail-page .owners-lots-list-organizing:empty + .no-lots {
   display: block;
 }
+.lot-detail-page .owners-lots-list-priority:empty ~ .lots-exist,
+.lot-detail-page .owners-lots-list-organizing:empty ~ .lots-exist {
+  display: none;
+}
 .lot-detail-section {
   margin-bottom: 50px;
   margin-top: 50px;
