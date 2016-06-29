@@ -153,6 +153,42 @@ var boundaryFilter = flight.component(function () {
     });
 });
 
+var priorityFilter = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleChange = function () {
+        var checked = this.$node.is(':checked');
+
+        // If priority & organizing, clear others
+        if (this.name === 'priority-organizing' && checked) {
+            $('.filter-priority-organizing-list .filter[id!="' + this.name + '"]').prop('checked', false);
+        }
+
+        var details = {
+            name: this.name,
+            type: this.type,
+            value: checked
+        };
+        this.attr.filterList.trigger('filterChanged', details);
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.name = this.$node.attr('id');
+        this.type = 'priority-organizing';
+
+        // Check initial filters and set this input as appropriate
+        var initialFilters = this.attr.filterList.attr.initialFilters;
+        if (initialFilters[this.name]) {
+            this.$node.prop('checked', true);
+            this.handleChange();
+        }
+        this.on('change', this.handleChange);
+    });
+});
+
 // A group of filters, should be one per page
 var filters = flight.component(function () {
     this.attributes({
@@ -166,37 +202,39 @@ var filters = flight.component(function () {
     };
 
     this.aggregateFilters = function () {
+        var filters = {};
+
         // Get layers
         var $selectedLayers = this.$node.find('.filter[data-type=layer]:checked');
-        var layers = $selectedLayers.map(function () {
+        filters.layers = $selectedLayers.map(function () {
             return $(this).attr('name');
         }).get();
 
         // Get owners
-        var owners = {};
+        filters.owners = {};
         $selectedLayers.each(function () {
             var name = $(this).attr('name'),
                 $selectedOwners = $(this).parent().find('.filter[data-type=owner]:checked');
-            owners[name] = $selectedOwners.map(function () {
+            filters.owners[name] = $selectedOwners.map(function () {
                 return $(this).data('owner-pk');
             }).get();
         });
 
+        this.$node.find('.filter-priority-organizing-list .filter:checked').each(function () {
+            filters[$(this).attr('id')] = true;
+        });
+
         // Get boundaries
-        var boundaries = {};
+        filters.boundaries = {};
         var $selectedBoundary = this.$node.find('.filter-boundaries option:selected[value!=""]');
         if ($selectedBoundary.length) {
-            boundaries = {
+            filters.boundaries = {
                 layer: $selectedBoundary.parent().data('layer'),
                 value: $selectedBoundary.val()
             };
         }
 
-        return {
-            boundaries: boundaries,
-            layers: layers,
-            owners: owners
-        }
+        return filters;
     };
 
     this.currentFilters = function () {
@@ -208,6 +246,9 @@ var filters = flight.component(function () {
             filterList: this
         });
         boundaryFilter.attachTo(this.$node.find('.filter-boundaries'), {
+            filterList: this
+        });
+        priorityFilter.attachTo(this.$node.find('.filter-priority-organizing-list :input'), {
             filterList: this
         });
 
@@ -224,14 +265,29 @@ module.exports = {
     lotShouldAppear: function (lot, filters, boundariesLayer) {
         // Should a lot show up on the map?
         //
-        // The filters UI is split into three categories:
+        // The filters UI is split into four categories:
         //  * boundaries
+        //  * priority / organizing
         //  * ownership
         //  * layers / categories
         //
         // We follow these three categories to find a reason to exclude a lot.
         // If a lot fails for any of the three categories, it fails for all and
         // is not shown.
+
+        /*
+         * Priority / organizing
+         */
+        if (filters.priority || filters['priority-organizing']) {
+            if (!lot.feature.properties.priority) {
+                return false;
+            }
+        }
+        if (filters.organizing || filters['priority-organizing']) {
+            if (!lot.feature.properties.organizing) {
+                return false;
+            }
+        }
 
         /*
          * Layers
@@ -285,6 +341,11 @@ module.exports = {
                 filters.boundaryLayer = $(this).data('layer');
                 filters.boundaryPk = $(this).val();
             }
+        });
+
+        // Add priority / organizing
+        $('.filter-priority-organizing-list .filter:checked').each(function () {
+            filters[$(this).attr('id')] = true;
         });
 
         var params = toParams(filters);
