@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lots_tags %}
 
 {% with owner_lots=lot.owner.lot_set.all %}
     <section class="collapsible">
@@ -15,6 +15,10 @@
                 None.
                 {% endfor %}
             </ul>
+            {% get_owner_map_url for lot as owner_map_url %}
+            <a class="btn btn-default" href="{{ owner_map_url }}" target="_blank">
+                {% trans "View Map" %}
+            </a>
         </div>
     </section>
 

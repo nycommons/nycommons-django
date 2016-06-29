@@ -1,7 +1,9 @@
+import json
+from urllib import urlencode
+
 from classytags.core import Options
 from classytags.arguments import Argument
 from classytags.helpers import AsTag
-
 from django import template
 
 
@@ -33,4 +35,26 @@ class GetOasisUrl(AsTag):
         return None
 
 
+class GetOwnerMapUrl(AsTag):
+    """
+    Get a map url that will filter the data on the map to just the owner and
+    commons type that this lot is.
+    """
+    options = Options(
+        'for',
+        Argument('lot', resolve=True, required=True),
+        'as',
+        Argument('varname', resolve=False, required=False),
+    )
+
+    def get_value(self, context, lot):
+        owners = {}
+        owners[lot.commons_type] = [lot.owner.pk,]
+        return '/#%s' % urlencode({
+            'layers': json.dumps([lot.commons_type,]),
+            'owners': json.dumps(owners),
+        })
+
+
 register.tag(GetOasisUrl)
+register.tag(GetOwnerMapUrl)
