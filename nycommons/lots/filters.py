@@ -51,6 +51,14 @@ class LotCenterFilter(django_filters.Filter):
         return qs.filter(centroid__distance_lte=(lot.centroid, D(mi=.5)))
 
 
+class OrganizingFilter(django_filters.Filter):
+
+    def filter(self, qs, value):
+        if value == 'true':
+            qs = qs.filter(organizing=True)
+        return qs
+
+
 class OwnerFilter(django_filters.Filter):
 
     def __init__(self, owner_type=None, **kwargs):
@@ -68,6 +76,22 @@ class OwnerFilter(django_filters.Filter):
         )
         other_owners_query = ~Q(owner__owner_type=self.owner_type)
         return qs.filter(owner_query | other_owners_query)
+
+
+class PriorityFilter(django_filters.Filter):
+
+    def filter(self, qs, value):
+        if value == 'true':
+            qs = qs.filter(priority=True)
+        return qs
+
+
+class PriorityOrganizingFilter(django_filters.Filter):
+
+    def filter(self, qs, value):
+        if value == 'true':
+            qs = qs.filter(organizing=True, priority=True)
+        return qs
 
 
 class ProjectFilter(django_filters.Filter):
@@ -94,7 +118,10 @@ class LotFilter(django_filters.FilterSet):
         widget=django_filters.widgets.CSVWidget()
     )
     lot_center = LotCenterFilter()
+    organizing = OrganizingFilter()
     parents_only = LotGroupParentFilter()
+    priority = PriorityFilter()
+    priority_organizing = PriorityOrganizingFilter()
     projects = ProjectFilter()
     public_owners = OwnerFilter(owner_type='public')
 
@@ -115,7 +142,10 @@ class LotFilter(django_filters.FilterSet):
             'commons_type',
             'known_use',
             'lot_center',
+            'organizing',
             'parents_only',
+            'priority',
+            'priority_organizing',
             'projects',
             'public_owners',
         ]

@@ -15,7 +15,8 @@ var defaultFilters = {
 };
 
 var renamedFilters = {
-    commonsTypes: 'commons_type'
+    commonsTypes: 'commons_type',
+    'priority-organizing': 'priority_organizing'
 };
 
 function normalizeFilters(filters) {
