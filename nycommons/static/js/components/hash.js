@@ -13,7 +13,7 @@ function deparam(s) {
 
 function param(obj) {
     var parts = Object.keys(obj).map(function (key) {
-        return [key, JSON.stringify(obj[key])].join('=');
+        return [key, encodeURIComponent(JSON.stringify(obj[key]))].join('=');
     });
     return parts.join('&');
 }
