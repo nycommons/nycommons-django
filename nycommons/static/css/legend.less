@@ -1,3 +1,14 @@
+.legend-marker-icon {
+    background-color: inherit;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    border-radius: 0;
+    height: 20px;
+    margin: 0 5px;
+    width: 20px;
+}
+
 .legend {
     position: absolute;
     z-index: 5000;
@@ -20,36 +31,50 @@
         background: black;
         border-radius: 10px;
         display: inline-block;
-        height: 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-        width: 10px;
+        height: 13px;
+        margin-left: 9px;
+        margin-right: 9px;
+        width: 13px;
 
-        &-organized {
-            margin-left: 5px;
-            margin-right: 5px;
-            background: data-uri("../img/action_star_small.png");
-            height: 20px;
-            width: 20px;
-        }
-
-        &-library {
-            background: @lot-library-color;
-        }
-
-        &-post_office {
-            background: @lot-post-office-color;
-        }
-
-        &-public_housing {
-            background: @lot-public-housing-color;
+        &-organizing {
+            .legend-marker-icon();
+            background-image: data-uri("../img/legend-organizing.png");
         }
 
         &-priority {
-            background: transparent;
-            border: 2px solid @red;
-            height: 12px;
-            width: 12px;
+            .legend-marker-icon();
+            background-image: data-uri("../img/legend-priority.png");
+            height: 15px;
+            margin: 0 7.5px;
+            width: 15px;
+        }
+
+        &-priority-organizing {
+            .legend-marker-icon();
+            background-image: data-uri("../img/legend-priority-organizing.png");
+            height: 25px;
+            margin: 0 2.5px;
+            width: 25px;
+        }
+
+        &-library {
+            background-color: @lot-library-color;
+        }
+
+        &-post_office {
+            background-color: @lot-post-office-color;
+        }
+
+        &-public_housing {
+            background-color: @lot-public-housing-color;
+        }
+
+        &-vacant_lot {
+            background-color: @lot-vacant-lot-color;
+        }
+
+        &-waterfront {
+            background-color: @lot-waterfront-color;
         }
 
         &-project {
@@ -62,9 +87,11 @@
         font-weight: 300;
         line-height: 22px;
         text-transform: capitalize;
+        vertical-align: middle;
 
-        &-organized {
-            vertical-align: top;
+        &-priority-organizing {
+            display: inline-block;
+            margin-top: -5px;
         }
     }
 
