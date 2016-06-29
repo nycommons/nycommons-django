@@ -5776,6 +5776,13 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .filter-section-boundaries select {
   width: 100%;
 }
+.filters-actions {
+  float: right;
+}
+.filters-actions a {
+  float: right;
+  margin-left: 10px;
+}
 footer {
   background: #f6f6f6;
   color: #8e8e8e;

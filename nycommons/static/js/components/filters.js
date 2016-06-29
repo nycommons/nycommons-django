@@ -65,6 +65,13 @@ var filter = flight.component(function () {
         });
     };
 
+    this.handleReset = function () {
+        this.$node.prop('checked', true);
+        if (this.type === 'layer') {
+            this.toggleLayerOwners();
+        }
+    };
+
     this.isChecked = function () {
         return this.$node.prop('checked');
     };
@@ -117,6 +124,7 @@ var filter = flight.component(function () {
             this.toggleLayerOwners();
         }
         this.on('change', this.handleChange);
+        this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
     });
 });
 
@@ -140,6 +148,16 @@ var boundaryFilter = flight.component(function () {
         return false;
     };
 
+    this.handleReset = function () {
+        this.$node.val('');
+        var details = {
+            name: this.name,
+            type: this.type,
+            value: null
+        };
+        $(document).trigger('boundaryChanged', details);
+    };
+
     this.after('initialize', function () {
         this.name = this.$node.data('layer');
         this.type = 'boundary';
@@ -151,6 +169,7 @@ var boundaryFilter = flight.component(function () {
             this.handleChange();
         }
         this.on('change', this.handleChange);
+        this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
     });
 });
 
@@ -176,6 +195,10 @@ var priorityFilter = flight.component(function () {
         return false;
     };
 
+    this.handleReset = function () {
+        this.$node.prop('checked', false);
+    };
+
     this.after('initialize', function () {
         this.name = this.$node.attr('id');
         this.type = 'priority-organizing';
@@ -187,6 +210,22 @@ var priorityFilter = flight.component(function () {
             this.handleChange();
         }
         this.on('change', this.handleChange);
+        this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
+    });
+});
+
+var resetButton = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleClick = function () {
+        this.attr.filterList.trigger('filtersReset');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick);
     });
 });
 
@@ -252,11 +291,15 @@ var filters = flight.component(function () {
         priorityFilter.attachTo(this.$node.find('.filter-priority-organizing-list :input'), {
             filterList: this
         });
+        resetButton.attachTo(this.$node.find('.reset'), {
+            filterList: this
+        });
 
         // Set off filterChanged with current state of filters
         this.handleFilterChanged();
 
         this.on('filterChanged', this.handleFilterChanged);
+        this.on('filtersReset', this.handleFilterChanged);
     });
 });
 
