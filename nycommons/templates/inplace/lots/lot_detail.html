@@ -87,7 +87,7 @@
 {% block content %}
     <div class="lot-detail-map-container row">
         <div class="col-md-3">
-            <a href="/#18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}">
+            <a href="/#map=18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}" target="_blank">
                 <div id="lot-detail-map"
                     data-l-zoom="16" 
                     data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
