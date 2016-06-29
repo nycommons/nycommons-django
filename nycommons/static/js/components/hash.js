@@ -35,7 +35,7 @@ module.exports = {
             if (!parsed.filters) {
                 parsed.filters = {};
             }
-            parsed.filters[key] = JSON.parse(hash[key]);
+            parsed.filters[key] = JSON.parse(decodeURIComponent(hash[key].replace(/\+/g, '%20')));
         });
         return parsed;
     },
