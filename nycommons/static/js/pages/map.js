@@ -23,6 +23,7 @@ var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
+require('../data/lotcounts').init();
 var oasis = require('../lib/oasis');
 
 
@@ -114,7 +115,7 @@ $(document).ready(function () {
         $(document).on('filtersChanged', function (event, data) {
             map.updateFilters(data.filters);
             var params = map.buildLotFilterParams();
-            $(document).trigger('updateLotCount');
+            $(document).trigger('updateLotCount', { map: map });
             hashHandler.update(map);
         });
 
@@ -154,17 +155,17 @@ $(document).ready(function () {
                 });
             });
 
-        $(document).trigger('updateLotCount');
+        $(document).trigger('updateLotCount', { map: map });
         map.on({
             'moveend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
-                $(document).trigger('updateLotCount');
+                $(document).trigger('updateLotCount', { map: map });
             },
             'zoomend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
-                $(document).trigger('updateLotCount');
+                $(document).trigger('updateLotCount', { map: map });
             }
         });
 
