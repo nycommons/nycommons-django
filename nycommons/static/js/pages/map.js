@@ -24,6 +24,7 @@ var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
 require('../data/lotcounts').init();
+require('../data/ownercounts').init();
 var oasis = require('../lib/oasis');
 
 
@@ -116,6 +117,7 @@ $(document).ready(function () {
             map.updateFilters(data.filters);
             var params = map.buildLotFilterParams();
             $(document).trigger('updateLotCount', { map: map });
+            $(document).trigger('updateOwnerCount', { map: map });
             hashHandler.update(map);
         });
 
@@ -129,10 +131,10 @@ $(document).ready(function () {
             map.updateFilters(map.currentFilters);
         });
 
-        legend.attachTo('#map-legend', { map: map });
+        legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        details.details.attachTo('.details-section', { map: map });
+        details.details.attachTo('.details-section');
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
         exportLink.attachTo('.export', { map: map });
 
@@ -156,16 +158,19 @@ $(document).ready(function () {
             });
 
         $(document).trigger('updateLotCount', { map: map });
+        $(document).trigger('updateOwnerCount', { map: map });
         map.on({
             'moveend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount', { map: map });
+                $(document).trigger('updateOwnerCount', { map: map });
             },
             'zoomend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount', { map: map });
+                $(document).trigger('updateOwnerCount', { map: map });
             }
         });
 

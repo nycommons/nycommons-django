@@ -37,36 +37,26 @@ Handlebars.registerHelper('formatArea', function (area) {
 });
 
 var details = flight.component(function () {
-    this.attributes({
-        map: null
-    });
-
-    this.updateOwnershipOverview = function () {
-        var url = Django.url('lots:lot_ownership_overview');
-        var $details = this.$node;
-
-        $.getJSON(url + '?' + this.attr.map.getParamsQueryString({ bbox: true }), function (data) {
-            var template = Handlebars.compile($('#details-template').html());
-            var content = template({ lottypes: data });
-            $('.details-body').html(content);
-            $('.map-printable-details').html(content);
-
-            $details.find('.details-toggle-owner-list').on('click', function () {
-                $(this).toggleClass('expanded');
-                $(this).parent().parent().find('.details-owner-list').slideToggle();
-                return false;
-            });
-        });
-    }
-
     this.receivedLotCount = function (event, data) {
         this.$node.find('.details-header-property-count').text(data.count);
     };
 
+    this.receivedOwnerCount = function (event, data) {
+        var template = Handlebars.compile($('#details-template').html());
+        var content = template({ lottypes: data.results });
+        $('.details-body').html(content);
+        $('.map-printable-details').html(content);
+
+        this.$node.find('.details-toggle-owner-list').on('click', function () {
+            $(this).toggleClass('expanded');
+            $(this).parent().parent().find('.details-owner-list').slideToggle();
+            return false;
+        });
+    };
+
     this.after('initialize', function () {
-        this.updateOwnershipOverview();
-        this.on(document, 'filtersChanged', this.updateOwnershipOverview);
         this.on(document, 'receivedLotCount', this.receivedLotCount);
+        this.on(document, 'receivedOwnerCount', this.receivedOwnerCount);
     });
 });
 
@@ -741,7 +731,21 @@ module.exports = {
     }
 };
 
-},{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js":[function(require,module,exports){
+},{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js":[function(require,module,exports){
+function updateOwnerCount (event, data) {
+    var url = Django.url('lots:lot_ownership_overview') + '?' + data.map.getParamsQueryString({ bbox: true });
+    $.getJSON(url, function (data) {
+        $(document).trigger('receivedOwnerCount', { results: data });
+    });
+}
+
+module.exports = {
+    init: function () {
+        $(document).on('updateOwnerCount', updateOwnerCount);
+    }
+};
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js":[function(require,module,exports){
 var geocoder = new google.maps.Geocoder();
 
 function geocode(address, bounds, state, f) {
@@ -1942,6 +1946,7 @@ var locateButton = require('../components/locate').locateButton;
 var searchButton = require('../components/search').searchButton;
 require('../components/sidebar');
 require('../data/lotcounts').init();
+require('../data/ownercounts').init();
 var oasis = require('../lib/oasis');
 
 
@@ -2034,6 +2039,7 @@ $(document).ready(function () {
             map.updateFilters(data.filters);
             var params = map.buildLotFilterParams();
             $(document).trigger('updateLotCount', { map: map });
+            $(document).trigger('updateOwnerCount', { map: map });
             hashHandler.update(map);
         });
 
@@ -2047,10 +2053,10 @@ $(document).ready(function () {
             map.updateFilters(map.currentFilters);
         });
 
-        legend.attachTo('#map-legend', { map: map });
+        legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        details.details.attachTo('.details-section', { map: map });
+        details.details.attachTo('.details-section');
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
         exportLink.attachTo('.export', { map: map });
 
@@ -2074,16 +2080,19 @@ $(document).ready(function () {
             });
 
         $(document).trigger('updateLotCount', { map: map });
+        $(document).trigger('updateOwnerCount', { map: map });
         map.on({
             'moveend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount', { map: map });
+                $(document).trigger('updateOwnerCount', { map: map });
             },
             'zoomend': function () {
                 hashHandler.update(map);
                 $(document).trigger('mapMoved');
                 $(document).trigger('updateLotCount', { map: map });
+                $(document).trigger('updateOwnerCount', { map: map });
             }
         });
 
@@ -2097,7 +2106,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -58346,7 +58355,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
