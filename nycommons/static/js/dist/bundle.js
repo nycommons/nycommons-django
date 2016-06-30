@@ -548,6 +548,7 @@ module.exports = {
 };
 
 },{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js":[function(require,module,exports){
+var _ = require('underscore');
 var flight = require('flightjs');
 
 var legend = flight.component(function () {
@@ -559,8 +560,16 @@ var legend = flight.component(function () {
         this.select('lotsCount').text(data.count);
     };
 
+    this.receivedOwnerCount = function (event, data) {
+        _.each(data.results, function (element) {
+            console.log(element.type, element.count);
+            this.$node.find('.legend-count[data-type="' + element.type + '"]').text(element.count);
+        }, this);
+    };
+
     this.after('initialize', function () {
         this.on(document, 'receivedLotCount', this.receivedLotCount);
+        this.on(document, 'receivedOwnerCount', this.receivedOwnerCount.bind(this));
     });
 });
 
@@ -568,7 +577,7 @@ module.exports = {
     legend: legend
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js":[function(require,module,exports){
 var flight = require('flightjs');
 require('leaflet-usermarker');
 
@@ -58355,7 +58364,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

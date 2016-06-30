@@ -6079,6 +6079,9 @@ footer .footer-right {
   display: inline-block;
   margin-top: -5px;
 }
+.legend-count {
+  float: right;
+}
 @media print {
   .legend {
     display: none;
