@@ -12,7 +12,6 @@ var legend = flight.component(function () {
 
     this.receivedOwnerCount = function (event, data) {
         _.each(data.results, function (element) {
-            console.log(element.type, element.count);
             this.$node.find('.legend-count[data-type="' + element.type + '"]').text(element.count);
         }, this);
     };
