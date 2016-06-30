@@ -1295,7 +1295,7 @@ require('livinglots.emailparticipants');
 var livinglotsBoundaries = require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
-require('leaflet-geojsongridlayer');
+require('leaflet-geojson-gridlayer');
 require('leaflet-usermarker');
 
 var filters = require('../components/filters');
@@ -1473,7 +1473,7 @@ L.lotMap = function (id, options) {
     return new L.LotMap(id, options);
 };
 
-},{"../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js","./lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js","./styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js":[function(require,module,exports){
+},{"../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","./lotlayer":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js","./lotmarker":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js","./styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojson-gridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojson-gridlayer/src/GeoJSONGridLayer.js","leaflet-plugins-bing":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-plugins/layer/tile/Bing.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js","livinglots.addlot":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.addlot/src/index.js","livinglots.boundaries":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.boundaries/src/index.js","livinglots.emailparticipants":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/livinglots.emailparticipants/src/index.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmarker.js":[function(require,module,exports){
 var L = require('leaflet');
 
 require('./lotpath');
@@ -1804,7 +1804,7 @@ $(document).ready(function () {
 var L = require('leaflet');
 
 require('leaflet-dataoptions');
-require('leaflet-geojsongridlayer');
+require('leaflet-geojson-gridlayer');
 
 var collapsibleSection = require('../components/collapse').collapsibleSection;
 var mapstyles = require('../map/styles');
@@ -1927,7 +1927,7 @@ $(document).ready(function () {
     collapsibleSection.attachTo('section.collapsible');
 });
 
-},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map/styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojsongridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map/styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojson-gridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojson-gridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -14989,7 +14989,7 @@ define(function (require, exports, module) {
 
 })();
 
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojsongridlayer/src/GeoJSONGridLayer.js":[function(require,module,exports){
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojson-gridlayer/src/GeoJSONGridLayer.js":[function(require,module,exports){
 /*
  * Leaflet.GeoJSONGridLayer 
  */
@@ -58363,7 +58363,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

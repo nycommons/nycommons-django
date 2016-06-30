@@ -8,7 +8,7 @@ require('livinglots.emailparticipants');
 var livinglotsBoundaries = require('livinglots.boundaries');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
-require('leaflet-geojsongridlayer');
+require('leaflet-geojson-gridlayer');
 require('leaflet-usermarker');
 
 var filters = require('../components/filters');
