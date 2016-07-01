@@ -42,7 +42,6 @@ django-jsonfield==0.9.19
 git+git://github.com/ebrelsford/Django-monitor/@v0.4.0
 django-mptt==0.8.4
 django-reversion==1.10.2
-django.js==0.8.2.dev0
 git+git://github.com/Lightmatter/django.js/@master
 feincms-cleanse==5
 feincms-elephantblog==1.0.2
