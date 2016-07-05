@@ -3,30 +3,29 @@ import contextlib
 from fabric.api import *
 
 
-# TODO set hosts
-env.hosts = ['',]
+env.hosts = ['nycommons_nycommons',]
 env.use_ssh_config = True
 
 
 # TODO set
 server_project_dirs = {
-    'dev': '~/webapps/',
-    'prod': '~/webapps/',
+    'dev': '/webapps/nycommons_dev/nycommons-django/',
+    'prod': '',
 }
 
 # TODO set
 server_virtualenvs = {
-    'dev': '',
+    'dev': 'nycommons_dev',
     'prod': '',
 }
 
 # TODO set
 supervisord_programs = {
-    'dev': '',
+    'dev': 'django_dev',
     'prod': '',
 }
 
-supervisord_conf = '~/var/supervisor/supervisord.conf'
+supervisord_conf = '/etc/supervisor/supervisord.conf'
 
 
 @contextlib.contextmanager
@@ -57,30 +56,23 @@ def install_requirements(version='prod'):
 
 
 @task
-def build_static(version='prod'):
+def collect_static(version='prod'):
     with workon(version):
-        run('django-admin.py collectstatic --noinput')
-        with cdversion(version, 'nycommons/collected_static/'):
-            run('bower install')
-        with cdversion(version, 'nycommons/collected_static/js/'):
-            run('r.js -o app.build.js')
-
-
-@task
-def syncdb(version='prod'):
-    with workon(version):
-        run('django-admin.py syncdb')
+        run('django-admin collectstatic --noinput')
 
 
 @task
 def migrate(version='prod'):
     with workon(version):
-        run('django-admin.py migrate')
+        run('django-admin migrate')
 
 
 @task
-def restart_django():
-    run('supervisorctl -c %s restart llnola' % supervisord_conf)
+def restart_django(version='prod'):
+    run('supervisorctl -c %s restart %s' % (
+        supervisord_conf,
+        supervisord_programs[version],
+    ))
 
 
 @task
@@ -97,9 +89,8 @@ def status():
 def start(version='prod'):
     pull(version=version)
     install_requirements(version=version)
-    syncdb(version=version)
     migrate(version=version)
-    build_static(version=version)
+    collect_static(version=version)
     with workon(version):
         run('supervisorctl -c %s start %s' % (supervisord_conf,
                                               supervisord_programs[version]))
@@ -113,10 +104,18 @@ def stop(version='prod'):
 
 
 @task
+def deploy_dev():
+    pull(version='dev')
+    install_requirements(version='dev')
+    migrate(version='dev')
+    collect_static(version='dev')
+    restart_django(version='dev')
+
+
+@task
 def deploy():
     pull()
     install_requirements()
-    syncdb()
     migrate()
-    build_static()
+    collect_static()
     restart_django()
