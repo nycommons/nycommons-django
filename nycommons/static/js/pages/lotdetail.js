@@ -63,7 +63,7 @@ function initFacebookLink($link) {
 
 function initTwitterLink($link) {
     var url = 'http://twitter.com/intent/tweet?' + $.param({
-        related: '596acres',
+        related: 'nycommons',
         text: $link.data('tweet'),
         url: window.location.href
     });

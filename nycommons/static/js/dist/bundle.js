@@ -1868,7 +1868,7 @@ function initFacebookLink($link) {
 
 function initTwitterLink($link) {
     var url = 'http://twitter.com/intent/tweet?' + $.param({
-        related: '596acres',
+        related: 'nycommons',
         text: $link.data('tweet'),
         url: window.location.href
     });
@@ -58371,7 +58371,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
