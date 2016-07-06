@@ -6,7 +6,10 @@ from .models import Organizer
 
 
 class OrganizerAdmin(BaseOrganizerAdmin):
-    pass
+    
+    def has_add_permission(self, request):
+        """Never allow adding organizer through the admin site."""
+        return False
 
 
 admin.site.register(Organizer, OrganizerAdmin)
