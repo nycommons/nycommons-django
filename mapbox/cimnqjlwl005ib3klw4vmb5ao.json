@@ -10,7 +10,7 @@
             "type": "vector"
         }
     },
-    "sprite": "mapbox://sprites/sonicribbon/cimnqjlwl005ib3klw4vmb5ao",
+    "sprite": "mapbox://sprites/newyorkcommons/ciqb8k12r000ic2nfknryenh5",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "layers": [
         {
@@ -863,9 +863,9 @@
             }
         }
     ],
-    "created": "2016-04-05T18:04:32.123Z",
-    "id": "cimnqjlwl005ib3klw4vmb5ao",
-    "modified": "2016-04-05T18:04:32.123Z",
-    "owner": "sonicribbon",
+    "created": "2016-07-06T18:46:33.935Z",
+    "id": "ciqb8k12r000ic2nfknryenh5",
+    "modified": "2016-07-06T18:46:33.935Z",
+    "owner": "newyorkcommons",
     "draft": false
 }
