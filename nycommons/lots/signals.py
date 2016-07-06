@@ -2,6 +2,7 @@ from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 from organize.models import Organizer
+from .models import Lot
 
 
 @receiver(post_save, sender=Organizer, dispatch_uid='lot_update_organizing')
@@ -31,3 +32,11 @@ def update_organizing_delete(sender, instance, **kwargs):
     if not lot.organizers.exclude(pk=instance.pk).exists():
         lot.organizing = False
         lot.save()
+
+
+@receiver(post_save, sender=Lot, dispatch_uid='lot_update_area')
+def update_area(sender, instance, created=False, **kwargs):
+    if not (instance and created):
+        return
+    # Force calculation of area on lot
+    instance._area()
