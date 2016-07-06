@@ -28,6 +28,14 @@
     {% endverbatim %}
 </script>
 
+<script>
+    {% if debug %}
+        window.django_debug = true;
+    {% else %}
+        window.django_debug = false;
+    {% endif %}
+</script>
+
 <div id="map"
     data-l-zoom="11"
     data-l-center="[40.73, -73.99]"

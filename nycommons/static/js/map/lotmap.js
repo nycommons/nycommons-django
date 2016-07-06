@@ -110,9 +110,17 @@ L.LotMap = L.Map.extend({
     },
 
     addBaseLayer: function () {
-        var streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
-            attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
-        }).addTo(this);
+        var streets;
+        if (window.django_debug) {
+            streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+            }).addTo(this);
+        }
+        else {
+            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/ciqb8ncgp000jc2nos35k88tc/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
+                attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(this);
+        }
         var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
 
         L.control.layers({
