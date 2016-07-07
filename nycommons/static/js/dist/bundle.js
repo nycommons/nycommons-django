@@ -618,6 +618,8 @@ module.exports = {
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
 var flight = require('flightjs');
+var geocode = require('../lib/geocode').geocode;
+var oasis = require('../lib/oasis');
 
 var searchButton = flight.component(function () {
     this.click = function (event) {
@@ -631,15 +633,135 @@ var searchButton = flight.component(function () {
     });
 });
 
+var searchForm = flight.component(function () {
+    this.searchResultError = function (e, message) {
+        this.$node.find('.warning').text(mesage).show();
+
+        // Done searching
+        this.$node.find(':input[type=submit]')
+            .removeAttr('disabled');
+    };
+
+    this.searchResultFound = function (e, data) {
+        this.$node.find(':input[type=submit]')
+            .removeAttr('disabled');
+        $(document).trigger('searchresultfound', data);
+    };
+
+    this.addCityAndState = function (query, city, state) {
+        if (query.toLowerCase().indexOf(city) <= 0) {
+            query += ', ' + city;
+        }
+        if (query.toLowerCase().indexOf(state) <= 0) {
+            query += ', ' + state;
+        }
+        return query;
+    };
+
+    this.searchLotsAndParcels = function (opts) {
+        var query = this.$node.find('input[type="text"]').val(),
+            url = this.$node.data('lot-search-url') + '?' + $.param({ q: query });
+        $.getJSON(url, function (data) {
+            if (data.results.length > 0) {
+                var result = data.results[0];
+                this.$node.trigger('searchresultfound', [{
+                    longitude: result.longitude,
+                    latitude: result.latitude
+                }]);
+            }
+            else {
+                opts.failure();
+            }
+        });
+    };
+
+    this.searchByAddress = function () {
+        var bounds = this.$node.data('bounds'),
+            city = this.$node.data('city'),
+            state = this.$node.data('state'),
+            query = this.$node.find('input[type="text"]').val();
+
+        query = this.addCityAndState(query, city, state);
+        geocode(query, bounds, state, (function (result, status) {
+            // Is result valid?
+            if (result === null) {
+                this.trigger('searchresulterror', this.$node.data('errorMessage'));
+                return;
+            }
+
+            // Let the world know!
+            var foundLocation = result.geometry.location;
+            this.trigger('searchresultfound', [{
+                longitude: foundLocation.lng(),
+                latitude: foundLocation.lat(),
+                query_address: query,
+                found_address: result.formatted_address
+            }]);
+        }).bind(this));
+    };
+
+    this.search = function (e) {
+        e.preventDefault();
+        this.trigger('searchstart');
+        this.$node.find('.warning').hide();
+        this.$node.find(':input[type=submit]')
+            .attr('disabled', 'disabled');
+
+        // Search by bbl, lot name, if that turns up nothing then
+        // searchByAddress
+        this.searchByAddress();
+        /*
+        this.searchLotsAndParcels({
+            failure: function () {
+                this.searchByAddress();
+            }
+        });
+        */
+        return false;
+    };
+
+    this.keypress = function (e) {
+        if (e.keyCode === '13') {
+            e.preventDefault();
+            this.search(e);
+        }
+    };
+
+    this.after('initialize', function () {
+        this.$node.find('input[type=text]').on('keypress', this.keypress.bind(this));
+        this.on('submit', this.search.bind(this));
+        this.on('searchresulterror', this.searchResultError.bind(this));
+        this.on('searchresultfound', this.searchResultFound.bind(this));
+    });
+});
+
 var searchBar = flight.component(function () {
+    this.attributes({
+        map: null
+    });
+
     this.close = function (event) {
         this.$node.hide();
         $('body').removeClass('search-enabled');
         return false;
     };
 
+    this.searchStart = function (event) {
+        this.attr.map.removeUserLayer();
+    };
+
+    this.searchResultFound = function (event, data) {
+        var oasisUrl = oasis.vacantLotsUrl(data.latitude, data.longitude);
+        this.attr.map.addUserLayer([data.latitude, data.longitude], {
+            popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing a vacant lot here that you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
+        });
+    };
+
     this.after('initialize', function () {
         this.$node.find('.map-search-close').on('click', this.close.bind(this));
+        searchForm.attachTo('.map-search-form');
+        $(document).on('searchstart', this.searchStart.bind(this));
+        $(document).on('searchresultfound', this.searchResultFound.bind(this));
     });
 });
 
@@ -648,7 +770,7 @@ module.exports = {
     button: searchButton
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js":[function(require,module,exports){
+},{"../lib/geocode":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/geocode.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js":[function(require,module,exports){
 //
 // sidebar.js
 //
@@ -767,7 +889,51 @@ module.exports = {
     }
 };
 
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js":[function(require,module,exports){
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js":[function(require,module,exports){
+var Handlebars = require('handlebars');
+
+/*
+ * A helper that formats a comparable (see django-sizecompare) into a readable
+ * string.
+ */
+Handlebars.registerHelper('compare', function (comparable) {
+    if (comparable.comparable_is === 'smaller') {
+        return comparable.factor + ' times the size of ' + comparable.name;
+    }
+    else {
+        return comparable.fraction + ' the size of ' + comparable.name;
+    }
+});
+
+
+/*
+ * A helper that picks the friendlier area to display.
+ */
+Handlebars.registerHelper('pick-area', function (acres, sqft) {
+    if (acres > 1) {
+        return acres + ' acres';
+    }
+    return sqft + ' sq ft';
+});
+
+},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
+var numeral = require('numeral');
+
+var squareFootPerAcre = 43560;
+
+module.exports = {
+    formatSquareFeet: function (area) {
+        if (!area) return 'unknown area';
+        var units = 'sq ft';
+        if (area > squareFootPerAcre) {
+            area /= squareFootPerAcre;
+            units = 'acres';
+        }
+        return numeral(area).format('0,0.[0]') + ' ' + units;
+    }
+};
+
+},{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/geocode.js":[function(require,module,exports){
 var geocoder = new google.maps.Geocoder();
 
 function geocode(address, bounds, state, f) {
@@ -840,51 +1006,7 @@ module.exports = {
     geocode: geocode
 };
 
-},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js":[function(require,module,exports){
-var Handlebars = require('handlebars');
-
-/*
- * A helper that formats a comparable (see django-sizecompare) into a readable
- * string.
- */
-Handlebars.registerHelper('compare', function (comparable) {
-    if (comparable.comparable_is === 'smaller') {
-        return comparable.factor + ' times the size of ' + comparable.name;
-    }
-    else {
-        return comparable.fraction + ' the size of ' + comparable.name;
-    }
-});
-
-
-/*
- * A helper that picks the friendlier area to display.
- */
-Handlebars.registerHelper('pick-area', function (acres, sqft) {
-    if (acres > 1) {
-        return acres + ' acres';
-    }
-    return sqft + ' sq ft';
-});
-
-},{"handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/area.js":[function(require,module,exports){
-var numeral = require('numeral');
-
-var squareFootPerAcre = 43560;
-
-module.exports = {
-    formatSquareFeet: function (area) {
-        if (!area) return 'unknown area';
-        var units = 'sq ft';
-        if (area > squareFootPerAcre) {
-            area /= squareFootPerAcre;
-            units = 'acres';
-        }
-        return numeral(area).format('0,0.[0]') + ' ' + units;
-    }
-};
-
-},{"numeral":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/numeral/numeral.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js":[function(require,module,exports){
 var _ = require('underscore');
 var proj4 = require('proj4');
 require('./proj4.defs');
@@ -1085,113 +1207,7 @@ require('./pages/addorganizer.js');
 require('./pages/map.js');
 require('./pages/lotdetail.js');
 
-},{"./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./pages/addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js","./pages/lotdetail.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js","./pages/map.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js":[function(require,module,exports){
-var L = require('leaflet');
-
-var geocode = require('./geocode').geocode;
-
-
-function addCityAndState(query, city, state) {
-    if (query.toLowerCase().indexOf(city) <= 0) {
-        query += ', ' + city;
-    }
-    if (query.toLowerCase().indexOf(state) <= 0) {
-        query += ', ' + state;
-    }
-    return query;
-}
-
-function searchByAddress($form) {
-    var bounds = $form.data('bounds'),
-        city = $form.data('city'),
-        state = $form.data('state'),
-        query = $form.find('input[type="text"]').val();
-
-    query = addCityAndState(query, city, state);
-    geocode(query, bounds, state, function (result, status) {
-        // Is result valid?
-        if (result === null) {
-            $form.trigger('searchresulterror', $form.data('errorMessage'));
-            return;
-        }
-
-        // Let the world know!
-        var found_location = result.geometry.location;
-        $form.trigger('searchresultfound', [{
-            longitude: found_location.lng(),
-            latitude: found_location.lat(),
-            query_address: query,
-            found_address: result.formatted_address
-        }]);
-    });
-}
-
-function searchLotsAndParcels($form, opts) {
-    var query = $form.find('input[type="text"]').val(),
-        url = $form.data('lot-search-url') + '?' + $.param({ q: query });
-    $.getJSON(url, function (data) {
-        if (data.results.length > 0) {
-            var result = data.results[0];
-            $form.trigger('searchresultfound', [{
-                longitude: result.longitude,
-                latitude: result.latitude
-            }]);
-        }
-        else {
-            opts.failure();
-        }
-    });
-}
-
-$.fn.mapsearch = function (options) {
-    var $form = this;
-    var warningSelector = this.data('warningSelector');
-
-    function search(form) {
-        form.trigger('searchstart');
-        form.find(warningSelector).hide();
-        form.find(':input[type=submit]')
-            .attr('disabled', 'disabled');
-
-        // Search by bbl, lot name, if that turns up nothing then
-        // searchByAddress
-        searchLotsAndParcels(form, {
-            failure: function () {
-                searchByAddress($form);
-            }
-        });
-        return false;
-    }
-
-    this.keypress(function (e) {
-        if (e.keyCode === '13') {
-            e.preventDefault();
-            return search($form);
-        }
-    });
-    this.submit(function (e) {
-        e.preventDefault();
-        return search($form);
-    });
-
-    this.on('searchresulterror', function (e, message) {
-        $form.find(warningSelector).text(mesage).show();
-
-        // Done searching
-        $form.find(':input[type=submit]')
-            .removeAttr('disabled');
-    });
-
-    this.on('searchresultfound', function (e, message) {
-        // Done searching
-        $form.find(':input[type=submit]')
-            .removeAttr('disabled');
-    });
-
-    return this;
-};
-
-},{"./geocode":"/home/eric/Documents/596/nycommons/nycommons/static/js/geocode.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js":[function(require,module,exports){
+},{"./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./pages/addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js","./pages/lotdetail.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js","./pages/map.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js":[function(require,module,exports){
 var L = require('leaflet');
 var _ = require('underscore');
 
@@ -1966,7 +1982,6 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
-require('../map.search.js');
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
@@ -1977,7 +1992,6 @@ var search = require('../components/search');
 require('../components/sidebar');
 require('../data/lotcounts').init();
 require('../data/ownercounts').init();
-var oasis = require('../lib/oasis');
 
 
 // Watch out for IE 8
@@ -2086,7 +2100,7 @@ $(document).ready(function () {
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        search.bar.attachTo('.map-search');
+        search.bar.attachTo('.map-search', { map: map });
         details.details.attachTo('.details-section');
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
         exportLink.attachTo('.export', { map: map });
@@ -2098,17 +2112,6 @@ $(document).ready(function () {
             window.print();
             return false;
         });
-
-        $('form.map-search-form').mapsearch()
-            .on('searchstart', function (e) {
-                map.removeUserLayer();
-            })
-            .on('searchresultfound', function (e, result) {
-                var oasisUrl = oasis.vacantLotsUrl(result.latitude, result.longitude);
-                map.addUserLayer([result.latitude, result.longitude], {
-                    popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing a vacant lot here that you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
-                });
-            });
 
         $(document).trigger('updateLotCount', { map: map });
         $(document).trigger('updateOwnerCount', { map: map });
@@ -2137,7 +2140,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../lib/oasis":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/oasis.js","../map.search.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/map.search.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+},{"../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -58386,7 +58389,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

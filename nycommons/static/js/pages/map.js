@@ -14,7 +14,6 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
-require('../map.search.js');
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
@@ -25,7 +24,6 @@ var search = require('../components/search');
 require('../components/sidebar');
 require('../data/lotcounts').init();
 require('../data/ownercounts').init();
-var oasis = require('../lib/oasis');
 
 
 // Watch out for IE 8
@@ -134,7 +132,7 @@ $(document).ready(function () {
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
-        search.bar.attachTo('.map-search');
+        search.bar.attachTo('.map-search', { map: map });
         details.details.attachTo('.details-section');
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
         exportLink.attachTo('.export', { map: map });
@@ -146,17 +144,6 @@ $(document).ready(function () {
             window.print();
             return false;
         });
-
-        $('form.map-search-form').mapsearch()
-            .on('searchstart', function (e) {
-                map.removeUserLayer();
-            })
-            .on('searchresultfound', function (e, result) {
-                var oasisUrl = oasis.vacantLotsUrl(result.latitude, result.longitude);
-                map.addUserLayer([result.latitude, result.longitude], {
-                    popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing a vacant lot here that you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
-                });
-            });
 
         $(document).trigger('updateLotCount', { map: map });
         $(document).trigger('updateOwnerCount', { map: map });
