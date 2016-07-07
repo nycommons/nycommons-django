@@ -5669,6 +5669,30 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   border-bottom: 1px solid #cccccc;
   padding-top: 35px;
 }
+.recent-activity {
+  padding-right: 0;
+}
+.recent-activity .activity-stream {
+  min-height: 60px;
+}
+.recent-activity .action-list {
+  list-style: none;
+  padding-left: 0;
+}
+.recent-activity .action-list .action {
+  border-bottom: 1px solid #160805;
+  padding: 10px;
+}
+.recent-activity .action-list .action:last-of-type {
+  border-bottom: none;
+}
+.recent-activity .action-list .action .actor {
+  font-weight: bold;
+}
+.recent-activity .action-list .action-timestamp {
+  font-size: 12px;
+  margin-top: 5px;
+}
 .caption {
   display: block;
   font-style: italic;
@@ -6645,27 +6669,6 @@ footer .social-media-instagram {
 }
 footer .social-media-twitter {
   background-image: url("/static/img/twitter-footer.png");
-}
-.recent-activity {
-  padding-right: 0;
-}
-.recent-activity .action-list {
-  list-style: none;
-  padding-left: 0;
-}
-.recent-activity .action-list .action {
-  border-bottom: 1px solid #160805;
-  padding: 10px;
-}
-.recent-activity .action-list .action:last-of-type {
-  border-bottom: none;
-}
-.recent-activity .action-list .action .actor {
-  font-weight: bold;
-}
-.recent-activity .action-list .action-timestamp {
-  font-size: 12px;
-  margin-top: 5px;
 }
 .usercontent-list .note {
   padding-top: 35px;
