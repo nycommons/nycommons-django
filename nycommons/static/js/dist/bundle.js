@@ -667,7 +667,7 @@ var searchForm = flight.component(function () {
     this.searchLotsAndParcels = function (opts) {
         var query = this.select('querySelector').val(),
             url = this.$node.data('lot-search-url') + '?' + $.param({ q: query });
-        $.getJSON(url, function (data) {
+        $.getJSON(url, (function (data) {
             if (data.results.length > 0) {
                 var result = data.results[0];
                 this.$node.trigger('searchresultfound', [{
@@ -678,7 +678,7 @@ var searchForm = flight.component(function () {
             else {
                 opts.failure();
             }
-        });
+        }).bind(this));
     };
 
     this.searchByAddress = function () {
@@ -715,14 +715,11 @@ var searchForm = flight.component(function () {
 
         // Search by bbl, lot name, if that turns up nothing then
         // searchByAddress
-        this.searchByAddress();
-        /*
         this.searchLotsAndParcels({
-            failure: function () {
+            failure: (function () {
                 this.searchByAddress();
-            }
+            }).bind(this)
         });
-        */
         return false;
     };
 
@@ -58395,7 +58392,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
