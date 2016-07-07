@@ -48,18 +48,20 @@ var searchForm = flight.component(function () {
     this.searchLotsAndParcels = function (opts) {
         var query = this.select('querySelector').val(),
             url = this.$node.data('lot-search-url') + '?' + $.param({ q: query });
-        $.getJSON(url, (function (data) {
-            if (data.results.length > 0) {
-                var result = data.results[0];
-                this.$node.trigger('searchresultfound', [{
-                    longitude: result.longitude,
-                    latitude: result.latitude
-                }]);
-            }
-            else {
-                opts.failure();
-            }
-        }).bind(this));
+        $.getJSON(url)
+            .done((function (data) {
+                if (data.results.length > 0) {
+                    var result = data.results[0];
+                    this.$node.trigger('searchresultfound', [{
+                        longitude: result.longitude,
+                        latitude: result.latitude
+                    }]);
+                }
+                else {
+                    opts.failure();
+                }
+            }).bind(this))
+            .fail(opts.failure);
     };
 
     this.searchByAddress = function () {
