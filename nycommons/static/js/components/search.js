@@ -15,16 +15,22 @@ var searchButton = flight.component(function () {
 });
 
 var searchForm = flight.component(function () {
+    this.attributes({
+        querySelector: ':input[type=text]',
+        submitSelector: ':input[type=submit]',
+        warningSelector: '.warning'
+    });
+
     this.searchResultError = function (e, message) {
-        this.$node.find('.warning').text(mesage).show();
+        this.select('warningSelector').text(mesage).show();
 
         // Done searching
-        this.$node.find(':input[type=submit]')
+        this.select('submitSelector')
             .removeAttr('disabled');
     };
 
     this.searchResultFound = function (e, data) {
-        this.$node.find(':input[type=submit]')
+        this.select('submitSelector')
             .removeAttr('disabled');
         $(document).trigger('searchresultfound', data);
     };
@@ -40,7 +46,7 @@ var searchForm = flight.component(function () {
     };
 
     this.searchLotsAndParcels = function (opts) {
-        var query = this.$node.find('input[type="text"]').val(),
+        var query = this.select('querySelector').val(),
             url = this.$node.data('lot-search-url') + '?' + $.param({ q: query });
         $.getJSON(url, function (data) {
             if (data.results.length > 0) {
@@ -84,8 +90,8 @@ var searchForm = flight.component(function () {
     this.search = function (e) {
         e.preventDefault();
         this.trigger('searchstart');
-        this.$node.find('.warning').hide();
-        this.$node.find(':input[type=submit]')
+        this.select('warningSelector').hide();
+        this.select('submitSelector')
             .attr('disabled', 'disabled');
 
         // Search by bbl, lot name, if that turns up nothing then
@@ -109,7 +115,7 @@ var searchForm = flight.component(function () {
     };
 
     this.after('initialize', function () {
-        this.$node.find('input[type=text]').on('keypress', this.keypress.bind(this));
+        this.select('querySelector').on('keypress', this.keypress.bind(this));
         this.on('submit', this.search.bind(this));
         this.on('searchresulterror', this.searchResultError.bind(this));
         this.on('searchresultfound', this.searchResultFound.bind(this));
