@@ -1,7 +1,51 @@
 .map-search {
+    background: white;
     display: none;
+    height: @map-search-height;
     left: 0;
     position: absolute;
     top: 0;
+    width: 100%;
     z-index: 5000;
+
+    &-form {
+        float: left;
+        margin-left: 15px;
+        width: 80%;
+    }
+
+    &-close {
+        background-image: data-uri("../../img/close.png");
+        background-repeat: no-repeat;
+        background-size: contain;
+        display: inline-block;
+        float: right;
+        height: 35px;
+        margin-right: @map-overlay-side;
+        margin-top: 12.5px;
+        width: 35px;
+    }
+
+    input[type=text] {
+        border: 0;
+        font-size: 24px;
+        line-height: @map-search-height;
+        padding: 0;
+        width: 90%;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    button {
+        margin-bottom: 10px;
+    }
+
+    img {
+        float: left;
+        margin-left: @map-overlay-side;
+        margin-top: 12.5px;
+        max-width: @map-search-height - 25px;
+    }
 }

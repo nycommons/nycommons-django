@@ -622,6 +622,7 @@ var flight = require('flightjs');
 var searchButton = flight.component(function () {
     this.click = function (event) {
         $(this.attr.searchBar).toggle();
+        $('body').toggleClass('search-enabled');
         return false;
     };
 
@@ -630,8 +631,21 @@ var searchButton = flight.component(function () {
     });
 });
 
+var searchBar = flight.component(function () {
+    this.close = function (event) {
+        this.$node.hide();
+        $('body').removeClass('search-enabled');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.$node.find('.map-search-close').on('click', this.close.bind(this));
+    });
+});
+
 module.exports = {
-    searchButton: searchButton
+    bar: searchBar,
+    button: searchButton
 };
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js":[function(require,module,exports){
@@ -1959,7 +1973,7 @@ var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
-var searchButton = require('../components/search').searchButton;
+var search = require('../components/search');
 require('../components/sidebar');
 require('../data/lotcounts').init();
 require('../data/ownercounts').init();
@@ -2071,7 +2085,8 @@ $(document).ready(function () {
 
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
-        searchButton.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
+        search.bar.attachTo('.map-search');
         details.details.attachTo('.details-section');
         filters.filters.attachTo('.filters-section', { initialFilters: parsedHash.filters || {} });
         exportLink.attachTo('.export', { map: map });
@@ -58371,7 +58386,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

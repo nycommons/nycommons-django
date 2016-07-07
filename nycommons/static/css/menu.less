@@ -3,7 +3,7 @@
 .map-menu {
     position: absolute;
     right: 15px;
-    top: 15px;
+    top: @map-overlay-top;
     z-index: 5001;
 
     .social-media {
@@ -14,6 +14,10 @@
             margin-top: 0;
         }
     }
+}
+
+.search-enabled .map-menu {
+    top: @map-overlay-top + @map-search-height;
 }
 
 .menu-expanded {

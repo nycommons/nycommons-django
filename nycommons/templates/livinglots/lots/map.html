@@ -177,11 +177,13 @@
 </div>
 
 <div class="map-search">
+    <img src="{% static "img/search-large.png" %}" />
     <form class="map-search-form" data-bounds="[-74.304657,40.476203,-73.678436,40.939452]" data-city="New York" data-state="NY" data-error-message="Could not find your location. Try again?" data-warning-selector="map-search.warning">
         <input id="search" name="search" placeholder="{% trans "Search by address, zip code" %}" type="text" />
-        <button class="map-search-submit btn btn-default" type="submit">{% trans "GO" %}</button>
+        <button class="map-search-submit btn btn-default" type="submit">{% trans "Search" %}</button>
         <div class="warning" style="display: none;"></div>
     </form>
+    <a href="#" class="map-search-close"></a>
 </div>
 
 <div class="menu-expanded">

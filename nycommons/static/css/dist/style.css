@@ -6459,6 +6459,9 @@ fieldset[disabled] .btn-show-details.active {
   margin-right: 5px;
   margin-top: 0;
 }
+.search-enabled .map-menu {
+  top: 75px;
+}
 .menu-expanded {
   display: none;
   background: white;
@@ -6977,11 +6980,49 @@ section.collapsible > h6.collapsed::before {
   display: block;
 }
 .map-search {
+  background: white;
   display: none;
+  height: 60px;
   left: 0;
   position: absolute;
   top: 0;
+  width: 100%;
   z-index: 5000;
+}
+.map-search-form {
+  float: left;
+  margin-left: 15px;
+  width: 80%;
+}
+.map-search-close {
+  background-image: url("../../img/close.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: inline-block;
+  float: right;
+  height: 35px;
+  margin-right: 15px;
+  margin-top: 12.5px;
+  width: 35px;
+}
+.map-search input[type=text] {
+  border: 0;
+  font-size: 24px;
+  line-height: 60px;
+  padding: 0;
+  width: 90%;
+}
+.map-search input[type=text]:focus {
+  outline: none;
+}
+.map-search button {
+  margin-bottom: 10px;
+}
+.map-search img {
+  float: left;
+  margin-left: 15px;
+  margin-top: 12.5px;
+  max-width: 35px;
 }
 .map-sidebar {
   position: absolute;
@@ -7123,6 +7164,9 @@ section.collapsible > h6.collapsed::before {
 .map-sidebar .map-header-content-details,
 .map-sidebar .map-header-content-filters {
   display: none;
+}
+.search-enabled .map-sidebar {
+  top: 75px;
 }
 .map-add-lot-parent {
   left: 50px;

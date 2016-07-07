@@ -2,7 +2,7 @@
     position: absolute;
     left: 15px;
     max-height: 75%;
-    top: 15px;
+    top: @map-overlay-top;
     min-width: 25%;
     z-index: 5000;
 
@@ -97,4 +97,8 @@
             display: none;
         }
     }
+}
+
+.search-enabled .map-sidebar {
+    top: @map-overlay-top + @map-search-height;
 }
