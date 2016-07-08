@@ -30,8 +30,7 @@ urlpatterns += (
     url(r'^lots/', include('lots.urls', 'lots')),
 
     # Activity stream
-    url('^activity/', include('actstream.urls')),
-    url('^activity-stream/', include('inplace_activity_stream.urls')),
+    url('^activity/', include('activities.urls')),
 
     # Inplace
     url(r'^inplace/', include('inplace.urls', 'inplace')),
