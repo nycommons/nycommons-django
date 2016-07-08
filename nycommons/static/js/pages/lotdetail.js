@@ -39,7 +39,7 @@ function addBaseLayer(map) {
 }
 
 function addLotsLayer(map) {
-    var url = map.options.lotsUrl,
+    var url = map.options.lotsTilesUrl,
         lotLayerOptions = getLotLayerOptions(map.options.lotPk);
     L.geoJsonGridLayer(url, {
         layers: {

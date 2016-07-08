@@ -87,4 +87,4 @@ DEBUG_TOOLBAR_CONFIG = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-LOT_CENTROIDS_URL = "http://localhost:8080/lots/{z}/{x}/{y}.json"
+LOT_TILES_URL = "http://localhost:8080/lots/{z}/{x}/{y}.json"
