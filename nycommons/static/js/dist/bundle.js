@@ -3,42 +3,75 @@ var flight = require('flightjs');
 var Handlebars = require('handlebars');
 var moment = require('moment');
 
+var loadActivities = require('../data/activities').loadActivities;
+
 Handlebars.registerHelper('formatTimestamp', function (timestamp) {
     timestamp = Handlebars.escapeExpression(timestamp);
     return moment(timestamp).fromNow();
 });
 
-var activities = flight.component(function () {
+function activityMixin () {
     this.attributes({
+        contentSelector: '.activity-section',
+        expandSelector: '.activity-list-expand',
         streamSelector: '.activity-stream'
     });
 
-    this.showFirst = function () {
-        $.getJSON(this.baseUrl)
-            .done((function (data) {
-                this.actions = data.actions;
-                this.currentPage = data.pagination.page;
-                this.totalPages = data.pagination.pages;
-                var content = this.template({
-                    actions: this.actions.slice(0, 1)
-                });
-                this.select('streamSelector').html(content);
-            }).bind(this));
+    this.after('initialize', function () {
+        this.template = Handlebars.compile($('#activity-list-template').html());
+    });
+}
+
+var recentActivity = flight.component(function () {
+    this.expand = function (e) {
+        e.preventDefault();
+        $(document).trigger('sidebarHeaderContentShown', {
+            name: 'activities'
+        });
+        return false;
+    };
+
+    this.showFirst = function (e, data) {
+        var content = this.template({
+            actions: data.activities.slice(0, 1)
+        });
+        this.select('streamSelector').html(content);
     };
 
     this.after('initialize', function () {
-        this.template = Handlebars.compile($('#activity-list-template').html());
-        this.baseUrl = Django.url('activity_list');
+        $(document).on('receivedActivities', this.showFirst.bind(this));
+        this.select('expandSelector').on('click', this.expand.bind(this));
 
-        this.showFirst();
+        loadActivities();
     });
-});
+}, activityMixin);
+
+var activities = flight.component(function () {
+    this.collapse = function (e) {
+        this.$node.hide();
+        $(document).trigger('sidebarHeaderContentHidden');
+        return false;
+    };
+
+    this.receivedActivities = function (e, data) {
+        var content = this.template({
+            actions: data.activities
+        });
+        this.select('streamSelector').html(content);
+    };
+
+    this.after('initialize', function () {
+        $(document).on('receivedActivities', this.receivedActivities.bind(this));
+        this.select('expandSelector').on('click', this.collapse.bind(this));
+    });
+}, activityMixin);
 
 module.exports = {
-    activities: activities
+    activities: activities,
+    recentActivity: recentActivity
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
+},{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
 var flight = require('flightjs');
 
 var collapsibleSection = flight.component(function () {
@@ -898,9 +931,38 @@ $(document).ready(function () {
     legend.attachTo('.map-legend');
     defaultSidebarContent.attachTo('.map-header-content-default');
     recentActivity.attachTo('.recent-activity');
+    sidebarHeaderContent.attachTo('.map-header-content-activities', { name: 'activities' });
 });
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js":[function(require,module,exports){
+var singleminded = require('../lib/singleminded');
+
+var activities = [];
+var page = 0;
+var totalPages;
+
+function loadActivities (requestedPage) {
+    var pageToLoad = page + 1;
+    if (requestedPage) {
+        page = requestedPage;
+    }
+    var baseUrl = Django.url('activity_list');
+    singleminded.remember({
+        name: 'loadActivities' + pageToLoad,
+        jqxhr: $.getJSON(baseUrl, function (data) {
+            activities = activities.concat(data.actions);
+            page = data.pagination.page;
+            totalPages = data.pagination.pages;
+            $(document).trigger('receivedActivities', { activities: activities });
+        })
+    });
+}
+
+module.exports = {
+    loadActivities: loadActivities
+};
+
+},{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js":[function(require,module,exports){
 var singleminded = require('../lib/singleminded');
 
 function updateLotCount (event, data) {
@@ -2026,7 +2088,7 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
-var activities = require('../components/activities').activities;
+var activities = require('../components/activities');
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
@@ -2123,7 +2185,8 @@ $(document).ready(function () {
             map.updateFilters(map.currentFilters);
         });
 
-        activities.attachTo('.recent-activity');
+        activities.activities.attachTo('.map-header-content-activities');
+        activities.recentActivity.attachTo('.recent-activity');
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
@@ -62612,7 +62675,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

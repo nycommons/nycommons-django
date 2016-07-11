@@ -1,33 +1,9 @@
 {% load i18n %}
 
-<script id="activity-list-template" type="text/x-handlebars-template">
-    {% verbatim %}
-        {{#*inline "activityPartial"}}
-            <div class="action">
-                <span class="actor">{{actor}}</span>
-                <span class="verb">{{verb}}</span>
-                {{#if details}}
-                    {{details}}
-                {{/if}}
-                on
-                {{#if target_url}}
-                    <a href="{{target_url}}" target="_blank">{{target}}</a>
-                {{else}}
-                    {{target}}
-                {{/if}}
-                <div class="action-timestamp">
-                    {{formatTimestamp timestamp}}
-                </div>
-            </div>
-        {{/inline}}
-        <ul class="action-list">
-            {{#each actions}}
-                {{> activityPartial}}
-            {{/each}}
-        </ul>
-    {% endverbatim %}
-</script>
-
-<h2>{% trans "Recent Activity" %}</h2>
+<div class="activity-header">
+    <h2>{% trans "Recent Activity" %}</h2>
+    <a href="#" class="activity-list-expand"></a>
+    <div style="clear: both;"></div>
+</div>
 <div class="activity-stream">
 </div>

@@ -5669,27 +5669,58 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   border-bottom: 1px solid #cccccc;
   padding-top: 35px;
 }
-.recent-activity {
+.recent-activity,
+.map-header-content-activities {
   padding-right: 0;
 }
-.recent-activity .activity-stream {
+.recent-activity .activity-stream,
+.map-header-content-activities .activity-stream {
   min-height: 60px;
 }
-.recent-activity .action-list {
+.recent-activity .activity-header h2,
+.map-header-content-activities .activity-header h2 {
+  float: left;
+}
+.recent-activity .activity-list-expand,
+.map-header-content-activities .activity-list-expand {
+  float: right;
+}
+.recent-activity .activity-list-expand::after,
+.map-header-content-activities .activity-list-expand::after {
+  background-image: url("/static/img/collapse-arrow.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  display: block;
+  height: 20px;
+  margin-top: 5px;
+  width: 20px;
+}
+.recent-activity.expanded .activity-list-expand::after,
+.map-header-content-activities.expanded .activity-list-expand::after {
+  transform: rotate(90deg);
+}
+.recent-activity .action-list,
+.map-header-content-activities .action-list {
   list-style: none;
   padding-left: 0;
 }
-.recent-activity .action-list .action {
+.recent-activity .action-list .action,
+.map-header-content-activities .action-list .action {
   border-bottom: 1px solid #160805;
   padding: 10px;
 }
-.recent-activity .action-list .action:last-of-type {
+.recent-activity .action-list .action:last-of-type,
+.map-header-content-activities .action-list .action:last-of-type {
   border-bottom: none;
 }
-.recent-activity .action-list .action .actor {
+.recent-activity .action-list .action .actor,
+.map-header-content-activities .action-list .action .actor {
   font-weight: bold;
 }
-.recent-activity .action-list .action-timestamp {
+.recent-activity .action-list .action-timestamp,
+.map-header-content-activities .action-list .action-timestamp {
   font-size: 12px;
   margin-top: 5px;
 }
@@ -7165,7 +7196,8 @@ section.collapsible > h6.collapsed::before {
   margin-top: 0;
 }
 .map-sidebar .map-header-content-details,
-.map-sidebar .map-header-content-filters {
+.map-sidebar .map-header-content-filters,
+.map-sidebar .map-header-content-activities {
   display: none;
 }
 .search-enabled .map-sidebar {

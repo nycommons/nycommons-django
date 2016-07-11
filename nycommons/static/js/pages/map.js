@@ -13,7 +13,7 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
-var recentActivity = require('../components/activities').recentActivity;
+var activities = require('../components/activities');
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
@@ -110,7 +110,8 @@ $(document).ready(function () {
             map.updateFilters(map.currentFilters);
         });
 
-        recentActivity.attachTo('.recent-activity');
+        activities.activities.attachTo('.map-header-content-activities');
+        activities.recentActivity.attachTo('.recent-activity');
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });

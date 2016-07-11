@@ -80,4 +80,5 @@ $(document).ready(function () {
     legend.attachTo('.map-legend');
     defaultSidebarContent.attachTo('.map-header-content-default');
     recentActivity.attachTo('.recent-activity');
+    sidebarHeaderContent.attachTo('.map-header-content-activities', { name: 'activities' });
 });

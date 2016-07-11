@@ -1,9 +1,36 @@
-.recent-activity {
+.recent-activity,
+.map-header-content-activities {
     // Let the scrollbar sit on the right
     padding-right: 0;
 
     .activity-stream {
         min-height: 60px;
+    }
+
+    .activity-header h2 {
+        float: left;
+    }
+
+    .activity-list-expand {
+        float: right;
+
+        &::after {
+            background-image: data-uri("/static/img/collapse-arrow.png");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            content: "";
+            display: block;
+            height: 20px;
+            margin-top: 5px;
+            width: 20px;
+        }
+    }
+
+    &.expanded {
+        .activity-list-expand::after {
+            transform: rotate(90deg);
+        }
     }
 
     .action-list {
