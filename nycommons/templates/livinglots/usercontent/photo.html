@@ -1,0 +1,24 @@
+{% extends "livinglots/usercontent/detail_base.html" %}
+{% load i18n imagekit %}
+
+{% block verb %}
+    {% trans "posted" %}
+{% endblock %}
+
+{% block details %}
+    <a rel="gallery" href="{{ photo.formatted_image.url }}" class="fancybox photo-image" {% if photo.added_by_name %}data-added-by="{{ photo.added_by_name }}"{% endif %} data-description="{{ photo.description }}">
+        {% if photo.name %}
+            {% thumbnail '400x300' photo.formatted_image -- alt=photo.name %}
+        {% else %}
+            {% thumbnail '400x300' photo.formatted_image %}
+        {% endif %}
+    </a>
+    <div>
+        {% if photo.name %}
+            <span class="photo-name">{{ photo.name }}</span>
+        {% endif %}
+        {% if photo.description %}
+            <span class="photo-description">{{ photo.description }}</span>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "livinglots/usercontent/detail_base.html" %}
+{% load i18n %}
+
+{% block verb %}
+    {% trans "said" %}
+{% endblock %}
+
+{% block details %}
+    {{ note.text|safe }}
+{% endblock %}

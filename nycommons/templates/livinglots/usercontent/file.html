@@ -1,0 +1,17 @@
+{% extends "livinglots/usercontent/detail_base.html" %}
+{% load i18n %}
+
+{% block verb %}
+    {% trans "uploaded" %}
+{% endblock %}
+
+{% block details %}
+    <span class="file-title">
+        <a href="{{ file.document.url }}">
+            {{ file.title }}
+        </a>
+    </span>
+    <span class="file-description">
+        {{ file.description }}
+    </span>
+{% endblock %}
