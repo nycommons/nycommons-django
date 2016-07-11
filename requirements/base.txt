@@ -1,11 +1,13 @@
 # General requirements
 BeautifulSoup==3.2.1
+bleach==1.4.3
 Fabric>=1.10.1
 IMAPClient>=0.10.2
 Pillow==2.3.1
 Pint==0.6
 ipython>=2.0.0
 lxml==3.1.0
+markdown2==2.3.1
 pilkit==1.1.6
 psycopg2==2.4.6
 pygments==2.1.3
