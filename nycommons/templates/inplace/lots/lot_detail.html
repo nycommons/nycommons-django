@@ -163,18 +163,26 @@
             <h2>
                 {% trans "Notes, Photos, and Documents" %}
             </h2>
-            <div class="usercontent-actions">
-                <span>{% trans "Add a" %}</span>
-                <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
-                    {% trans "note" %}
-                </a>
-                <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
-                    {% trans "file" %}
-                </a>
-                <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
-                    {% trans "photo" %}
-                </a>
-            </div>
+            {% if user.is_authenticated %}
+                <div class="usercontent-actions">
+                    <span>{% trans "Add a" %}</span>
+                    {% if perms.notes.add_note %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
+                            {% trans "note" %}
+                        </a>
+                    {% endif %}
+                    {% if perms.files.add_file %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
+                            {% trans "file" %}
+                        </a>
+                    {% endif %}
+                    {% if perms.photos.add_photo %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
+                            {% trans "photo" %}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
             {% comment %}
             <div class="usercontent-list">
                 {% render_user_content_list for lot %}
