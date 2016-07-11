@@ -9,7 +9,7 @@ Handlebars.registerHelper('formatTimestamp', function (timestamp) {
     return moment(timestamp).fromNow();
 });
 
-var activities = flight.component(function () {
+var recentActivity = flight.component(function () {
     this.attributes({
         contentSelector: '.activity-section',
         expandSelector: '.activity-list-expand',
@@ -43,5 +43,5 @@ var activities = flight.component(function () {
 });
 
 module.exports = {
-    activities: activities
+    recentActivity: recentActivity
 };
