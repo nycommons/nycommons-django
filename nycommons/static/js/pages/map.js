@@ -13,7 +13,7 @@ require('bootstrap_tooltip');
 require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
-var recentActivity = require('../components/recent-activity').recentActivity;
+var recentActivity = require('../components/activities').recentActivity;
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
