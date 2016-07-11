@@ -1,8 +1,9 @@
+var _ = require('underscore');
 var flight = require('flightjs');
 var Handlebars = require('handlebars');
 var moment = require('moment');
 
-var loadActivities = require('../data/activities').loadActivities;
+var activitiesData = require('../data/activities');
 
 Handlebars.registerHelper('formatTimestamp', function (timestamp) {
     timestamp = Handlebars.escapeExpression(timestamp);
@@ -13,6 +14,7 @@ function activityMixin () {
     this.attributes({
         contentSelector: '.activity-section',
         expandSelector: '.activity-list-expand',
+        listSelector: '.activity-stream ul',
         streamSelector: '.activity-stream'
     });
 
@@ -34,14 +36,14 @@ var recentActivity = flight.component(function () {
         var content = this.template({
             actions: data.activities.slice(0, 1)
         });
-        this.select('streamSelector').html(content);
+        this.select('listSelector').html(content);
     };
 
     this.after('initialize', function () {
         $(document).on('receivedActivities', this.showFirst.bind(this));
         this.select('expandSelector').on('click', this.expand.bind(this));
 
-        loadActivities();
+        activitiesData.loadActivities();
     });
 }, activityMixin);
 
@@ -56,12 +58,23 @@ var activities = flight.component(function () {
         var content = this.template({
             actions: data.activities
         });
-        this.select('streamSelector').html(content);
+        this.select('listSelector').append(content);
+    };
+
+    this.onScroll = function (e) {
+        var actionTop = this.$node.find('.action:last-of-type').offset().top;
+        var documentHeight = $(document).height();
+        if (actionTop - documentHeight < 150) {
+            activitiesData.loadNextActivitiesPage();
+        }
     };
 
     this.after('initialize', function () {
         $(document).on('receivedActivities', this.receivedActivities.bind(this));
         this.select('expandSelector').on('click', this.collapse.bind(this));
+
+        this.scrollable = this.$node.parent();
+        this.scrollable.on('scroll', _.debounce(this.onScroll.bind(this), 200));
     });
 }, activityMixin);
 

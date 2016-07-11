@@ -1,9 +1,10 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js":[function(require,module,exports){
+var _ = require('underscore');
 var flight = require('flightjs');
 var Handlebars = require('handlebars');
 var moment = require('moment');
 
-var loadActivities = require('../data/activities').loadActivities;
+var activitiesData = require('../data/activities');
 
 Handlebars.registerHelper('formatTimestamp', function (timestamp) {
     timestamp = Handlebars.escapeExpression(timestamp);
@@ -14,6 +15,7 @@ function activityMixin () {
     this.attributes({
         contentSelector: '.activity-section',
         expandSelector: '.activity-list-expand',
+        listSelector: '.activity-stream ul',
         streamSelector: '.activity-stream'
     });
 
@@ -35,14 +37,14 @@ var recentActivity = flight.component(function () {
         var content = this.template({
             actions: data.activities.slice(0, 1)
         });
-        this.select('streamSelector').html(content);
+        this.select('listSelector').html(content);
     };
 
     this.after('initialize', function () {
         $(document).on('receivedActivities', this.showFirst.bind(this));
         this.select('expandSelector').on('click', this.expand.bind(this));
 
-        loadActivities();
+        activitiesData.loadActivities();
     });
 }, activityMixin);
 
@@ -57,12 +59,23 @@ var activities = flight.component(function () {
         var content = this.template({
             actions: data.activities
         });
-        this.select('streamSelector').html(content);
+        this.select('listSelector').append(content);
+    };
+
+    this.onScroll = function (e) {
+        var actionTop = this.$node.find('.action:last-of-type').offset().top;
+        var documentHeight = $(document).height();
+        if (actionTop - documentHeight < 150) {
+            activitiesData.loadNextActivitiesPage();
+        }
     };
 
     this.after('initialize', function () {
         $(document).on('receivedActivities', this.receivedActivities.bind(this));
         this.select('expandSelector').on('click', this.collapse.bind(this));
+
+        this.scrollable = this.$node.parent();
+        this.scrollable.on('scroll', _.debounce(this.onScroll.bind(this), 200));
     });
 }, activityMixin);
 
@@ -71,7 +84,7 @@ module.exports = {
     recentActivity: recentActivity
 };
 
-},{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
+},{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
 var flight = require('flightjs');
 
 var collapsibleSection = flight.component(function () {
@@ -944,22 +957,29 @@ var totalPages;
 function loadActivities (requestedPage) {
     var pageToLoad = page + 1;
     if (requestedPage) {
-        page = requestedPage;
+        pageToLoad = requestedPage;
     }
     var baseUrl = Django.url('activity_list');
     singleminded.remember({
         name: 'loadActivities' + pageToLoad,
-        jqxhr: $.getJSON(baseUrl, function (data) {
+        jqxhr: $.getJSON(baseUrl + '?page=' + pageToLoad, function (data) {
             activities = activities.concat(data.actions);
             page = data.pagination.page;
             totalPages = data.pagination.pages;
-            $(document).trigger('receivedActivities', { activities: activities });
+            $(document).trigger('receivedActivities', { activities: data.actions });
         })
     });
 }
 
+function loadNextActivitiesPage () {
+    if (page && totalPages && page < totalPages) {
+        loadActivities(page + 1);
+    }
+}
+
 module.exports = {
-    loadActivities: loadActivities
+    loadActivities: loadActivities,
+    loadNextActivitiesPage: loadNextActivitiesPage
 };
 
 },{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js":[function(require,module,exports){
@@ -62675,7 +62695,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
