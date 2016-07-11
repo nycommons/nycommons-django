@@ -26,6 +26,7 @@
     "livinglots.addlot": "git://github.com/596acres/livinglots.addlot#v1.0.0",
     "livinglots.boundaries": "git://github.com/596acres/livinglots.boundaries#v1.0.0",
     "livinglots.emailparticipants": "git://github.com/596acres/livinglots.emailparticipants#v0.2.3",
+    "moment": "^2.14.1",
     "numeral": "^1.5.3",
     "proj4": "^2.3.3",
     "select2": "^3.5.2-browserify",

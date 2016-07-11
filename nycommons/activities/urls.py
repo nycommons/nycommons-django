@@ -1,11 +1,11 @@
 from django.conf.urls import patterns, url
 
-from .views import ActivityListView
+from .views import ActivityJSONListView
 
 
 urlpatterns = patterns('',
 
-    url(r'^list/', ActivityListView.as_view(), name='activity_list'),
+    url(r'^list/json/', ActivityJSONListView.as_view(), name='activity_list'),
 
 )
 
