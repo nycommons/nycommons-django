@@ -43,6 +43,18 @@
                 {{else}}
                     {{target}}
                 {{/if}}
+                {{#if file_url}}
+                    <div class="file">
+                        <a href="{{file_url}}" target="_blank">
+                            {{action_object}}
+                        </a>
+                    </div>
+                {{/if}}
+                {{#if thumbnail_url}}
+                    <div class="thumbnail">
+                        <img src="{{thumbnail_url}}" />
+                    </div>
+                {{/if}}
                 <div class="action-timestamp">
                     {{formatTimestamp timestamp}}
                 </div>
