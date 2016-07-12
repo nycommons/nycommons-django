@@ -36,7 +36,9 @@
         <ul class="details-owner-layer-list">
             {{#each lottypes}}
                 {{#unless priority}}
-                    {{> layerPartial}}
+                    {{#if in_details_view}}
+                        {{> layerPartial}}
+                    {{/if}}
                 {{/unless}}
             {{/each}}
         </ul>

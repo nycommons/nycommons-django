@@ -213,6 +213,8 @@ class LotsGeoJSONPolygon(LotGeoJSONMixin, FilteredLotsMixin, GeoJSONListView):
 class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
+        'organizing': 'organizing',
+        'organizing_priority': 'organizing & priority',
         'community_project': 'community project',
         'priority': 'priority',
         'library': 'library',
@@ -242,6 +244,8 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     def get_layers(self, lots):
         return OrderedDict([
+            ('organizing', lots.filter(organizing=True)),
+            ('organizing_priority', lots.filter(organizing=True, priority=True)),
             ('community_project', lots.filter(steward_projects__isnull=False)),
             ('priority', lots.filter(priority=True)),
             ('library', lots.filter(commons_type='library')),
