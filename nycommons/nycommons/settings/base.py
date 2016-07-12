@@ -308,6 +308,7 @@ LIVING_LOTS = {
         'owner_group': 'owners.OwnerGroup',
         'pathway': 'pathways.Pathway',
         'stewardproject': 'steward.StewardProject',
+        'watcher': 'organize.Watcher',
     },
 }
 

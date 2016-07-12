@@ -5,6 +5,12 @@
     <div>
         <section>
             <h3>{% trans "Stay Up to Date" %}</h3>
+            <p>{% trans "Get updates about this property." %}
+            <div>
+                <a class="btn btn-small btn-default" href="{% url "organize:subscribe" pk=lot.pk %}">
+                    {% trans "subscribe" %}
+                </a>
+            </div>
         </section>
 
         <section>
