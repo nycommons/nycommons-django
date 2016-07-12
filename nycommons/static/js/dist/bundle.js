@@ -89,7 +89,7 @@ var flight = require('flightjs');
 
 var collapsibleSection = flight.component(function () {
     this.toggle = function (event) {
-        if (this.$content.is(':visible')) {
+        if (!this.$header.is('.collapsed')) {
             this.$content.slideUp();
             this.$header.addClass('collapsed');
         }
@@ -104,6 +104,11 @@ var collapsibleSection = flight.component(function () {
         this.$header = this.$node.find('h1,h2,h3,h4,h5,h6:eq(0)');
         this.$content = this.$header.next();
         this.$header.on('click', this.toggle.bind(this));
+
+        // Hide on init if collapsed
+        if (this.$header.is('.collapsed')) {
+            this.$content.hide();
+        }
     });
 });
 
@@ -702,7 +707,37 @@ module.exports = {
     locateButton: locateButton
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
+var flight = require('flightjs');
+
+var sameOwnerSection = flight.component(function () {
+    this.attributes({
+        contentSelector: '.lot-detail-same-owner-content',
+        expandSelector: 'h2'
+    });
+
+    this.loadDetails = function (e) {
+        if (this.loaded) return;
+        this.loaded = true;
+        var params = $.param({
+            organizing: this.$node.data('organizing'),
+            priority: this.$node.data('priority')
+        });
+        var url = Django.url('lots:lot_same_owner', { pk: this.$node.data('lot') });
+        this.select('contentSelector').load(url + '?' + params);
+    };
+
+    this.after('initialize', function () {
+        this.loaded = false;
+        this.select('expandSelector').on('click', this.loadDetails.bind(this));
+    });
+});
+
+module.exports = {
+    sameOwnerSection: sameOwnerSection
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
 var flight = require('flightjs');
 var geocode = require('../lib/geocode').geocode;
 var oasis = require('../lib/oasis');
@@ -1995,6 +2030,7 @@ require('leaflet-dataoptions');
 require('leaflet-geojson-gridlayer');
 
 var collapsibleSection = require('../components/collapse').collapsibleSection;
+var sameOwnerSection = require('../components/same-owner').sameOwnerSection;
 var mapstyles = require('../map/styles');
 var StreetView = require('../lib/streetview');
 
@@ -2113,9 +2149,10 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 
     collapsibleSection.attachTo('section.collapsible');
+    sameOwnerSection.attachTo('.lot-detail-same-owner');
 });
 
-},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map/styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojson-gridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojson-gridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
+},{"../components/collapse":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js","../components/same-owner":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js","../lib/streetview":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js","../map/styles":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/styles.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-dataoptions":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-dataoptions/src/leaflet.dataoptions.js","leaflet-geojson-gridlayer":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-geojson-gridlayer/src/GeoJSONGridLayer.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js":[function(require,module,exports){
 //
 // mappage.js
 //
@@ -62718,7 +62755,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

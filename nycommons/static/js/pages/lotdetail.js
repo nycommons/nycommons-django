@@ -10,6 +10,7 @@ require('leaflet-dataoptions');
 require('leaflet-geojson-gridlayer');
 
 var collapsibleSection = require('../components/collapse').collapsibleSection;
+var sameOwnerSection = require('../components/same-owner').sameOwnerSection;
 var mapstyles = require('../map/styles');
 var StreetView = require('../lib/streetview');
 
@@ -128,4 +129,5 @@ $(document).ready(function () {
     initTwitterLink($('.share-twitter'));
 
     collapsibleSection.attachTo('section.collapsible');
+    sameOwnerSection.attachTo('.lot-detail-same-owner');
 });

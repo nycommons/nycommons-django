@@ -1,78 +1,18 @@
 {% load i18n lots_tags %}
 
-{# TODO each of these as their own view #}
-{# TODO only load on collapsible section when expanded #}
 {% with owner_lots=lot.owner.lot_set.all %}
-    <section class="collapsible">
-        <h2>{% trans "Properties with the Same Official Owner"%}</h2>
-        <div>
-            <ul>
-                {% for owner_lot in owner_lots %}
-                    {% if owner_lot != lot %}
-                        <li>
-                            <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
-                        </li>
-                    {% endif %}
-                {% empty %}
-                None.
-                {% endfor %}
-            </ul>
-            {% get_owner_map_url for lot as owner_map_url %}
-            <a class="btn btn-default" href="{{ owner_map_url }}" target="_blank">
-                {% trans "View Map" %}
-            </a>
-        </div>
+    <section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}">
+        <h2 class="collapsed">{% trans "Properties with the Same Official Owner"%}</h2>
+        <div class="lot-detail-same-owner-content"></div>
     </section>
 
-    <section class="collapsible">
-        <h2>{% trans "Priority Properties with the Same Official Owner"%}</h2>
-        <div>
-            {% spaceless %}
-                <ul class="owners-lots-list-priority">
-                    {% for owner_lot in owner_lots %}
-                        {% if owner_lot != lot and owner_lot.priority %}
-                            <li>
-                                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% endspaceless %}
-            <div class="no-lots">
-                None yet.
-            </div>
-            <div class="lots-exist">
-                {% get_owner_map_url False True for lot as owner_priority_map_url %}
-                <a class="btn btn-default" href="{{ owner_priority_map_url }}" target="_blank">
-                    {% trans "View Map" %}
-                </a>
-            </div>
-        </div>
+    <section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}" data-priority="true">
+        <h2 class="collapsed">{% trans "Priority Properties with the Same Official Owner"%}</h2>
+        <div class="lot-detail-same-owner-content"></div>
     </section>
 
-    <section class="collapsible">
-        <h2>{% trans "Properties with the Same Official Owner Where Others Are Organizing"%}</h2>
-        <div>
-            {% spaceless %}
-                <ul class="owners-lots-list-organizing">
-                    {% for owner_lot in owner_lots %}
-                        {% if owner_lot != lot and owner_lot.organizers.exists %}
-                            <li>
-                                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% endspaceless %}
-            <div class="no-lots">
-                None yet.
-            </div>
-            <div class="lots-exist">
-                {% get_owner_map_url True False for lot as owner_organizing_map_url %}
-                <a class="btn btn-default" href="{{ owner_organizing_map_url }}" target="_blank">
-                    {% trans "View Map" %}
-                </a>
-            </div>
-        </div>
+    <section class="lot-detail-same-owner collapsible collapsed" data-lot="{{ lot.pk }}" data-organizing="true">
+        <h2 class="collapsed">{% trans "Properties with the Same Official Owner Where Others Are Organizing"%}</h2>
+        <div class="lot-detail-same-owner-content"></div>
     </section>
 {% endwith %}
