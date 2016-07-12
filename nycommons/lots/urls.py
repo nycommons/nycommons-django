@@ -3,7 +3,7 @@ from django.conf.urls import url
 import livinglots_lots.urls as llurls
 
 from .views import (LotDetailView, LotDetailViewJSON, LotsCountViewWithAcres,
-                    LotsGeoJSONCentroid, LotsGeoJSONPolygon, 
+                    LotsGeoJSONCentroid, LotsGeoJSONPolygon,
                     LotsOwnershipOverview, LotsCSV, LotsKML, LotsGeoJSON,
                     SameOwner, SearchView)
 
