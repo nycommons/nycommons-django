@@ -6629,7 +6629,8 @@ fieldset[disabled] .btn-show-details.active {
     padding-right: 15px;
   }
 }
-.mainmenu-item:hover .submenu {
+.mainmenu-item:hover .submenu,
+.mainmenu-item.open .submenu {
   display: block;
 }
 .mainmenu-item-parent {

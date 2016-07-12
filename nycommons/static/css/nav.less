@@ -76,8 +76,11 @@
 }
 
 .mainmenu-item {
-    &:hover .submenu {
-        display: block;
+    &:hover,
+    &.open {
+        .submenu {
+            display: block;
+        }
     }
 
     &-parent {

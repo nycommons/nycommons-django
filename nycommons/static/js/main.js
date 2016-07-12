@@ -76,6 +76,25 @@ $(document).ready(function () {
         });
     }
 
+    /*
+     * Make hovered menus work similarly on touch devices
+     */
+    function hideSubmenu (e) {
+        if (!$('.mainmenu-item-parent').is(e.target)) {
+            e.stopPropagation();
+            $(document).off('click', hideSubmenu);
+            $('.nav .mainmenu-item').removeClass('open');
+        }
+    }
+
+    if ($('.navbar').length) {
+        $('.nav .mainmenu-item').click(function () {
+            $('.mainmenu-item').removeClass('open');
+            $(this).addClass('open');
+            $(document).on('click', hideSubmenu);
+        });
+    }
+
     $('.menu-button').click(function () {
         $('.menu-expanded').toggle();
     });

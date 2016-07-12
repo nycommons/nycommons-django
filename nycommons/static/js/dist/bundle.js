@@ -1325,6 +1325,25 @@ $(document).ready(function () {
         });
     }
 
+    /*
+     * Make hovered menus work similarly on touch devices
+     */
+    function hideSubmenu (e) {
+        if (!$('.mainmenu-item-parent').is(e.target)) {
+            e.stopPropagation();
+            $(document).off('click', hideSubmenu);
+            $('.nav .mainmenu-item').removeClass('open');
+        }
+    }
+
+    if ($('.navbar').length) {
+        $('.nav .mainmenu-item').click(function () {
+            $('.mainmenu-item').removeClass('open');
+            $(this).addClass('open');
+            $(document).on('click', hideSubmenu);
+        });
+    }
+
     $('.menu-button').click(function () {
         $('.menu-expanded').toggle();
     });
@@ -62699,7 +62718,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
