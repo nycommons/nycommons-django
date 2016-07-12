@@ -41,10 +41,6 @@
             </a>
         {% endif %}
 
-        <a class="build-community-button lot-page-tooltip" href="{% url "organize:add_organizer" pk=lot.pk %}" data-toggle="tooltip" title="{% trans "Get involved with this lot or let people know you are already working towards growing community here." %}">
-            {% trans "Take Action" %}
-        </a>
-
         <a href="/#18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}">
             {% trans "Map" %}
         </a>
@@ -124,6 +120,8 @@
         </section>
 
         {% include "inplace/lots/_lot_detail_take_action.html" with lot=lot %}
+
+        {% include "inplace/lots/_lot_detail_organizing_networks.html" with lot=lot %}
 
         {% get_steward_project_list for lot as stewards %}
         {% if stewards %}
