@@ -1,0 +1,17 @@
+{% load i18n lots_tags %}
+
+<div>
+    <ul>
+        {% for owner_lot in lots %}
+            <li>
+                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
+            </li>
+        {% empty %}
+        None.
+        {% endfor %}
+    </ul>
+    {% get_owner_map_url organizing priority for lot as owner_map_url %}
+    <a class="btn btn-default" href="{{ owner_map_url }}" target="_blank">
+        {% trans "View Map" %}
+    </a>
+</div>

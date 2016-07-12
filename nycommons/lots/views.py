@@ -8,7 +8,7 @@ import re
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, Sum
-from django.views.generic import View
+from django.views.generic import DetailView, View
 
 from caching.base import cached
 from braces.views import JSONResponseMixin
@@ -368,3 +368,25 @@ class SearchView(JSONResponseMixin, View):
         return self.render_json_response({
             'results': self.get_search_results(request.GET.get('q', None)),
         })
+
+
+class SameOwner(DetailView):
+    model = Lot
+    template_name = 'livinglots/lots/same_owner.html'
+
+    def get_context_data(self, **kwargs):
+        lot = self.get_object()
+        organizing = (self.request.GET.get('organizing', False) == 'true')
+        priority = (self.request.GET.get('priority', False) == 'true')
+
+        lots = lot.owner.lot_set.exclude(pk=lot.pk)
+        if organizing:
+            lots = lots.filter(organizing=True)
+        if priority:
+            lots = lots.filter(priority=True)
+        context = super(SameOwner, self).get_context_data(**kwargs)
+        context['lots'] = lots
+        context['lot'] = lot
+        context['organizing'] = organizing
+        context['priority'] = priority
+        return context

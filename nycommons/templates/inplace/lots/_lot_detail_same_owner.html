@@ -1,5 +1,7 @@
 {% load i18n lots_tags %}
 
+{# TODO each of these as their own view #}
+{# TODO only load on collapsible section when expanded #}
 {% with owner_lots=lot.owner.lot_set.all %}
     <section class="collapsible">
         <h2>{% trans "Properties with the Same Official Owner"%}</h2>

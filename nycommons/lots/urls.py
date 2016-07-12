@@ -5,7 +5,7 @@ import livinglots_lots.urls as llurls
 from .views import (LotDetailView, LotDetailViewJSON, LotsCountViewWithAcres,
                     LotsGeoJSONCentroid, LotsGeoJSONPolygon, 
                     LotsOwnershipOverview, LotsCSV, LotsKML, LotsGeoJSON,
-                    SearchView)
+                    SameOwner, SearchView)
 
 
 urlpatterns = [
@@ -23,5 +23,8 @@ urlpatterns = [
     url(r'^kml/', LotsKML.as_view(), name='kml'),
     url(r'^geojson/', LotsGeoJSON.as_view(), name='geojson'),
     url(r'^search/', SearchView.as_view(), name='search'),
+
+    url(r'^(?P<pk>\d+)/same-owner/', SameOwner.as_view(),
+        name='lot_same_owner'),
 
 ] + llurls.urlpatterns
