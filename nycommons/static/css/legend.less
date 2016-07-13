@@ -97,6 +97,10 @@
 
     &-count {
         float: right;
+
+        @media (max-width: @screen-xs-max) {
+            display: none;
+        }
     }
 
     @media print {
@@ -111,7 +115,7 @@
 
     @media (max-width: @screen-xs-max) {
         &.sidebar-section {
-            height: 250px;
+            height: 160px;
             margin-top: 0;
             padding: 10px;
         }
@@ -173,6 +177,13 @@
     .details-button {
         @media (max-width: @screen-xs-max) {
             display: none;
+        }
+    }
+
+    .legend-column {
+        @media (max-width: @screen-xs-max) {
+            float: left;
+            width: 50%;
         }
     }
 }

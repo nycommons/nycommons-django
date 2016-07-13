@@ -6471,6 +6471,11 @@ footer .footer-right {
 .legend-count {
   float: right;
 }
+@media (max-width: 767px) {
+  .legend-count {
+    display: none;
+  }
+}
 @media print {
   .legend {
     display: none;
@@ -6483,7 +6488,7 @@ footer .footer-right {
 }
 @media (max-width: 767px) {
   .map-legend.sidebar-section {
-    height: 250px;
+    height: 160px;
     margin-top: 0;
     padding: 10px;
   }
@@ -6538,6 +6543,12 @@ footer .footer-right {
 @media (max-width: 767px) {
   .map-legend .details-button {
     display: none;
+  }
+}
+@media (max-width: 767px) {
+  .map-legend .legend-column {
+    float: left;
+    width: 50%;
   }
 }
 #lot-detail-map {
