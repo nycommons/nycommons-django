@@ -5955,9 +5955,13 @@ section.collapsible > h6.collapsed::before {
 }
 @media (max-width: 767px) {
   .map-sidebar .map-header-content {
+    display: none;
     height: 100%;
     max-height: 100%;
     top: 0;
+  }
+  .map-filters-open .map-sidebar .map-header-content {
+    display: block;
   }
 }
 .search-enabled .map-sidebar {
