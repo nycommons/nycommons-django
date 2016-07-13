@@ -7075,6 +7075,11 @@ fieldset[disabled] .btn-show-details.active {
   float: right;
   margin-left: 15px;
 }
+@media (max-width: 767px) {
+  .social-media {
+    display: none;
+  }
+}
 .social-media a {
   background-repeat: no-repeat;
   background-size: contain;
