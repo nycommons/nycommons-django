@@ -23,7 +23,7 @@ var sidebarHeaderContent = flight.component(function () {
 
     this.sidebarHeaderContentHidden = function (event) {
         this.$node.hide();
-        $(document).trigger('sidebarHeaderContentHidden');
+        $(document).trigger('sidebarHeaderContentHidden', { name: this.attr.name });
         return false;
     };
 

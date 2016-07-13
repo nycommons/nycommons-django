@@ -5819,6 +5819,13 @@ section.collapsible > h6.collapsed::before {
     top: inherit;
     width: 100%;
   }
+  .map-filters-open .map-sidebar {
+    bottom: inherit;
+    height: 100%;
+    max-height: 100%;
+    top: 0;
+    z-index: 10001;
+  }
 }
 .map-sidebar h2 {
   font-weight: normal;
@@ -5945,6 +5952,13 @@ section.collapsible > h6.collapsed::before {
 .map-sidebar .map-header-content-filters,
 .map-sidebar .map-header-content-activities {
   display: none;
+}
+@media (max-width: 767px) {
+  .map-sidebar .map-header-content {
+    height: 100%;
+    max-height: 100%;
+    top: 0;
+  }
 }
 .search-enabled .map-sidebar {
   top: 75px;

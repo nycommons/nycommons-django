@@ -969,7 +969,7 @@ var sidebarHeaderContent = flight.component(function () {
 
     this.sidebarHeaderContentHidden = function (event) {
         this.$node.hide();
-        $(document).trigger('sidebarHeaderContentHidden');
+        $(document).trigger('sidebarHeaderContentHidden', { name: this.attr.name });
         return false;
     };
 
@@ -2360,6 +2360,17 @@ $(document).ready(function () {
         });
         $(document).on('legendExpanded', function () {
             $('body').removeClass('map-legend-collapsed');
+        });
+
+        $(document).on('sidebarHeaderContentShown', function (e, data) {
+            if (data.name === 'filter') {
+                $('body').addClass('map-filters-open');
+            }
+        });
+        $(document).on('sidebarHeaderContentHidden', function (e, data) {
+            if (data.name === 'filter') {
+                $('body').removeClass('map-filters-open');
+            }
         });
     }
 });
@@ -62809,7 +62820,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

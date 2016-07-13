@@ -159,5 +159,16 @@ $(document).ready(function () {
         $(document).on('legendExpanded', function () {
             $('body').removeClass('map-legend-collapsed');
         });
+
+        $(document).on('sidebarHeaderContentShown', function (e, data) {
+            if (data.name === 'filter') {
+                $('body').addClass('map-filters-open');
+            }
+        });
+        $(document).on('sidebarHeaderContentHidden', function (e, data) {
+            if (data.name === 'filter') {
+                $('body').removeClass('map-filters-open');
+            }
+        });
     }
 });
