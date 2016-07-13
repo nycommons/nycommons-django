@@ -6142,6 +6142,11 @@ footer .footer-right {
     display: none;
   }
 }
+@media (max-width: 767px) {
+  .map-legend .details-button {
+    display: none;
+  }
+}
 #lot-detail-map {
   border: 2px solid #58595b;
   cursor: pointer;
