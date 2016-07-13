@@ -642,10 +642,30 @@ module.exports = {
 var _ = require('underscore');
 var flight = require('flightjs');
 
+var legendHeader = flight.component(function () {
+    this.attributes({
+        legend: null
+    });
+
+    this.onClick = function (e) {
+        e.stopPropagation();
+        this.attr.legend.toggleCollapse();
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.onClick);
+    });
+});
+
 var legend = flight.component(function () {
     this.attributes({
+        legendHeaderSelector: '.legend-header',
         lotsCount: '.lots-count'
     });
+
+    this.toggleCollapse = function () {
+        this.$node.toggleClass('collapse');
+    };
 
     this.receivedLotCount = function (event, data) {
         this.select('lotsCount').text(data.count);
@@ -658,6 +678,9 @@ var legend = flight.component(function () {
     };
 
     this.after('initialize', function () {
+        legendHeader.attachTo(this.select('legendHeaderSelector'), {
+            legend: this
+        });
         this.on(document, 'receivedLotCount', this.receivedLotCount);
         this.on(document, 'receivedOwnerCount', this.receivedOwnerCount.bind(this));
     });
@@ -62768,7 +62791,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
