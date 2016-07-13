@@ -102,4 +102,8 @@
 
 .search-enabled .map-sidebar {
     top: @map-overlay-top + @map-search-height;
+
+    @media (max-width: @screen-xs-max) {
+        top: inherit;
+    }
 }

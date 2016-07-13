@@ -4,8 +4,13 @@ var oasis = require('../lib/oasis');
 
 var searchButton = flight.component(function () {
     this.click = function (event) {
-        $(this.attr.searchBar).toggle();
-        $('body').toggleClass('search-enabled');
+        if ($('body').hasClass('search-enabled')) {
+            $('body').removeClass('search-enabled');
+        }
+        else {
+            $('body').addClass('search-enabled');
+        }
+        $('body').removeClass('search-submitted');
         return false;
     };
 
@@ -91,6 +96,7 @@ var searchForm = flight.component(function () {
 
     this.search = function (e) {
         e.preventDefault();
+        $('body').addClass('search-submitted');
         this.trigger('searchstart');
         this.select('warningSelector').hide();
         this.select('submitSelector')
@@ -127,7 +133,6 @@ var searchBar = flight.component(function () {
     });
 
     this.close = function (event) {
-        this.$node.hide();
         $('body').removeClass('search-enabled');
         return false;
     };
