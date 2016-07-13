@@ -6423,7 +6423,7 @@ footer .footer-right {
   #page-header .header-bar-right {
     width: 90%;
   }
-  #page-header .mobile-map-header-content-default {
+  .map-page #page-header .mobile-map-header-content-default {
     background-color: white;
     display: block;
     padding: 5px;
@@ -6638,6 +6638,11 @@ footer .footer-right {
 }
 .lot-detail-page .page-wrapper {
   margin: 50px;
+}
+@media (max-width: 767px) {
+  .lot-detail-page .page-wrapper {
+    margin: 0;
+  }
 }
 .lot-detail-page h1 {
   font-family: "Open Sans", sans-serif;
@@ -7108,7 +7113,7 @@ fieldset[disabled] .btn-show-details.active {
 }
 @media (max-width: 767px) {
   .navbar {
-    background-color: white;
+    border: 0;
     margin-bottom: 0;
     position: fixed;
     top: 0;
@@ -7118,7 +7123,8 @@ fieldset[disabled] .btn-show-details.active {
     z-index: 10000;
   }
   .navbar-collapse {
-    margin-top: 80px;
+    background-color: white;
+    margin-top: 75px;
   }
   .navbar-header {
     margin-left: 0;
