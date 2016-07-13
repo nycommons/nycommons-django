@@ -7379,6 +7379,19 @@ footer .social-media-twitter {
     padding: 0;
   }
 }
+.leaflet-bottom {
+  transition-property: bottom;
+  transition-duration: .5s;
+  transition-timing-function: ease;
+}
+@media (max-width: 767px) {
+  .leaflet-bottom {
+    bottom: 160px;
+  }
+  .map-legend-collapsed .leaflet-bottom {
+    bottom: 45px;
+  }
+}
 .leaflet-bottom .leaflet-control {
   margin-bottom: 3px;
 }

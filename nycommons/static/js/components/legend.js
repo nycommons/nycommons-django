@@ -24,6 +24,12 @@ var legend = flight.component(function () {
 
     this.toggleCollapse = function () {
         this.$node.toggleClass('collapse');
+        if (this.$node.hasClass('collapse')) {
+            $(document).trigger('legendCollapsed');
+        }
+        else {
+            $(document).trigger('legendExpanded');
+        }
     };
 
     this.receivedLotCount = function (event, data) {

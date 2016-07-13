@@ -23,6 +23,20 @@
     }
 }
 
+.leaflet-bottom {
+    transition-property: bottom;
+    transition-duration: .5s;
+    transition-timing-function: ease;
+
+    @media (max-width: @screen-xs-max) {
+        bottom: @mobile-legend-height;
+
+        .map-legend-collapsed & {
+            bottom: @mobile-legend-height-collapsed;
+        }
+    }
+}
+
 .leaflet-bottom .leaflet-control {
     margin-bottom: 3px;
 }

@@ -152,5 +152,12 @@ $(document).ready(function () {
         $('.admin-button-email').click(function () {
             map.enterMailMode();
         });
+
+        $(document).on('legendCollapsed', function () {
+            $('body').addClass('map-legend-collapsed');
+        });
+        $(document).on('legendExpanded', function () {
+            $('body').removeClass('map-legend-collapsed');
+        });
     }
 });
