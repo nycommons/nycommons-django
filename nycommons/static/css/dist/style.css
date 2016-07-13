@@ -6885,9 +6885,11 @@ fieldset[disabled] .btn-show-details.active {
 }
 @media (max-width: 767px) {
   .map-header-btn {
+    height: 35px;
     margin-top: 0;
     position: absolute;
     top: 17px;
+    width: 35px;
   }
 }
 .map-header-locate-btn {
@@ -6895,7 +6897,7 @@ fieldset[disabled] .btn-show-details.active {
 }
 @media (max-width: 767px) {
   .map-header-locate-btn {
-    right: 75px;
+    right: 63px;
   }
 }
 .map-header-search-btn {
@@ -6906,8 +6908,10 @@ fieldset[disabled] .btn-show-details.active {
 }
 @media (max-width: 767px) {
   .map-header-search-btn {
-    right: 25px;
+    right: 110px;
     margin-top: 0;
+    margin-right: 0;
+    width: 35px;
   }
 }
 .map-menu {
@@ -6973,6 +6977,18 @@ fieldset[disabled] .btn-show-details.active {
 .navbar-default .navbar-toggle .icon-bar {
   background-color: #00aeef;
   height: 4px;
+}
+@media (max-width: 767px) {
+  .navbar-toggle,
+  .navbar-default .navbar-toggle {
+    padding: 9px 2px;
+    width: 32px;
+  }
+  .navbar-toggle .icon-bar,
+  .navbar-default .navbar-toggle .icon-bar {
+    margin-top: 4px;
+    width: 100%;
+  }
 }
 .navbar-default {
   float: right;

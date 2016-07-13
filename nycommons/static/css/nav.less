@@ -4,6 +4,15 @@
         background-color: @foreground-color;
         height: 4px;
     }
+
+    @media (max-width: @screen-xs-max) {
+        padding: 9px 2px;
+        width: 32px;
+        .icon-bar {
+            margin-top: 4px;
+            width: 100%;
+        }
+    }
 }
 
 .navbar-default {
