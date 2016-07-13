@@ -709,6 +709,16 @@ module.exports = {
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
 var flight = require('flightjs');
+var Spinner = require('spin.js');
+
+var spinnerOptions = {
+    left: '100%',
+    length: 5,
+    position: 'relative',
+    radius: 6,
+    top: '15px',
+    width: 2
+};
 
 var sameOwnerSection = flight.component(function () {
     this.attributes({
@@ -718,13 +728,16 @@ var sameOwnerSection = flight.component(function () {
 
     this.loadDetails = function (e) {
         if (this.loaded) return;
+        var spinner = new Spinner(spinnerOptions).spin(this.select('expandSelector')[0]);
         this.loaded = true;
         var params = $.param({
             organizing: this.$node.data('organizing'),
             priority: this.$node.data('priority')
         });
         var url = Django.url('lots:lot_same_owner', { pk: this.$node.data('lot') });
-        this.select('contentSelector').load(url + '?' + params);
+        this.select('contentSelector').load(url + '?' + params, function () {
+            spinner.stop();
+        });
     };
 
     this.after('initialize', function () {
@@ -737,7 +750,7 @@ module.exports = {
     sameOwnerSection: sameOwnerSection
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
 var flight = require('flightjs');
 var geocode = require('../lib/geocode').geocode;
 var oasis = require('../lib/oasis');
@@ -62755,7 +62768,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
