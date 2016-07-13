@@ -1,0 +1,68 @@
+{% load i18n %}
+
+<div>
+    <a class="legend-button filter-button" href="#">
+        Filter
+    </a>
+    <a class="legend-button details-button" href="#">
+        Details
+    </a>
+    <h2><span class="lots-count"></span> Properties</h2>
+</div>
+
+<div>
+    <span class="legend-marker legend-marker-priority"></span>
+    <label class="legend-label">
+        {% trans "Priority" %}
+    </label>
+    <span class="legend-count legend-count-priority" data-type="priority">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-organizing"></span>
+    <label class="legend-label">
+        {% trans "Organizing" %}
+    </label>
+    <span class="legend-count legend-count-organizing" data-type="organizing">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-priority-organizing"></span>
+    <label class="legend-label legend-label-priority-organizing">
+        {% trans "Organizing & Priority" %}
+    </label>
+    <span class="legend-count legend-count-priority-organizing" data-type="organizing_priority">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-vacant_lot"></span>
+    <label class="legend-label">
+        {% trans "Vacant Lot / Garden" %}
+    </label>
+    <span class="legend-count legend-count-vacant_lot" data-type="vacant_lot">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-library"></span>
+    <label class="legend-label legend-label-organized">
+        {% trans "Library" %}
+    </label>
+    <span class="legend-count legend-count-library" data-type="library">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-post_office"></span>
+    <label class="legend-label legend-label-organized">
+        {% trans "Post Office" %}
+    </label>
+    <span class="legend-count legend-count-post_office" data-type="post_office">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-waterfront"></span>
+    <label class="legend-label legend-label-organized">
+        {% trans "Waterfront" %}
+    </label>
+    <span class="legend-count legend-count-waterfront" data-type="waterfront">0</span>
+</div>
+<div>
+    <span class="legend-marker legend-marker-public_housing"></span>
+    <label class="legend-label legend-label-organized">
+        {% trans "Public Housing Sites" %}
+    </label>
+    <span class="legend-count legend-count-public_housing" data-type="public_housing">0</span>
+</div>
