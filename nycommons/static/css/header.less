@@ -28,6 +28,10 @@
             width: 95%;
         }
     }
+
+    .mobile-map-header-content-default {
+        display: none;
+    }
 }
 
 @media (max-width: @screen-xs-max) {
@@ -49,6 +53,16 @@
             &-right {
                 width: 90%;
             }
+        }
+
+        .mobile-map-header-content-default {
+            background-color: white;
+            display: block;
+            padding: 5px;
+            position: absolute;
+            top: 75px;
+            width: 100%;
+            z-index: @header-z-index - 1;
         }
     }
 

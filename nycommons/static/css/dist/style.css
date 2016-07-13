@@ -6402,6 +6402,9 @@ footer .footer-right {
   height: 100%;
   width: 95%;
 }
+#page-header .mobile-map-header-content-default {
+  display: none;
+}
 @media (max-width: 767px) {
   #page-header {
     margin-top: 0;
@@ -6419,6 +6422,15 @@ footer .footer-right {
   }
   #page-header .header-bar-right {
     width: 90%;
+  }
+  #page-header .mobile-map-header-content-default {
+    background-color: white;
+    display: block;
+    padding: 5px;
+    position: absolute;
+    top: 75px;
+    width: 100%;
+    z-index: 9999;
   }
   .header-home-link {
     position: fixed;
@@ -7101,6 +7113,9 @@ fieldset[disabled] .btn-show-details.active {
     position: fixed;
     top: 0;
     width: 100%;
+  }
+  .navbar-default {
+    z-index: 10000;
   }
   .navbar-collapse {
     margin-top: 80px;
