@@ -86,15 +86,16 @@ var filter = flight.component(function () {
 
     this.toggleLayerOwners = function () {
         var $layerOwners = this.$node.parent().find('.filter-owners-list');
+        var $filterItem = this.$node.parents('.filters-list-item');
         if (this.isChecked()) {
             // Check all the owners for this layer
             this.findLayerOwners().each(function () {
                 $(this).prop('checked', true);
             });
-            $layerOwners.show();
+            $filterItem.removeClass('collapse');
         }
         else {
-            $layerOwners.hide();
+            $filterItem.addClass('collapse');
         }
     };
 
@@ -125,6 +126,17 @@ var filter = flight.component(function () {
         }
         this.on('change', this.handleChange);
         this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
+    });
+});
+
+var filterCollapseButton = flight.component(function () {
+    this.onClick = function (e) {
+        this.$filterItem.toggleClass('collapse');
+    };
+
+    this.after('initialize', function () {
+        this.$filterItem = this.$node.parents('.filters-list-item');
+        this.on('click', this.onClick.bind(this));
     });
 });
 
@@ -294,6 +306,7 @@ var filters = flight.component(function () {
         resetButton.attachTo(this.$node.find('.reset'), {
             filterList: this
         });
+        filterCollapseButton.attachTo(this.$node.find('.filter-layer-collapse'));
 
         // Set off filterChanged with current state of filters
         this.handleFilterChanged();

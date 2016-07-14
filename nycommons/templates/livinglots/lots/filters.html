@@ -7,11 +7,12 @@
     </div>
     <h2>Property Filters</h2>
     <ul class="filters-list">
-        <li>
+        <li class="filters-list-item">
             <input id="layer-post-offices" type="checkbox" class="filter filter-layer" name="post office" data-type="layer" checked />
             <label for="layer-post-offices">
                 {% trans "post offices" %}
             </label>
+            <a href="#" class="filter-layer-collapse"></a>
 
             <ul class="filter-owners-list">
                 {% get_owners_by_commons_type "post office" as owners %}
@@ -23,11 +24,12 @@
                 {% endfor %}
             </ul>
         </li>
-        <li>
+        <li class="filters-list-item">
             <input id="layer-libraries" type="checkbox" class="filter filter-layer" name="library" data-type="layer" checked />
             <label for="layer-libraries">
                 {% trans "libraries" %}
             </label>
+            <a href="#" class="filter-layer-collapse"></a>
 
             <ul class="filter-owners-list">
                 {% get_owners_by_commons_type "library" as owners %}
@@ -39,11 +41,12 @@
                 {% endfor %}
             </ul>
         </li>
-        <li>
+        <li class="filters-list-item">
             <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="public housing" data-type="layer" checked />
             <label for="layer-public-housing">
                 {% trans "public housing sites" %}
             </label>
+            <a href="#" class="filter-layer-collapse"></a>
 
             <ul class="filter-owners-list">
                 {% get_owners_by_commons_type "public housing" as owners %}

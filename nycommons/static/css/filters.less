@@ -22,6 +22,35 @@
     }
 }
 
+.filter-layer {
+    &-collapse {
+        background-image: data-uri("/static/img/collapse-arrow.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        display: inline-block;
+        height: 10px;
+        margin-left: 7px;
+        width: 10px;
+
+        -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+        -o-transform: rotate(90deg);
+        transform: rotate(90deg);
+        -webkit-transition: -webkit-transform .2s;
+        transition: transform .5s;
+
+        .filters-list-item.collapse & {
+            -webkit-transform: rotate(0deg);
+            -moz-transform: rotate(0deg);
+            -ms-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+    }
+}
+
 .filter-owners-list {
     list-style: none;
     margin: 0;
@@ -29,6 +58,15 @@
 
     label {
         margin-left: 10px;
+    }
+}
+
+.filters-list-item.collapse {
+    display: block;
+    visibility: visible;
+
+    .filter-owners-list {
+        display: none;
     }
 }
 
