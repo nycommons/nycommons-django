@@ -5641,6 +5641,11 @@ section.collapsible > h6.collapsed::before {
   min-height: 400px;
   min-width: 800px;
 }
+@media (max-width: 991px) {
+  .details-section .details-body {
+    min-width: 700px;
+  }
+}
 .details-section .details-header-text {
   position: relative;
   min-height: 1px;
