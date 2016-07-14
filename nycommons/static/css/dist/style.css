@@ -5777,16 +5777,19 @@ section.collapsible > h6.collapsed::before {
 }
 .map-search input[type=text] {
   border: 0;
+  float: left;
   font-size: 24px;
   line-height: 60px;
   padding: 0;
-  width: 90%;
+  width: 80%;
 }
 .map-search input[type=text]:focus {
   outline: none;
 }
 .map-search button {
+  float: right;
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 @media (max-width: 767px) {
   .map-search button {

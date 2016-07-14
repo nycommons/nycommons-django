@@ -54,10 +54,11 @@
 
     input[type=text] {
         border: 0;
+        float: left;
         font-size: 24px;
         line-height: @map-search-height;
         padding: 0;
-        width: 90%;
+        width: 80%;
 
         &:focus {
             outline: none;
@@ -65,7 +66,9 @@
     }
 
     button {
+        float: right;
         margin-bottom: 10px;
+        margin-top: 10px;
         @media (max-width: @screen-xs-max) {
             margin-left: 35%;
             width: 30%;
