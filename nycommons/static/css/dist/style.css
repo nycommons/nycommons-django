@@ -5627,7 +5627,7 @@ section.collapsible > h6.collapsed::before {
   padding-left: 15px;
   padding-right: 15px;
 }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .details-section .details-header-actions {
     float: left;
     width: 50%;
@@ -5654,7 +5654,7 @@ section.collapsible > h6.collapsed::before {
   font-size: 18px;
   padding: 0;
 }
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .details-section .details-header-text {
     float: left;
     width: 50%;
