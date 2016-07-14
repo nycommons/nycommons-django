@@ -6289,6 +6289,43 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   float: right;
   margin-left: 10px;
 }
+.filters-section input[type=checkbox] {
+  display: none;
+}
+.filters-section input[type=checkbox] + label {
+  margin-left: 15px;
+}
+.filters-section input[type=checkbox] + label:before {
+  background: transparent;
+  border: 2px solid blue;
+  border-radius: 0;
+  color: black;
+  content: " ";
+  display: inline-block;
+  font-size: 15px;
+  line-height: 15px;
+  height: 15px;
+  margin-left: -15px;
+  margin-right: 5px;
+  text-align: center;
+  vertical-align: top;
+  width: 15px;
+}
+.filters-section input[type=checkbox]:checked + label:before {
+  content: "\2713";
+}
+.filters-section .filter-priority-organizing-list-item input[type=checkbox] + label:before {
+  border-color: #bf1e2d;
+}
+.filters-section .filter-post-offices-item input[type=checkbox] + label:before {
+  border-color: #662d91;
+}
+.filters-section .filter-library-item input[type=checkbox] + label:before {
+  border-color: #00aeef;
+}
+.filters-section .filter-public-housing-item input[type=checkbox] + label:before {
+  border-color: #f5a623;
+}
 footer {
   background: #f6f6f6;
   color: #8e8e8e;

@@ -92,3 +92,47 @@
         margin-left: 10px;
     }
 }
+
+.filters-section {
+    input[type=checkbox] {
+        display: none;
+
+        & + label {
+            margin-left: 15px;
+        }
+
+        & + label:before {
+            background: transparent;
+            border: 2px solid blue;
+            border-radius: 0;
+            color: black;
+            content: " ";
+            display: inline-block;
+            font-size: 15px;
+            line-height: 15px;
+            height: 15px;
+            margin-left: -15px;
+            margin-right: 5px;
+            text-align: center;
+            vertical-align: top;
+            width: 15px;
+        }
+
+        &:checked + label:before {
+            content: "\2713";
+        }
+    }
+
+    .filter-priority-organizing-list-item input[type=checkbox] + label:before {
+        border-color: @red;
+    }
+    .filter-post-offices-item input[type=checkbox] + label:before {
+        border-color: @lot-post-office-color;
+    }
+    .filter-library-item input[type=checkbox] + label:before {
+        border-color: @lot-library-color;
+    }
+    .filter-public-housing-item input[type=checkbox] + label:before {
+        border-color: @lot-public-housing-color;
+    }
+}
