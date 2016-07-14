@@ -6760,6 +6760,7 @@ footer .footer-right {
   border: none;
   box-shadow: none;
   margin: 0;
+  min-width: inherit;
 }
 .lot-detail-actions .dropdown-menu > li > a {
   background: #ffffff;
