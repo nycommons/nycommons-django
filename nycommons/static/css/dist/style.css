@@ -5566,7 +5566,7 @@ body {
 }
 @media (max-width: 767px) {
   #main {
-    padding: 0 30px;
+    padding: 0 10px;
   }
   #aside-left .submenu {
     margin-left: 0;
