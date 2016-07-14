@@ -727,20 +727,20 @@ var locateButton = flight.component(function () {
         return false;
     };
 
-    this.after('initialize', function () {
-        var map = this.attr.map;
-        var that = this;
-        map.on('locationfound', function (event) {
-            if (that.userLayer) {
-                map.removeLayer(that.userLayer);
-            }
-            that.userLayer = L.userMarker(event.latlng, {
-                pulsing: true,
-                accuracy: event.accuracy,
-                smallIcon: true
-            });
-            that.userLayer.addTo(map);
+    this.onLocationFound = function (event) {
+        if (this.userLayer) {
+            this.attr.map.removeLayer(this.userLayer);
+        }
+        this.userLayer = L.userMarker(event.latlng, {
+            pulsing: true,
+            accuracy: event.accuracy,
+            smallIcon: true
         });
+        this.userLayer.addTo(this.attr.map);
+    };
+
+    this.after('initialize', function () {
+        this.attr.map.on('locationfound', this.onLocationFound.bind(this));
         this.on('click', this.click);
     });
 });
@@ -62833,7 +62833,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
