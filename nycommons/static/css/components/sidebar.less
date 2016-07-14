@@ -3,7 +3,7 @@
     left: 15px;
     max-height: 75%;
     top: @map-overlay-top;
-    min-width: 25%;
+    min-width: 30%;
     z-index: 5000;
 
     @media (max-width: @screen-xs-max) {
@@ -19,6 +19,10 @@
             top: 0;
             z-index: @header-z-index + 1;
         }
+    }
+
+    @media (max-width: @screen-sm-max) {
+        min-width: 40%;
     }
 
     h2 {

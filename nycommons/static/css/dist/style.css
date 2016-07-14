@@ -5810,7 +5810,7 @@ section.collapsible > h6.collapsed::before {
   left: 15px;
   max-height: 75%;
   top: 15px;
-  min-width: 25%;
+  min-width: 30%;
   z-index: 5000;
 }
 @media (max-width: 767px) {
@@ -5826,6 +5826,11 @@ section.collapsible > h6.collapsed::before {
     max-height: 100%;
     top: 0;
     z-index: 10001;
+  }
+}
+@media (max-width: 991px) {
+  .map-sidebar {
+    min-width: 40%;
   }
 }
 .map-sidebar h2 {
