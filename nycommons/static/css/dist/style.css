@@ -5994,6 +5994,7 @@ section.collapsible > h6.collapsed::before {
 #mc_embed_signup .email {
   background: transparent;
   border: 1px solid #8e8e8e;
+  border-radius: 0;
   color: #8e8e8e;
   font-size: 18px;
   padding: 5px;
