@@ -5523,6 +5523,11 @@ a.thumbnail.active {
   float: right !important;
   font-size: 12px;
 }
+@media (max-width: 991px) {
+  .user-content-added {
+    float: left !important;
+  }
+}
 .user-content-added-by-name {
   font-family: "Open Sans", sans-serif;
   font-weight: bold;
@@ -6186,6 +6191,11 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .usercontent-list .file-added {
   float: right !important;
   font-size: 12px;
+}
+@media (max-width: 991px) {
+  .usercontent-list .file-added {
+    float: left !important;
+  }
 }
 .usercontent-list .file-added-by-name {
   font-family: "Open Sans", sans-serif;
@@ -7283,6 +7293,11 @@ footer .social-media-twitter {
   float: right !important;
   font-size: 12px;
 }
+@media (max-width: 991px) {
+  .usercontent-list .note-added {
+    float: left !important;
+  }
+}
 .usercontent-list .note-added-by-name {
   font-family: "Open Sans", sans-serif;
   font-weight: bold;
@@ -7337,6 +7352,11 @@ footer .social-media-twitter {
 .usercontent-list .photo-added {
   float: right !important;
   font-size: 12px;
+}
+@media (max-width: 991px) {
+  .usercontent-list .photo-added {
+    float: left !important;
+  }
 }
 .usercontent-list .photo-added-by-name {
   font-family: "Open Sans", sans-serif;
