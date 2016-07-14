@@ -5797,11 +5797,7 @@ section.collapsible > h6.collapsed::before {
 }
 @media (max-width: 767px) {
   .map-search img {
-    left: 50%;
-    margin: 0;
-    position: absolute;
-    top: 45%;
-    transform: translateX(-50%);
+    display: none;
   }
 }
 .map-sidebar {
