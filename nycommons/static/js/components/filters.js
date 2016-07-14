@@ -123,6 +123,8 @@ var filter = flight.component(function () {
 
         if (this.type === 'layer') {
             this.toggleLayerOwners();
+            var $filterItem = this.$node.parents('.filters-list-item');
+            $filterItem.addClass('collapse');
         }
         this.on('change', this.handleChange);
         this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
@@ -212,7 +214,6 @@ var priorityFilter = flight.component(function () {
     };
 
     this.after('initialize', function () {
-        console.log('priorityFilter init');
         this.name = this.$node.attr('id');
         this.type = 'priority-organizing';
 

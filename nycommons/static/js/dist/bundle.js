@@ -307,6 +307,8 @@ var filter = flight.component(function () {
 
         if (this.type === 'layer') {
             this.toggleLayerOwners();
+            var $filterItem = this.$node.parents('.filters-list-item');
+            $filterItem.addClass('collapse');
         }
         this.on('change', this.handleChange);
         this.attr.filterList.on('filtersReset', this.handleReset.bind(this));
@@ -396,7 +398,6 @@ var priorityFilter = flight.component(function () {
     };
 
     this.after('initialize', function () {
-        console.log('priorityFilter init');
         this.name = this.$node.attr('id');
         this.type = 'priority-organizing';
 
@@ -62834,7 +62835,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
