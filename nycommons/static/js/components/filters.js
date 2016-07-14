@@ -195,7 +195,7 @@ var priorityFilter = flight.component(function () {
 
         // If priority & organizing, clear others
         if (this.name === 'priority-organizing' && checked) {
-            $('.filter-priority-organizing-list .filter[id!="' + this.name + '"]').prop('checked', false);
+            $('.filter-priority-organizing-list-item .filter[id!="' + this.name + '"]').prop('checked', false);
         }
 
         var details = {
@@ -212,6 +212,7 @@ var priorityFilter = flight.component(function () {
     };
 
     this.after('initialize', function () {
+        console.log('priorityFilter init');
         this.name = this.$node.attr('id');
         this.type = 'priority-organizing';
 
@@ -272,7 +273,7 @@ var filters = flight.component(function () {
             }).get();
         });
 
-        this.$node.find('.filter-priority-organizing-list .filter:checked').each(function () {
+        this.$node.find('.filter-priority-organizing-list-item .filter:checked').each(function () {
             filters[$(this).attr('id')] = true;
         });
 
@@ -300,7 +301,7 @@ var filters = flight.component(function () {
         boundaryFilter.attachTo(this.$node.find('.filter-boundaries'), {
             filterList: this
         });
-        priorityFilter.attachTo(this.$node.find('.filter-priority-organizing-list :input'), {
+        priorityFilter.attachTo(this.$node.find('.filter-priority-organizing-list-item :input'), {
             filterList: this
         });
         resetButton.attachTo(this.$node.find('.reset'), {
@@ -401,7 +402,7 @@ module.exports = {
         });
 
         // Add priority / organizing
-        $('.filter-priority-organizing-list .filter:checked').each(function () {
+        $('.filter-priority-organizing-list-item .filter:checked').each(function () {
             filters[$(this).attr('id')] = true;
         });
 
