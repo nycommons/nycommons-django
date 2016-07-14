@@ -6319,6 +6319,9 @@ footer .footer-left {
 footer .footer-main {
   font-size: 20px;
 }
+footer .footer-main p:nth-of-type(1) {
+  margin-top: 0;
+}
 footer .footer-row {
   margin-left: 0;
   margin-right: 0;
