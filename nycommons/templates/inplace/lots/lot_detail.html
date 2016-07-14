@@ -34,6 +34,19 @@
         </div>
     </div>
 
+    <div class="lot-detail-map-container">
+        <a href="/#map=18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}" target="_blank">
+            <div id="lot-detail-map"
+                data-l-zoom="16" 
+                data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
+                data-l-bbox="{{ lot.bbox }}"
+                data-l-zoom-control="false"
+                data-l-lots-tiles-url="{% inplace_setting LOT_TILES_URL %}"
+                data-l-lot-pk="{{ lot.pk }}"
+            ></div>
+        </a>
+    </div>
+
     <div class="lot-detail-actions">
         {% if "lots.change_lot" in perms %}
             <a href="{% url "admin:lots_lot_change" lot.pk %}">
@@ -81,21 +94,6 @@
 {% block mainclasses %}col-sm-9{% endblock %}
 
 {% block content %}
-    <div class="lot-detail-map-container row">
-        <div class="col-md-3">
-            <a href="/#map=18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}" target="_blank">
-                <div id="lot-detail-map"
-                    data-l-zoom="16" 
-                    data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
-                    data-l-bbox="{{ lot.bbox }}"
-                    data-l-zoom-control="false"
-                    data-l-lots-tiles-url="{% inplace_setting LOT_TILES_URL %}"
-                    data-l-lot-pk="{{ lot.pk }}"
-                ></div>
-            </a>
-        </div>
-    </div>
-
     <div class="lot-detail-main">
         {% include "_messages.html" %}
 

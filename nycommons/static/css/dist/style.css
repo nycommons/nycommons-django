@@ -6662,9 +6662,11 @@ footer .footer-right {
 #lot-detail-map {
   border: 2px solid #58595b;
   cursor: pointer;
+  float: left;
   height: 150px;
+  margin-left: 75px;
   margin-top: -100px;
-  width: 100%;
+  width: 20%;
   z-index: 500;
 }
 .lot-detail-page .page-wrapper {
