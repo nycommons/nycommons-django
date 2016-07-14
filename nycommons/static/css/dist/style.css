@@ -5953,6 +5953,7 @@ section.collapsible > h6.collapsed::before {
 }
 .map-sidebar .map-header-content {
   margin-top: 0;
+  -webkit-overflow-scrolling: touch;
 }
 .map-sidebar .map-header-content-details,
 .map-sidebar .map-header-content-filters,
