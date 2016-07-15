@@ -110,7 +110,6 @@ TEMPLATES[0]['OPTIONS']['loaders'] = (
 #
 # SSL
 #
-# TODO uncomment for SSL
-#CSRF_COOKIE_SECURE = True
-#SESSION_COOKIE_SECURE = True
-LOT_TILES_URL = "http://tiles.dev.nycommons.org/lots/{z}/{x}/{y}.json"
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+LOT_TILES_URL = "https://tiles.dev.nycommons.org/lots/{z}/{x}/{y}.json"
