@@ -6937,6 +6937,20 @@ footer .footer-right {
     display: block;
   }
 }
+.map-page .map-print-image {
+  display: none;
+}
+.map-page .print-mode {
+  background: white;
+  border: 3px solid #00aeef;
+  display: none;
+  padding: 15px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 400px;
+  z-index: 10001;
+}
 .btn-show-details {
   position: relative;
   min-height: 1px;
@@ -7463,7 +7477,11 @@ footer .social-media-twitter {
 }
 .map-print-page-mixin .map-sidebar {
   top: 0;
+  height: 10in;
   width: 8.5in;
+}
+.map-print-page-mixin .map-sidebar .sidebar-section {
+  max-height: 3in;
 }
 .map-print-page-mixin .map-sidebar .map-header-content {
   display: block;
@@ -7498,7 +7516,11 @@ footer .social-media-twitter {
 }
 .map-print-page .map-sidebar {
   top: 0;
+  height: 10in;
   width: 8.5in;
+}
+.map-print-page .map-sidebar .sidebar-section {
+  max-height: 3in;
 }
 .map-print-page .map-sidebar .map-header-content {
   display: block;
@@ -7520,10 +7542,14 @@ footer .social-media-twitter {
 .map-print-page .hidden-print {
   display: none;
 }
+.map-print-page .print-mode {
+  display: block;
+}
 .map-print-page #map {
   visibility: hidden;
 }
 .map-print-page .map-print-image {
+  display: block;
   margin-top: 137px;
   max-width: 8.5in;
   position: absolute;
@@ -7542,7 +7568,8 @@ footer .social-media-twitter {
     print-color-adjust: exact;
   }
   body {
-    height: 100%;
+    height: 90%;
+    overflow: hidden;
     width: 100%;
   }
   .map-page .logo {
@@ -7557,7 +7584,11 @@ footer .social-media-twitter {
   }
   .map-page .map-sidebar {
     top: 0;
+    height: 10in;
     width: 8.5in;
+  }
+  .map-page .map-sidebar .sidebar-section {
+    max-height: 3in;
   }
   .map-page .map-sidebar .map-header-content {
     display: block;
@@ -7574,6 +7605,9 @@ footer .social-media-twitter {
     min-height: auto;
   }
   .map-page #page-header .mobile-map-header-content-default {
+    display: none;
+  }
+  .map-page .print-mode {
     display: none;
   }
 }

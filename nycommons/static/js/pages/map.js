@@ -20,6 +20,9 @@ var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
+var printButton = require('../components/print').printButton;
+var printModePrintButton = require('../components/print').printModePrintButton;
+var printModeExitButton = require('../components/print').printModeExitButton;
 var search = require('../components/search');
 require('../components/sidebar');
 require('../data/lotcounts').init();
@@ -36,8 +39,8 @@ function updateDetailsLink(map) {
     delete params.parents_only;
 
     var l = window.location,
-        query = '?' + $.param(params),
-        url = l.protocol + '//' + l.host + l.pathname + query + l.hash;
+    query = '?' + $.param(params),
+    url = l.protocol + '//' + l.host + l.pathname + query + l.hash;
     $('a.details-link').attr('href', url);
 }
 
@@ -114,6 +117,9 @@ $(document).ready(function () {
         activities.recentActivity.attachTo('.recent-activity');
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
+        printButton.attachTo('.details-print');
+        printModePrintButton.attachTo('.print-mode-print');
+        printModeExitButton.attachTo('.print-mode-exit', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
         search.bar.attachTo('.map-search', { map: map });
         details.details.attachTo('.details-section');
@@ -122,11 +128,6 @@ $(document).ready(function () {
 
         // Add lots *after* filters are set up so we have initial filters loaded
         map.addLotsLayer();
-
-        $('.details-print').click(function () {
-            window.print();
-            return false;
-        });
 
         $(document).trigger('updateLotCount', { map: map });
         $(document).trigger('updateOwnerCount', { map: map });

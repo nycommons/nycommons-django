@@ -750,7 +750,65 @@ module.exports = {
     locateButton: locateButton
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/print.js":[function(require,module,exports){
+var flight = require('flightjs');
+
+var printButton = flight.component(function () {
+    this.handleClick = function (e) {
+        this.addMapImage($('#map'), window.location.href);
+        $('body').addClass('map-print-page');
+        return false;
+    };
+
+    this.addMapImage = function ($map, pageUrl) {
+        var url = window.mapScreenshotUrl + '?';
+        url += $.param({
+            height: $map.height(),
+            width: $map.width(),
+            remove: '.map-sidebar,.map-menu,#djDebug,.leaflet-control-container',
+            url: pageUrl
+        });
+        var mapImage = $('<img></img>')
+            .attr('src', url)
+            .addClass('map-print-image');
+        $('body').append(mapImage);
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick.bind(this));
+    });
+});
+
+var printModePrintButton = flight.component(function () {
+    this.handleClick = function (e) {
+        window.print();
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick.bind(this));
+    });
+});
+
+var printModeExitButton = flight.component(function () {
+    this.handleClick = function (e) {
+        $('body').removeClass('map-print-page');
+        this.attr.map.invalidateSize();
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick.bind(this));
+    });
+});
+
+module.exports = {
+    printButton: printButton,
+    printModeExitButton: printModeExitButton,
+    printModePrintButton: printModePrintButton
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
 var flight = require('flightjs');
 var Spinner = require('spin.js');
 
@@ -2236,6 +2294,9 @@ var filters = require('../components/filters');
 var hashHandler = require('../components/hash');
 var legend = require('../components/legend').legend;
 var locateButton = require('../components/locate').locateButton;
+var printButton = require('../components/print').printButton;
+var printModePrintButton = require('../components/print').printModePrintButton;
+var printModeExitButton = require('../components/print').printModeExitButton;
 var search = require('../components/search');
 require('../components/sidebar');
 require('../data/lotcounts').init();
@@ -2252,8 +2313,8 @@ function updateDetailsLink(map) {
     delete params.parents_only;
 
     var l = window.location,
-        query = '?' + $.param(params),
-        url = l.protocol + '//' + l.host + l.pathname + query + l.hash;
+    query = '?' + $.param(params),
+    url = l.protocol + '//' + l.host + l.pathname + query + l.hash;
     $('a.details-link').attr('href', url);
 }
 
@@ -2330,6 +2391,9 @@ $(document).ready(function () {
         activities.recentActivity.attachTo('.recent-activity');
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
+        printButton.attachTo('.details-print');
+        printModePrintButton.attachTo('.print-mode-print');
+        printModeExitButton.attachTo('.print-mode-exit', { map: map });
         search.button.attachTo('.map-header-search-btn', { searchBar: '.map-search' });
         search.bar.attachTo('.map-search', { map: map });
         details.details.attachTo('.details-section');
@@ -2338,11 +2402,6 @@ $(document).ready(function () {
 
         // Add lots *after* filters are set up so we have initial filters loaded
         map.addLotsLayer();
-
-        $('.details-print').click(function () {
-            window.print();
-            return false;
-        });
 
         $(document).trigger('updateLotCount', { map: map });
         $(document).trigger('updateOwnerCount', { map: map });
@@ -2389,7 +2448,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js","../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+},{"../components/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js","../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/print":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/print.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -62834,7 +62893,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

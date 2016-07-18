@@ -14,7 +14,12 @@
 
     .map-sidebar {
         top: 0;
+        height: 10in;
         width: 8.5in;
+
+        .sidebar-section {
+            max-height: 3in;
+        }
 
         .map-header-content {
             display: block;
@@ -49,6 +54,10 @@
         display: none;
     }
 
+    .print-mode {
+        display: block;
+    }
+
     & {
         margin: 0 auto;
         width: 8.5in;
@@ -59,10 +68,11 @@
     }
 
     .map-print-image {
-    margin-top: @map-header-height;
-    max-width: 8.5in;
-    position: absolute;
-    top: 0;
+        display: block;
+        margin-top: @map-header-height;
+        max-width: 8.5in;
+        position: absolute;
+        top: 0;
     }
 
     .map-sidebar {
@@ -82,11 +92,16 @@
     }
 
     body {
-        height: 100%;
+        height: 90%;
+        overflow: hidden;
         width: 100%;
     }
 
     .map-page {
         .map-print-page-mixin();
+
+        .print-mode {
+            display: none;
+        }
     }
 }

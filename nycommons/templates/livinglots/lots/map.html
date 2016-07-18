@@ -72,6 +72,7 @@
     {% else %}
         window.django_debug = false;
     {% endif %}
+    window.mapScreenshotUrl = '{% inplace_setting MAP_SCREENSHOT_URL %}';
 </script>
 
 <div id="map"
@@ -191,4 +192,10 @@
 
 <div class="map-icon map-icon-organizing">
     {% svg "organizing" %}
+</div>
+
+<div class="print-mode">
+    <div><p>This is a preview of your printed map. If you're happy with it, go ahead and print. If you'd like the map to be show another part of the city, go back to the map, move the map, then print again.</p></div>
+    <a href="#" class="btn btn-default print-mode-print">Print</a>
+    <a href="#" class="btn btn-default print-mode-exit">Back to map</a>
 </div>
