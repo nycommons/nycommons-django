@@ -17,7 +17,6 @@ var details = flight.component(function () {
         var template = Handlebars.compile($('#details-template').html());
         var content = template({ lottypes: data.results });
         $('.details-body').html(content);
-        $('.map-printable-details').html(content);
 
         this.$node.find('.details-toggle-owner-list').on('click', function () {
             $(this).toggleClass('expanded');

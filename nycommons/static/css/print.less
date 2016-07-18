@@ -1,5 +1,6 @@
 @media print {
     @page {
+        size: letter;
         margin: 2cm;
     }
 
@@ -20,5 +21,36 @@
 
     .page-header {
         margin: 0;
+    }
+
+    .map-page {
+        #map {
+            height: 16cm;
+        }
+
+        .map-sidebar {
+            .map-header-content {
+                display: block;
+                overflow: hidden;
+
+                &-details {
+                    display: block;
+                }
+
+                .details-header-actions {
+                    display: none;
+                }
+
+                .details-section .details-body {
+                    min-height: auto;
+                }
+            }
+        }
+    }
+
+    #page-header {
+        .map-page & .mobile-map-header-content-default {
+            display: none;
+        }
     }
 }

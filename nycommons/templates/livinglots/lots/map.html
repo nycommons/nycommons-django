@@ -84,7 +84,7 @@
 >
 </div>
 
-<div class="map-menu">
+<div class="map-menu hidden-print">
     <div class="social-media">
         <a href="http://facebook.com" class="social-media-facebook"></a>
         <a href="http://twitter.com" class="social-media-twitter"></a>
@@ -106,12 +106,12 @@
             <div class="map-logo-bar-left"></div>
             <div class="map-logo-bar-right"></div>
         </div>
-        <a href="#" class="map-header-btn map-header-locate-btn"></a>
-        <a href="#" class="map-header-btn map-header-search-btn"></a>
+        <a href="#" class="map-header-btn map-header-locate-btn hidden-print"></a>
+        <a href="#" class="map-header-btn map-header-search-btn hidden-print"></a>
     </div>
 
-    <div class="hidden-print sidebar-section map-header-content">
-        <div class="map-header-content-default">
+    <div class="sidebar-section map-header-content">
+        <div class="hidden-print map-header-content-default">
             <div>
                 {% trans "Who owns NYC's public spaces?" %}
             </div>
@@ -137,7 +137,7 @@
         {% include "livinglots/lots/_legend.html" %}
     </div>
 
-    <div class="sidebar-section recent-activity hidden-xs">
+    <div class="sidebar-section recent-activity hidden-xs hidden-print">
         {% include "livinglots/lots/_activities.html" %}
     </div>
 </div>
