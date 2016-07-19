@@ -12,6 +12,7 @@ var printButton = flight.component(function () {
         url += $.param({
             height: $map.height(),
             width: $map.width(),
+            element: '#map',
             remove: '.map-sidebar,.map-menu,#djDebug,.leaflet-control-container',
             url: pageUrl
         });
