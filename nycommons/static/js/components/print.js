@@ -16,10 +16,12 @@ var printButton = flight.component(function () {
             remove: '.map-sidebar,.map-menu,#djDebug,.leaflet-control-container',
             url: pageUrl
         });
-        var mapImage = $('<img></img>')
-            .attr('src', url)
-            .addClass('map-print-image');
-        $('body').append(mapImage);
+        $.getJSON(url, function (data) {
+            var mapImage = $('<img></img>')
+                .attr('src', data.url)
+                .addClass('map-print-image');
+            $('body').append(mapImage);
+        });
     };
 
     this.after('initialize', function () {
