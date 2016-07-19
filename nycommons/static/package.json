@@ -15,7 +15,7 @@
     "flightjs": "^1.5.1",
     "handlebars": "^4.0.0",
     "jquery-infinite-scroll": "git://github.com/paulirish/infinite-scroll",
-    "leaflet": "^1.0.0-rc.1",
+    "leaflet": "^1.0.0-rc.2",
     "leaflet-dataoptions": "^1.0.0",
     "leaflet-draw": "^0.2.3",
     "leaflet-geojson-gridlayer": "git://github.com/ebrelsford/leaflet-geojson-gridlayer",
