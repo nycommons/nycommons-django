@@ -751,7 +751,10 @@ module.exports = {
 };
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","leaflet-usermarker":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-usermarker/src/leaflet.usermarker.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/print.js":[function(require,module,exports){
+var _ = require('underscore');
 var flight = require('flightjs');
+var Spinner = require('spin.js');
+var spinnerOptions = require('../lib/spinner-options');
 
 var printButton = flight.component(function () {
     this.handleClick = function (e) {
@@ -769,12 +772,14 @@ var printButton = flight.component(function () {
             remove: '.map-sidebar,.map-menu,#djDebug,.leaflet-control-container',
             url: pageUrl
         });
-        $.getJSON(url, function (data) {
+        this.spinner = new Spinner(spinnerOptions).spin($('.map-sidebar')[0]);
+        $.getJSON(url, (function (data) {
+            this.spinner.stop();
             var mapImage = $('<img></img>')
                 .attr('src', data.url)
                 .addClass('map-print-image');
             $('body').append(mapImage);
-        });
+        }).bind(this));
     };
 
     this.after('initialize', function () {
@@ -812,18 +817,14 @@ module.exports = {
     printModePrintButton: printModePrintButton
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
+},{"../lib/spinner-options":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/spinner-options.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/same-owner.js":[function(require,module,exports){
+var _ = require('underscore');
 var flight = require('flightjs');
 var Spinner = require('spin.js');
-
-var spinnerOptions = {
+var spinnerOptions = _.extend({}, require('../lib/spinner-options'), {
     left: '100%',
-    length: 5,
-    position: 'relative',
-    radius: 6,
-    top: '15px',
-    width: 2
-};
+    top: '15px'
+});
 
 var sameOwnerSection = flight.component(function () {
     this.attributes({
@@ -855,7 +856,7 @@ module.exports = {
     sameOwnerSection: sameOwnerSection
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
+},{"../lib/spinner-options":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/spinner-options.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js":[function(require,module,exports){
 var flight = require('flightjs');
 var geocode = require('../lib/geocode').geocode;
 var oasis = require('../lib/oasis');
@@ -1352,6 +1353,14 @@ function remember(params) {
 module.exports = {
     forget: forget,
     remember: remember
+};
+
+},{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/spinner-options.js":[function(require,module,exports){
+module.exports = {
+    length: 5,
+    position: 'relative',
+    radius: 6,
+    width: 2
 };
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/streetview.js":[function(require,module,exports){
@@ -63476,7 +63485,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

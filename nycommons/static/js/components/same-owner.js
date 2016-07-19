@@ -1,14 +1,10 @@
+var _ = require('underscore');
 var flight = require('flightjs');
 var Spinner = require('spin.js');
-
-var spinnerOptions = {
+var spinnerOptions = _.extend({}, require('../lib/spinner-options'), {
     left: '100%',
-    length: 5,
-    position: 'relative',
-    radius: 6,
-    top: '15px',
-    width: 2
-};
+    top: '15px'
+});
 
 var sameOwnerSection = flight.component(function () {
     this.attributes({

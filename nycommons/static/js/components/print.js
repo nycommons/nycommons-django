@@ -1,4 +1,7 @@
+var _ = require('underscore');
 var flight = require('flightjs');
+var Spinner = require('spin.js');
+var spinnerOptions = require('../lib/spinner-options');
 
 var printButton = flight.component(function () {
     this.handleClick = function (e) {
@@ -16,12 +19,14 @@ var printButton = flight.component(function () {
             remove: '.map-sidebar,.map-menu,#djDebug,.leaflet-control-container',
             url: pageUrl
         });
-        $.getJSON(url, function (data) {
+        this.spinner = new Spinner(spinnerOptions).spin($('.map-sidebar')[0]);
+        $.getJSON(url, (function (data) {
+            this.spinner.stop();
             var mapImage = $('<img></img>')
                 .attr('src', data.url)
                 .addClass('map-print-image');
             $('body').append(mapImage);
-        });
+        }).bind(this));
     };
 
     this.after('initialize', function () {
