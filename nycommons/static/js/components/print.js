@@ -40,6 +40,7 @@ var printModePrintButton = flight.component(function () {
 
 var printModeExitButton = flight.component(function () {
     this.handleClick = function (e) {
+        $('.map-print-image').remove();
         $('body').removeClass('map-print-page');
         this.attr.map.invalidateSize();
         return false;
