@@ -1,4 +1,12 @@
 .map-print-page-mixin {
+    & {
+        overflow: hidden;
+    }
+
+    .header-print {
+        display: none !important;
+    }
+
     .logo {
         height: auto;
         width: 8cm;
@@ -93,8 +101,17 @@
 
     body {
         height: 90%;
-        overflow: hidden;
         width: 100%;
+    }
+
+    footer {
+        .footer-columns {
+            display: none;
+        }
+
+        .footer-right {
+            display: none;
+        }
     }
 
     .map-page {
@@ -102,6 +119,53 @@
 
         .print-mode {
             display: none;
+        }
+    }
+
+    .lot-detail-page {
+        margin: 0;
+
+        header {
+            display: none;
+
+            .header-bar {
+                display: none;
+            }
+        }
+
+        h1 {
+            clear: both;
+        }
+
+        .header-print {
+            width: 100%;
+        }
+
+        .header-home-link {
+            position: inherit;
+        }
+
+        .header-bar {
+            position: inherit;
+        }
+
+        .page-wrapper {
+            margin: 0;
+        }
+
+        .lot-detail-main {
+            margin: 0;
+        }
+
+        section.collapsible {
+            h1, h2, h3, h4, h5, h6 {
+                &::before {
+                    display: none;
+                }
+            }
+            div {
+                display: block;
+            }
         }
     }
 }

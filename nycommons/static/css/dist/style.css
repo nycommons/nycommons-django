@@ -239,8 +239,6 @@
 	}
 .leaflet-container {
 	overflow: hidden;
-	-ms-touch-action: none;
-	touch-action: none;
 	}
 .leaflet-tile,
 .leaflet-marker-icon,
@@ -272,6 +270,18 @@
 .leaflet-container img.leaflet-image-layer {
 	max-width: none !important;
 	}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-drag {
+	-ms-touch-action: none;
+	touch-action: none;
+}
 .leaflet-tile {
 	filter: inherit;
 	visibility: hidden;
@@ -297,6 +307,7 @@
 .leaflet-overlay-pane { z-index: 400; }
 .leaflet-shadow-pane  { z-index: 500; }
 .leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
 .leaflet-popup-pane   { z-index: 700; }
 
 .leaflet-map-pane canvas { z-index: 100; }
@@ -318,6 +329,7 @@
 .leaflet-control {
 	position: relative;
 	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
 	pointer-events: auto;
 	}
 .leaflet-top,
@@ -438,6 +450,7 @@
 .leaflet-marker-icon.leaflet-interactive,
 .leaflet-image-layer.leaflet-interactive,
 .leaflet-pane > svg path.leaflet-interactive {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
 	pointer-events: auto;
 	}
 
@@ -653,6 +666,7 @@
 .leaflet-popup {
 	position: absolute;
 	text-align: center;
+	margin-bottom: 20px;
 	}
 .leaflet-popup-content-wrapper {
 	padding: 1px;
@@ -667,11 +681,13 @@
 	margin: 18px 0;
 	}
 .leaflet-popup-tip-container {
-	margin: 0 auto;
 	width: 40px;
 	height: 20px;
-	position: relative;
+	position: absolute;
+	left: 50%;
+	margin-left: -20px;
 	overflow: hidden;
+	pointer-events: none;
 	}
 .leaflet-popup-tip {
 	width: 17px;
@@ -743,6 +759,73 @@
 .leaflet-div-icon {
 	background: #fff;
 	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-clickable {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
 	}
 
 /* ================================================================== */
@@ -6468,31 +6551,31 @@ footer .footer-right {
     width: 50%;
   }
 }
-#page-header {
-  margin-top: 20px;
-}
-#page-header img {
-  max-width: 100%;
-}
-#page-header .header-home-link {
+.header-home-link {
   margin-left: 25px;
 }
-#page-header .header-bar {
+.header-bar {
   height: 25px;
   margin-top: -25px;
   width: 100%;
 }
-#page-header .header-bar-left {
+.header-bar-left {
   background-color: #00aeef;
   float: left;
   height: 100%;
   width: 5%;
 }
-#page-header .header-bar-right {
+.header-bar-right {
   background-color: #bf1e2d;
   float: left;
   height: 100%;
   width: 95%;
+}
+#page-header {
+  margin-top: 20px;
+}
+#page-header img {
+  max-width: 100%;
 }
 #page-header .mobile-map-header-content-default {
   display: none;
@@ -7465,6 +7548,12 @@ footer .social-media-twitter {
 .leaflet-popup-tip-container {
   margin-top: -1px;
 }
+.map-print-page-mixin {
+  overflow: hidden;
+}
+.map-print-page-mixin .header-print {
+  display: none !important;
+}
 .map-print-page-mixin .logo {
   height: auto;
   width: 8cm;
@@ -7501,8 +7590,12 @@ footer .social-media-twitter {
   display: none;
 }
 .map-print-page {
+  overflow: hidden;
   margin: 0 auto;
   width: 8.5in;
+}
+.map-print-page .header-print {
+  display: none !important;
 }
 .map-print-page .logo {
   height: auto;
@@ -7569,8 +7662,19 @@ footer .social-media-twitter {
   }
   body {
     height: 90%;
-    overflow: hidden;
     width: 100%;
+  }
+  footer .footer-columns {
+    display: none;
+  }
+  footer .footer-right {
+    display: none;
+  }
+  .map-page {
+    overflow: hidden;
+  }
+  .map-page .header-print {
+    display: none !important;
   }
   .map-page .logo {
     height: auto;
@@ -7609,6 +7713,44 @@ footer .social-media-twitter {
   }
   .map-page .print-mode {
     display: none;
+  }
+  .lot-detail-page {
+    margin: 0;
+  }
+  .lot-detail-page header {
+    display: none;
+  }
+  .lot-detail-page header .header-bar {
+    display: none;
+  }
+  .lot-detail-page h1 {
+    clear: both;
+  }
+  .lot-detail-page .header-print {
+    width: 100%;
+  }
+  .lot-detail-page .header-home-link {
+    position: inherit;
+  }
+  .lot-detail-page .header-bar {
+    position: inherit;
+  }
+  .lot-detail-page .page-wrapper {
+    margin: 0;
+  }
+  .lot-detail-page .lot-detail-main {
+    margin: 0;
+  }
+  .lot-detail-page section.collapsible h1::before,
+  .lot-detail-page section.collapsible h2::before,
+  .lot-detail-page section.collapsible h3::before,
+  .lot-detail-page section.collapsible h4::before,
+  .lot-detail-page section.collapsible h5::before,
+  .lot-detail-page section.collapsible h6::before {
+    display: none;
+  }
+  .lot-detail-page section.collapsible div {
+    display: block;
   }
 }
 .map-add-lot-parent {

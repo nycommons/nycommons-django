@@ -1,10 +1,6 @@
 {% load feincms_tags feincms_page_tags i18n static %}
 
 <header id="page-header">
-    <div class="visible-print" style="margin-left: 30px; margin-top: 15px; font-size: 30px; line-height: 30px;">
-        {{ project_name }}
-    </div>
-
     <nav class="navbar navbar-default hidden-print" role="navigation">
 
         <div class="navbar-header">
@@ -78,3 +74,18 @@
         </div>
     </div>
 </header>
+
+<div class="visible-print header-print">
+    <div class="header-home-link">
+        <a href="/">
+            <img src="{% static "img/logo.png" %}" />
+            <h1 style="display: none;">{% trans "NYCommons" %}</h1>
+        </a>
+    </div>
+
+    <div class="header-bar">
+        <div class="header-bar-left"></div>
+        <div class="header-bar-right"></div>
+        <div style="clear: both;"></div>
+    </div>
+</div>
