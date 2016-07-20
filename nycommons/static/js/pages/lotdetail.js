@@ -125,6 +125,11 @@ $(document).ready(function () {
         return false;
     });
 
+    $('.lot-detail-print').click(function () {
+        window.print();
+        return false;
+    });
+
     initFacebookLink($('.share-facebook'));
     initTwitterLink($('.share-twitter'));
 
