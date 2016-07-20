@@ -303,22 +303,19 @@ class LotsCountViewWithAcres(LotsCountView):
 class LotsCSV(BaseLotsCSV):
 
     def get_sitename(self):
-        # TODO replace with site name
-        return ''
+        return 'NYCommons'
 
 
 class LotsKML(BaseLotsKML):
 
     def get_sitename(self):
-        # TODO replace with site name
-        return ''
+        return 'NYCommons'
 
 
 class LotsGeoJSON(BaseLotsGeoJSON):
 
     def get_sitename(self):
-        # TODO replace with site name
-        return ''
+        return 'NYCommons'
 
 
 class SearchView(JSONResponseMixin, View):
