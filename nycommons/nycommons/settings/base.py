@@ -252,7 +252,7 @@ FACILITATORS = {
     'global': [],
 }
 
-EMAIL_SUBJECT_PREFIX = '[Living Lots] '
+EMAIL_SUBJECT_PREFIX = '[NYCommons] '
 
 MAILREADER_REPLY_PREFIX = 'Reply with text above this line to post a public note.'
 MAILREADER_IGNORE_FROM = []
