@@ -15,7 +15,7 @@ MANAGERS = (
 # TODO Fill with appropriate facilitators
 FACILITATORS = {
     'global': [
-        'facilitators@example.com',
+        'eric@596acres.org',
     ],
 }
 
