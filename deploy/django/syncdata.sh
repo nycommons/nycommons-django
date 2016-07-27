@@ -1,5 +1,5 @@
 #!/bin/bash
 
 source $HOME/.bashrc
-source $HOME/.virtualenvs/$LIVING_LOTS_VIRTUAL_ENV/bin/activate
+source $HOME/.virtualenvs/$NYCOMMONS_VIRTUAL_ENV/bin/activate
 django-admin.py syncdata
