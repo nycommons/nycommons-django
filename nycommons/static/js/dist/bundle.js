@@ -317,6 +317,7 @@ var filter = flight.component(function () {
 var filterCollapseButton = flight.component(function () {
     this.onClick = function (e) {
         this.$filterItem.toggleClass('collapse');
+        return false;
     };
 
     this.after('initialize', function () {
@@ -63490,7 +63491,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

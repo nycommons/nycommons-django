@@ -134,6 +134,7 @@ var filter = flight.component(function () {
 var filterCollapseButton = flight.component(function () {
     this.onClick = function (e) {
         this.$filterItem.toggleClass('collapse');
+        return false;
     };
 
     this.after('initialize', function () {
