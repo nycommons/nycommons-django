@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from livinglots_organize.admin import BaseOrganizerAdmin
+from livinglots_organize.admin import BaseOrganizerAdmin, BaseWatcherAdmin
 
-from .models import Organizer
+from .models import Organizer, Watcher
 
 
 class OrganizerAdmin(BaseOrganizerAdmin):
@@ -12,4 +12,12 @@ class OrganizerAdmin(BaseOrganizerAdmin):
         return False
 
 
+class WatcherAdmin(BaseWatcherAdmin):
+    
+    def has_add_permission(self, request):
+        """Never allow adding watcher through the admin site."""
+        return False
+
+
 admin.site.register(Organizer, OrganizerAdmin)
+admin.site.register(Watcher, WatcherAdmin)
