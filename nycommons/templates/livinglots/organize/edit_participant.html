@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Unsubscribe from properties" %} | {{ block.super }}{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>{% trans "Unsubscribe from properties" %}</h1>
+        <div>
+            {% if watchers %}
+                <p>
+                    {% blocktrans %}
+                        Hi <strong>{{ email }}</strong>! You're subscribed to the following properties:
+                    {% endblocktrans %}
+                    <ul>
+                        {% for watcher in watchers %}
+                            <li class="edit-participant-subscribed-lot">
+                                <a class="subscribed-lot-link" href="{{ watcher.content_object.get_absolute_url }}">
+                                    {{ watcher.content_object.display_name|default:"unknown address" }}
+                                </a>
+                                <a class="btn btn-danger btn-xs" href="{% url "organize:delete_watcher" pk=watcher.object_id hash=watcher.email_hash watcher_pk=watcher.pk %}?next_url={{ request.path }}">
+                                    {% trans "unsubscribe" %}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                </p>
+            {% else %}
+                <p>
+                    {% blocktrans %}
+                        Looks like you're not subscribed to any properties. Check out our <a href="/">map</a> and find a propery near you!
+                    {% endblocktrans %}
+                </p>
+            {% endif %}
+
+            <p>
+                {% blocktrans %}
+                    If you think this information is incorrect, please <a href="/get-involved/contact-us/">contact us</a> and let us know.
+                {% endblocktrans %}
+            </p>
+        </div>
+    </div>
+{% endblock %}
