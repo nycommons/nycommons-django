@@ -1,0 +1,1 @@
+{% load flatblocks %}{% flatblock "organize.mailings.0" evaluated=True using="flatblocks/flatblock.txt" %}
