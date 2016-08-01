@@ -198,6 +198,7 @@ INSTALLED_APPS = (
     'nycdata.nycha',
     'nycdata.parcels',
     'nycdata.postoffices',
+    'nycdata.waterfront',
 
     #
     # first-party, project-specific

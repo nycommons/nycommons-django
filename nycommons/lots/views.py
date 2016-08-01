@@ -220,6 +220,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
         'library': 'library',
         'public_housing': 'public housing site',
         'post_office': 'post office',
+        'waterfront': 'waterfront',
     }
 
     def count_organizers(self, lots_qs):
@@ -251,6 +252,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
             ('library', lots.filter(commons_type='library')),
             ('public_housing', lots.filter(commons_type='public housing')),
             ('post_office', lots.filter(commons_type='post office')),
+            ('waterfront', lots.filter(commons_type='waterfront')),
         ])
 
     def get_layer_counts(self, layers):

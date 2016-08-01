@@ -65,6 +65,21 @@
                 {% endfor %}
             </ul>
         </li>
+        <li class="filters-list-item filter-waterfront-item">
+            <input id="layer-waterfront" type="checkbox" class="filter filter-layer" name="waterfront" data-type="layer" checked />
+            <label for="layer-waterfront">{% trans "waterfront" %}</label>
+            <a href="#" class="filter-layer-collapse"></a>
+
+            <ul class="filter-owners-list">
+                {% get_owners_by_commons_type "waterfront" as owners %}
+                {% for owner in owners %}
+                    <li>
+                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
     </ul>
 
     <section class="filter-section filter-section-boundaries">

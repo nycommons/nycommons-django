@@ -6,6 +6,7 @@ var fillColors = {
     library: '#00AEEF',
     'public housing': '#F5A623',
     'post office': '#662D91',
+    waterfront: '#e64c9b',
     default: '#000000'
 };
 
