@@ -1968,6 +1968,7 @@ L.LotPathMixin = {
             this.updateActionPathScale();
 
             this._map.on('zoomend', this.updateActionPathScale.bind(this));
+            this.on('add', this.updateActionPathScale.bind(this));
             this.on('remove', this.removeActionPath.bind(this));
         }
     },
