@@ -5754,6 +5754,12 @@ section.collapsible > h6.collapsed::before {
   list-style: none;
   padding: 0;
 }
+.details-section .details-owner-count {
+  display: inline-block;
+  font-weight: bold;
+  min-width: 35px;
+  text-align: right;
+}
 .details-section .details-owner-priority-list {
   border-bottom: 3px solid #bf1e2d;
   padding-bottom: 14px;
