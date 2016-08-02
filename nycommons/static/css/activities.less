@@ -15,12 +15,7 @@
         float: right;
 
         &::after {
-            background-image: data-uri("/static/img/collapse-arrow.png");
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: contain;
-            content: "";
-            display: block;
+            .collapse-indicator();
             height: 20px;
             margin-top: 5px;
             width: 20px;
@@ -29,7 +24,7 @@
 
     &.expanded {
         .activity-list-expand::after {
-            transform: rotate(90deg);
+            .collapse-indicator-expanded();
         }
     }
 

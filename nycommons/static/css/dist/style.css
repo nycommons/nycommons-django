@@ -5661,6 +5661,30 @@ body {
     padding: 15px;
   }
 }
+.collapse-indicator {
+  background-image: url("/static/img/collapse-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  content: "";
+  display: block;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
+}
+.collapse-indicator-expanded {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.collapse-indicator-collapsed {
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
+}
 section.collapsible > h1,
 section.collapsible > h2,
 section.collapsible > h3,
@@ -5681,17 +5705,17 @@ section.collapsible > h6::before {
   background-size: contain;
   content: "";
   display: block;
-  height: 35px;
-  margin-left: -35px;
-  position: absolute;
-  width: 20px;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
   -webkit-transform: rotate(90deg);
   -moz-transform: rotate(90deg);
   -ms-transform: rotate(90deg);
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
-  -webkit-transition: -webkit-transform 0.2s;
-  transition: transform .5s;
+  height: 35px;
+  margin-left: -35px;
+  position: absolute;
+  width: 20px;
 }
 section.collapsible > h1.collapsed::before,
 section.collapsible > h2.collapsed::before,
@@ -5870,12 +5894,12 @@ section.collapsible > h6.collapsed::before {
   background-size: contain;
   content: "";
   display: block;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
   float: right;
   height: 10px;
   margin-left: 5px;
   margin-top: 5px;
-  -webkit-transition: -webkit-transform 0.2s;
-  transition: transform .5s;
   width: 10px;
 }
 .details-section .details-downloads .details-downloads-types {
@@ -6281,17 +6305,23 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .recent-activity .activity-list-expand::after,
 .map-header-content-activities .activity-list-expand::after {
   background-image: url("/static/img/collapse-arrow.png");
-  background-position: center center;
   background-repeat: no-repeat;
+  background-position: center;
   background-size: contain;
   content: "";
   display: block;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
   height: 20px;
   margin-top: 5px;
   width: 20px;
 }
 .recent-activity.expanded .activity-list-expand::after,
 .map-header-content-activities.expanded .activity-list-expand::after {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
   transform: rotate(90deg);
 }
 .recent-activity .action-list,
@@ -6417,17 +6447,19 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  display: inline-block;
-  height: 10px;
-  margin-left: 7px;
-  width: 10px;
+  content: "";
+  display: block;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
   -webkit-transform: rotate(90deg);
   -moz-transform: rotate(90deg);
   -ms-transform: rotate(90deg);
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
-  -webkit-transition: -webkit-transform 0.2s;
-  transition: transform .5s;
+  display: inline-block;
+  height: 10px;
+  margin-left: 7px;
+  width: 10px;
 }
 .filters-list-item.collapse .filter-layer-collapse {
   -webkit-transform: rotate(0deg);
@@ -6846,18 +6878,18 @@ footer .footer-right {
     background-size: contain;
     content: "";
     display: block;
-    float: right;
-    height: 15px;
-    margin-left: 7px;
-    margin-top: 7px;
-    width: 15px;
+    -webkit-transition: -webkit-transform 0.2s;
+    transition: transform .5s;
     -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);
     -ms-transform: rotate(90deg);
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
-    -webkit-transition: -webkit-transform 0.2s;
-    transition: transform .5s;
+    float: right;
+    height: 15px;
+    margin-left: 7px;
+    margin-top: 7px;
+    width: 15px;
   }
 }
 .map-legend.collapse {

@@ -122,18 +122,11 @@
         cursor: pointer;
 
         &::before {
-            background-image: data-uri("/static/img/collapse-arrow.png");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            content: "";
-            display: block;
+            .collapse-indicator();
             float: right;
             height: 10px;
             margin-left: 5px;
             margin-top: 5px;
-            -webkit-transition: -webkit-transform .2s;
-            transition: transform .5s;
             width: 10px;
         }
 
@@ -163,11 +156,7 @@
             }
 
             &::before {
-                -webkit-transform: rotate(90deg);
-                -moz-transform: rotate(90deg);
-                -ms-transform: rotate(90deg);
-                -o-transform: rotate(90deg);
-                transform: rotate(90deg);
+                .collapse-indicator-expanded();
             }
         }
     }
