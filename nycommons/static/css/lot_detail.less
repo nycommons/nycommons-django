@@ -193,6 +193,50 @@
     }
 }
 
+.make-lot-detail-icon(@name) {
+    & {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}.png");
+    }
+    &.organizing {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-organizing.png");
+    }
+    &.priority {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-priority.png");
+    }
+    &.organizing.priority {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-organizing-priority.png");
+    }
+}
+
+.lot-detail-page {
+    .lot-detail-icon {
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        display: inline-block;
+        height: 30px;
+        margin-left: -45px;
+        position: absolute;
+        width: 30px;
+
+        &.library {
+            .make-lot-detail-icon("library");
+        }
+        &.post-office {
+            .make-lot-detail-icon("post-office");
+        }
+        &.public-housing {
+            .make-lot-detail-icon("public-housing");
+        }
+        &.vacant-lot-garden {
+            .make-lot-detail-icon("vacant-lot-garden");
+        }
+        &.waterfront {
+            .make-lot-detail-icon("waterfront");
+        }
+    }
+}
+
 .nearby-lots-list {
     list-style: none;
     padding-left: 0;

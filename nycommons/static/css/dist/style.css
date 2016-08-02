@@ -7116,6 +7116,76 @@ footer .footer-right {
   width: 100%;
   height: 395px;
 }
+.lot-detail-page .lot-detail-icon {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  display: inline-block;
+  height: 30px;
+  margin-left: -45px;
+  position: absolute;
+  width: 30px;
+}
+.lot-detail-page .lot-detail-icon.library {
+  background-image: url("/static/img/lot-detail-icons/library.png");
+}
+.lot-detail-page .lot-detail-icon.library.organizing {
+  background-image: url("/static/img/lot-detail-icons/library-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.library.priority {
+  background-image: url("/static/img/lot-detail-icons/library-priority.png");
+}
+.lot-detail-page .lot-detail-icon.library.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/library-organizing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.post-office {
+  background-image: url("/static/img/lot-detail-icons/post-office.png");
+}
+.lot-detail-page .lot-detail-icon.post-office.organizing {
+  background-image: url("/static/img/lot-detail-icons/post-office-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.post-office.priority {
+  background-image: url("/static/img/lot-detail-icons/post-office-priority.png");
+}
+.lot-detail-page .lot-detail-icon.post-office.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/post-office-organizing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.public-housing {
+  background-image: url("/static/img/lot-detail-icons/public-housing.png");
+}
+.lot-detail-page .lot-detail-icon.public-housing.organizing {
+  background-image: url("/static/img/lot-detail-icons/public-housing-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.public-housing.priority {
+  background-image: url("/static/img/lot-detail-icons/public-housing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.public-housing.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/public-housing-organizing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.vacant-lot-garden {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden.png");
+}
+.lot-detail-page .lot-detail-icon.vacant-lot-garden.organizing {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.vacant-lot-garden.priority {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-priority.png");
+}
+.lot-detail-page .lot-detail-icon.vacant-lot-garden.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-organizing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.waterfront {
+  background-image: url("/static/img/lot-detail-icons/waterfront.png");
+}
+.lot-detail-page .lot-detail-icon.waterfront.organizing {
+  background-image: url("/static/img/lot-detail-icons/waterfront-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.waterfront.priority {
+  background-image: url("/static/img/lot-detail-icons/waterfront-priority.png");
+}
+.lot-detail-page .lot-detail-icon.waterfront.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/waterfront-organizing-priority.png");
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;
