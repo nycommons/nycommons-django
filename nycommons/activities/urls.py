@@ -1,13 +1,13 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from .views import ActivityJSONListView
 
 
-urlpatterns = patterns('',
+urlpatterns = [
 
     url(r'^list/json/', ActivityJSONListView.as_view(), name='activity_list'),
 
-)
+]
 
 
 from actstream import urls as actstream_urls
