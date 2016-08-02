@@ -5877,11 +5877,26 @@ section.collapsible > h6.collapsed::before {
   text-decoration: none;
 }
 .details-section .details-toggle-owner-list::after {
-  content: "\203A";
+  background-image: url("/static/img/collapse-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  content: "";
+  display: block;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
+  display: inline-block;
+  height: 10px;
+  margin-left: 5px;
   padding-left: 5px;
+  width: 10px;
 }
 .details-section .details-toggle-owner-list.expanded::after {
-  content: "\2304";
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 .details-section .details-downloads {
   color: #00aeef;

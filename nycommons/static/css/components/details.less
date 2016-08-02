@@ -108,12 +108,16 @@
         }
 
         &::after {
-            content: "\203A";
+            .collapse-indicator();
+            display: inline-block;
+            height: 10px;
+            margin-left: 5px;
             padding-left: 5px;
+            width: 10px;
         }
 
         &.expanded::after {
-            content: "\2304";
+            .collapse-indicator-expanded();
         }
     }
 
