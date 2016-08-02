@@ -5861,14 +5861,32 @@ section.collapsible > h6.collapsed::before {
 }
 .details-section .details-downloads {
   color: #00aeef;
+  cursor: pointer;
+}
+.details-section .details-downloads::before {
+  background-image: url("/static/img/collapse-arrow.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  content: "";
+  display: block;
+  float: right;
+  height: 10px;
+  margin-left: 5px;
+  margin-top: 5px;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: transform .5s;
+  width: 10px;
 }
 .details-section .details-downloads .details-downloads-types {
   background: #ffffff;
   display: none;
   list-style: none;
   margin: 0;
-  padding: 0;
+  margin-left: -5px;
+  padding: 5px;
   position: absolute;
+  z-index: 5000;
 }
 .details-section .details-downloads .details-downloads-types li {
   display: block;
@@ -5879,6 +5897,13 @@ section.collapsible > h6.collapsed::before {
 }
 .details-section .details-downloads:hover .details-downloads-types {
   display: block;
+}
+.details-section .details-downloads:hover::before {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 .map-search {
   background: white;

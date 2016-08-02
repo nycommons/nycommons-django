@@ -119,14 +119,33 @@
 
     .details-downloads {
         color: @foreground-color;
-        
+        cursor: pointer;
+
+        &::before {
+            background-image: data-uri("/static/img/collapse-arrow.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            content: "";
+            display: block;
+            float: right;
+            height: 10px;
+            margin-left: 5px;
+            margin-top: 5px;
+            -webkit-transition: -webkit-transform .2s;
+            transition: transform .5s;
+            width: 10px;
+        }
+
         .details-downloads-types {
             background: @white;
             display: none;
             list-style: none;
             margin: 0;
-            padding: 0;
+            margin-left: -5px;
+            padding: 5px;
             position: absolute;
+            z-index: @ui-z-index;
 
             li {
                 display: block;
@@ -141,6 +160,14 @@
         &:hover {
             .details-downloads-types {
                 display: block;
+            }
+
+            &::before {
+                -webkit-transform: rotate(90deg);
+                -moz-transform: rotate(90deg);
+                -ms-transform: rotate(90deg);
+                -o-transform: rotate(90deg);
+                transform: rotate(90deg);
             }
         }
     }
