@@ -27,7 +27,7 @@ django-admin-enhancer==1.0.0
 django-admin-tools==0.7.2
 django-autocomplete-light==2.3.3
 django-braces==1.9.0
-git+git://github.com/jbalogh/django-cache-machine/@master
+django-cache-machine==0.9.1
 git+git://github.com/ebrelsford/django-chosen/@master
 django-contact-form-gv==0.4.3
 django-extensions==1.6.6
