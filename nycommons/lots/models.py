@@ -20,11 +20,29 @@ ureg = UnitRegistry()
 
 class LotManager(BaseLotManager):
 
-    def find_nearby(self, lot, **kwargs):
-        qs = super(LotManager, self).find_nearby(lot, **kwargs)
-
-        # Including gutterspaces in nearby lots is annoying, remove them
-        return qs.exclude(lotlayer__name='gutterspace')
+    def get_visible(self):
+        """
+        Should be publicly viewable if:
+            * There is no known use or its type is visible
+            * The known_use_certainty is over 3
+            * If any steward_projects exist, they opted in to being included
+        """
+        return super(LotManager, self).get_queryset().filter(
+            Q(
+                Q(known_use__isnull=True) |
+                Q(known_use__visible=True)
+            ),
+            Q(
+                Q(steward_projects=None) |
+                Q(steward_inclusion_opt_in=True)
+            ),
+            Q(
+                ~Q(owner__owner_type='private') |
+                Q(owner_opt_in=True)
+            ),
+            known_use_certainty__gt=3,
+            group__isnull=True,
+        )
 
     def get_lot_kwargs(self, parcel, **defaults):
         kwargs = {
@@ -303,32 +321,8 @@ class LotMixin(models.Model):
         abstract = True
 
 
-class VisibleLotManager(BaseLotManager):
+class VisibleLotManager(LotManager):
     """A manager that only retrieves lots that are publicly viewable."""
-
-    def get_visible(self):
-        """
-        Should be publicly viewable if:
-            * There is no known use or its type is visible
-            * The known_use_certainty is over 3
-            * If any steward_projects exist, they opted in to being included
-        """
-        return super(VisibleLotManager, self).get_queryset().filter(
-            Q(
-                Q(known_use__isnull=True) |
-                Q(known_use__visible=True)
-            ),
-            Q(
-                Q(steward_projects=None) |
-                Q(steward_inclusion_opt_in=True)
-            ),
-            Q(
-                ~Q(owner__owner_type='private') |
-                Q(owner_opt_in=True)
-            ),
-            known_use_certainty__gt=3,
-            group__isnull=True,
-        )
 
     def get_queryset(self):
         return self.get_visible()
