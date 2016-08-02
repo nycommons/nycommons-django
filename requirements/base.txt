@@ -20,7 +20,7 @@ unicodecsv==0.14.1
 
 
 # Django-specific requirements
-Django==1.9.8
+Django==1.9.9
 FeinCMS==1.12.1
 django-activity-stream==0.6.1
 django-admin-enhancer==1.0.0
@@ -45,7 +45,7 @@ git+git://github.com/ebrelsford/Django-monitor/@v0.4.0
 django-mptt==0.8.4
 django-reversion==1.10.2
 git+git://github.com/Lightmatter/django.js/@master
-feincms-cleanse==5
+feincms-cleanse==8
 feincms-elephantblog==1.0.2
 feincms-pagepermissions==0.3.1
 django-widget-tweaks==1.3
