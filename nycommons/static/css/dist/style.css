@@ -7186,6 +7186,10 @@ footer .footer-right {
 .lot-detail-page .lot-detail-icon.waterfront.organizing.priority {
   background-image: url("/static/img/lot-detail-icons/waterfront-organizing-priority.png");
 }
+.lot-detail-page .lot-detail-same-owner .lot-detail-icon {
+  margin-left: 0;
+  position: inherit;
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;
