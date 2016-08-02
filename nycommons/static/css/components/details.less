@@ -12,6 +12,8 @@
     }
 
     .details-body {
+        margin-bottom: 15px;
+        margin-top: 15px;
         min-height: 400px;
         width: 900px;
 
@@ -29,7 +31,35 @@
     .details-owner-priority-list,
     .details-owner-layer-list {
         list-style: none;
+        margin: 0;
         padding: 0;
+
+        & > .row {
+            border-bottom-style: solid;
+            border-bottom-width: 3px;
+            margin: 0;
+            margin-bottom: 5px;
+        }
+    }
+
+    .priority-row {
+        border-bottom-color: @red;
+    }
+
+    .library-row {
+        border-bottom-color: @lot-library-color;
+    }
+
+    .public_housing-row {
+        border-bottom-color: @lot-public-housing-color;
+    }
+
+    .post_office-row {
+        border-bottom-color: @lot-post-office-color;
+    }
+
+    .waterfront-row {
+        border-bottom-color: @lot-waterfront-color;
     }
 
     .details-owner-count {
@@ -37,11 +67,6 @@
         font-weight: bold;
         min-width: 35px;
         text-align: right;
-    }
-
-    .details-owner-priority-list {
-        border-bottom: 3px solid @red;
-        padding-bottom: 14px;
     }
 
     .details-organizer-list,
@@ -56,6 +81,7 @@
 
     .details-label-wrapper {
         .make-sm-column(8);
+        padding-left: 0;
     }
 
     .details-owner-label {

@@ -5726,6 +5726,8 @@ section.collapsible > h6.collapsed::before {
   padding: 0 5px;
 }
 .details-section .details-body {
+  margin-bottom: 15px;
+  margin-top: 15px;
   min-height: 400px;
   width: 900px;
 }
@@ -5752,17 +5754,37 @@ section.collapsible > h6.collapsed::before {
 .details-section .details-owner-priority-list,
 .details-section .details-owner-layer-list {
   list-style: none;
+  margin: 0;
   padding: 0;
+}
+.details-section .details-organizer-layer-list > .row,
+.details-section .details-owner-priority-list > .row,
+.details-section .details-owner-layer-list > .row {
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
+  margin: 0;
+  margin-bottom: 5px;
+}
+.details-section .priority-row {
+  border-bottom-color: #bf1e2d;
+}
+.details-section .library-row {
+  border-bottom-color: #00aeef;
+}
+.details-section .public_housing-row {
+  border-bottom-color: #f5a623;
+}
+.details-section .post_office-row {
+  border-bottom-color: #662d91;
+}
+.details-section .waterfront-row {
+  border-bottom-color: #e64c9b;
 }
 .details-section .details-owner-count {
   display: inline-block;
   font-weight: bold;
   min-width: 35px;
   text-align: right;
-}
-.details-section .details-owner-priority-list {
-  border-bottom: 3px solid #bf1e2d;
-  padding-bottom: 14px;
 }
 .details-section .details-organizer-list,
 .details-section .details-owner-list {
@@ -5788,6 +5810,7 @@ section.collapsible > h6.collapsed::before {
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
+  padding-left: 0;
 }
 @media (min-width: 768px) {
   .details-section .details-label-wrapper {
