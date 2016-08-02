@@ -13,7 +13,7 @@
 
     .details-body {
         min-height: 400px;
-        min-width: 800px;
+        width: 900px;
 
         @media (max-width: @screen-sm-max) {
             min-width: 700px;
@@ -39,11 +39,16 @@
 
     .details-organizer-list,
     .details-owner-list {
+        .make-sm-column(12);
         display: none;
         list-style: none;
         -moz-column-count: 2;
         -webkit-column-count: 2;
         column-count: 2;
+    }
+
+    .details-label-wrapper {
+        .make-sm-column(8);
     }
 
     .details-owner-label {
@@ -52,15 +57,15 @@
 
     .details-toggle-organizer-list {
         &-wrapper {
+            .make-sm-column(2);
             display: inline-block;
-            margin-left: 15px;
         }
     }
 
     .details-toggle-owner-list {
         &-wrapper {
+            .make-sm-column(2);
             display: inline-block;
-            margin-left: 15px;
         }
 
         &:hover,

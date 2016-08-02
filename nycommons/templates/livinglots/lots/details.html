@@ -3,10 +3,12 @@
 <script id="details-template" type="text/x-handlebars-template">
     {% verbatim %}
         {{#*inline "layerPartial"}}
-            <li>
-                <span class="legend-marker legend-marker-{{type}}"></span>
-                <span class="details-owner-count">{{count}}</span>
-                <span class="details-owner-label">{{label}}</span>
+            <li class="row">
+                <span class="details-label-wrapper">
+                    <span class="legend-marker legend-marker-{{type}}"></span>
+                    <span class="details-owner-count">{{count}}</span>
+                    <span class="details-owner-label">{{label}}</span>
+                </span>
                 <span class="details-toggle-organizer-list-wrapper">
                     {{organizers_count}} 
                     <span class="details-toggle-organizer-list">Organizers</span>
