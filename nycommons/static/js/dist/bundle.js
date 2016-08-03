@@ -84,7 +84,32 @@ module.exports = {
     recentActivity: recentActivity
 };
 
-},{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
+},{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/admin-sidebar.js":[function(require,module,exports){
+var flight = require('flightjs');
+
+var adminSidebar = flight.component(function () {
+    this.attributes({
+        expandSelector: '.sidebar-section-admin-expand'
+    });
+
+    this.expand = function (e) {
+        e.preventDefault();
+        $(document).trigger('sidebarHeaderContentShown', {
+            name: 'admin'
+        });
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.select('expandSelector').on('click', this.expand.bind(this));
+    });
+});
+
+module.exports = {
+    adminSidebar: adminSidebar
+};
+
+},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
 var flight = require('flightjs');
 
 var collapsibleSection = flight.component(function () {
@@ -1081,6 +1106,9 @@ var defaultSidebarContent = flight.component(function () {
 var recentActivity = flight.component(function () {
 }, defaultSidebarContentMixin);
 
+var adminSection = flight.component(function () {
+}, defaultSidebarContentMixin);
+
 var sidebarHeaderButton = flight.component(function () {
     this.click = function (event, name) {
         $(document).trigger('sidebarHeaderContentShown', {
@@ -1105,6 +1133,8 @@ $(document).ready(function () {
     defaultSidebarContent.attachTo('.map-header-content-default');
     recentActivity.attachTo('.recent-activity');
     sidebarHeaderContent.attachTo('.map-header-content-activities', { name: 'activities' });
+    adminSection.attachTo('.sidebar-section-admin');
+    sidebarHeaderContent.attachTo('.map-header-content-admin', { name: 'admin' });
 });
 
 },{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js":[function(require,module,exports){
@@ -2309,6 +2339,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 var activities = require('../components/activities');
+var adminSidebar = require('../components/admin-sidebar').adminSidebar;
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
 var filters = require('../components/filters');
@@ -2410,6 +2441,7 @@ $(document).ready(function () {
 
         activities.activities.attachTo('.map-header-content-activities');
         activities.recentActivity.attachTo('.recent-activity');
+        adminSidebar.attachTo('.sidebar-section-admin');
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         printButton.attachTo('.details-print');
@@ -2469,7 +2501,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../components/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js","../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/print":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/print.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+},{"../components/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js","../components/admin-sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/admin-sidebar.js","../components/details":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/details.js","../components/export":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/export.js","../components/filters":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/filters.js","../components/hash":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/hash.js","../components/legend":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/legend.js","../components/locate":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/locate.js","../components/print":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/print.js","../components/search":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/search.js","../components/sidebar":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/sidebar.js","../data/lotcounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js","../data/ownercounts":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/ownercounts.js","../handlebars.helpers":"/home/eric/Documents/596/nycommons/nycommons/static/js/handlebars.helpers.js","../map/lotmap":"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotmap.js","bootstrap_button":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/button.js","bootstrap_tooltip":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/tooltip.js","jquery-infinite-scroll":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/jquery-infinite-scroll/jquery.infinitescroll.js","leaflet":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet/dist/leaflet-src.js","leaflet-loading":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/leaflet-loading/src/Control.Loading.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/amdefine/amdefine.js":[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -63493,7 +63525,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

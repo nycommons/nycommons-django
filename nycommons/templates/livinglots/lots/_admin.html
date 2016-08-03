@@ -1,0 +1,21 @@
+{% load i18n %}
+
+<div class="admin-header">
+    <h2>{% trans "Admin" %}</h2>
+    <a href="#" class="close">Close</a>
+    <div style="clear: both;"></div>
+</div>
+<div class="admin-body">
+    <ul class="action-list">
+        <li>
+            <a class="admin-button-add-lot btn btn-default btn-block">
+                {% trans "add lot" %}
+            </a>
+        </li>
+        <li>
+            <a class="admin-button-email-participants btn btn-default btn-block">
+                {% trans "email subscribers" %}
+            </a>
+        </li>
+    </ul>
+</div>

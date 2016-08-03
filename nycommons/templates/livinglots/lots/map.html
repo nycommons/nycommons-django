@@ -132,6 +132,12 @@
         <div class="map-header-content-activities expanded">
             {% include "livinglots/lots/_activities.html" %}
         </div>
+
+        {% if user.is_superuser %}
+            <div class="map-header-content-admin">
+                {% include "livinglots/lots/_admin.html" %}
+            </div>
+        {% endif %}
     </div>
 
     <div id="map-legend" class="map-legend sidebar-section hidden-print">
@@ -141,14 +147,11 @@
     <div class="sidebar-section recent-activity hidden-xs hidden-print">
         {% include "livinglots/lots/_activities.html" %}
     </div>
-</div>
 
-<div class="admin-menu">
-    <section>
-        <a class="admin-button-add-lot btn btn-default btn-block">
-            {% trans "add lot" %}
-        </a>
-    </section>
+    <div class="sidebar-section sidebar-section-admin hidden-xs hidden-print">
+        <h2>{% trans "Admin" %}</h2>
+        <a href="#" class="sidebar-section-admin-expand"></a>
+    </div>
 </div>
 
 <div class="map-search">

@@ -57,6 +57,9 @@ var defaultSidebarContent = flight.component(function () {
 var recentActivity = flight.component(function () {
 }, defaultSidebarContentMixin);
 
+var adminSection = flight.component(function () {
+}, defaultSidebarContentMixin);
+
 var sidebarHeaderButton = flight.component(function () {
     this.click = function (event, name) {
         $(document).trigger('sidebarHeaderContentShown', {
@@ -81,4 +84,6 @@ $(document).ready(function () {
     defaultSidebarContent.attachTo('.map-header-content-default');
     recentActivity.attachTo('.recent-activity');
     sidebarHeaderContent.attachTo('.map-header-content-activities', { name: 'activities' });
+    adminSection.attachTo('.sidebar-section-admin');
+    sidebarHeaderContent.attachTo('.map-header-content-admin', { name: 'admin' });
 });
