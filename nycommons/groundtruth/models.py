@@ -25,9 +25,9 @@ class GroundtruthRecord(BaseGroundtruthRecord):
           dispatch_uid='groundtruth_groundtruthrecord_notify')
 def notify(sender, instance=None, **kwargs):
     """
-    Notify facilitators if the instance is pending.
+    Notify facilitators
     """
-    if not instance and instance.is_pending:
+    if not instance:
         return
     notify_facilitators(instance)
 
