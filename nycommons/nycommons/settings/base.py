@@ -289,6 +289,7 @@ ABSOLUTE_URL_OVERRIDES = {
 }
 
 MIGRATION_MODULES = {
+    'elephantblog': 'blog.migrate.elephantblog',
     'medialibrary': 'cms.migrate.medialibrary',
     'page': 'cms.migrate.page',
 }

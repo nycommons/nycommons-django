@@ -1,0 +1,14 @@
+{% load elephantblog_tags %}
+
+<h2>Archive</h2>
+
+{% elephantblog_archive_months as months %}
+<ul class="blog-archive-list">
+    {% for month in months %}
+        <li>
+            <a href="{% url "elephantblog_entry_archive_month" year=month.year month=month|date:"m" %}">
+                {{ month|date:"F Y" }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

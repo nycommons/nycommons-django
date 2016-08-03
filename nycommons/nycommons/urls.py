@@ -53,6 +53,8 @@ urlpatterns += (
 
     # FeinCMS
     url(r'', include('feincms.urls')),
+
+    url(r'^updates/', include('elephantblog.urls')),
 )
 
 

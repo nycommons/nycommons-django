@@ -10,6 +10,7 @@ from feincms.content.richtext.models import RichTextContent
 
 from livinglots_pathways.cms import PathwayListContent
 
+from blog.models import BlogArchiveContent, RecentPostsContent
 from pathways.models import Pathway
 
 
@@ -145,6 +146,8 @@ Page.create_content_type(MediaFileContent, TYPE_CHOICES=(
 
 Page.create_content_type(ExternallyLinkedMediaFileContent)
 Page.create_content_type(MailchimpSignup)
+Page.create_content_type(BlogArchiveContent)
+Page.create_content_type(RecentPostsContent)
 
 Page.create_content_type(ApplicationContent, APPLICATIONS=(
     ('livinglots_lots.map_urls', _('Lots map')),

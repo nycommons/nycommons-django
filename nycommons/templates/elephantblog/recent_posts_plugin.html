@@ -1,0 +1,14 @@
+{% load elephantblog_tags %}
+
+<h2>Recent Posts</h2>
+
+{% elephantblog_entries limit=10 as entries %}
+<ul class="blog-recent-posts-list">
+    {% for entry in entries %}
+        <li>
+            <a href="{{ entry.get_absolute_url }}">
+                {{ entry }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

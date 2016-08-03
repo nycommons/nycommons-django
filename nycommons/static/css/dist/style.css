@@ -6362,6 +6362,14 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   font-size: 12px;
   margin-top: 5px;
 }
+.blog-archive-list {
+  list-style: none;
+  padding: 0;
+}
+.blog-recent-posts-list {
+  list-style: none;
+  padding: 0;
+}
 .caption {
   display: block;
   font-style: italic;
