@@ -13,6 +13,7 @@ from django.views.generic import DetailView, View
 from caching.base import cached
 from braces.views import JSONResponseMixin
 
+from groundtruth.forms import GroundtruthRecordForm
 from inplace.views import GeoJSONListView, PlacesDetailView
 from livinglots_genericviews.views import JSONResponseView
 from livinglots_lots.signals import lot_details_loaded
@@ -56,6 +57,23 @@ class LotDetailView(PlacesDetailView):
             if lot.known_use_certainty > 3:
                 raise Http404
         return lot
+
+    def get_groundtruth_form(self, request):
+        kwargs = {
+            'initial': {
+                'content_type': ContentType.objects.get_for_model(self.object),
+                'object_id': self.object.pk,
+            },
+            'user': request.user,
+        }
+        return GroundtruthRecordForm(**kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(LotDetailView, self).get_context_data(**kwargs)
+        context.update({
+            'groundtruth_form': self.get_groundtruth_form(self.request),
+        })
+        return context
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()

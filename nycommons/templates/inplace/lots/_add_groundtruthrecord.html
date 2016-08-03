@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<section class="lot-detail-add-groundtruthrecord collapsible">
+    <h2 class="collapsed">
+        {% trans "Did we miss something?" %}
+    </h2>
+    <div class="lot-detail-add-groundtruthrecord-owner-content">
+        {% url "groundtruth:add_groundtruthrecord" pk=lot.pk as action %}
+        {% include "_form.html" with action=action form=groundtruth_form %}
+    </div>
+</section>

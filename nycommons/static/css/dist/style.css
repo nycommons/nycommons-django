@@ -6690,7 +6690,7 @@ footer .footer-right {
 @media (min-width: 992px) {
   .form-group .controls {
     float: left;
-    width: 50%;
+    width: 100%;
   }
 }
 .header-home-link {

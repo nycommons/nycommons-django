@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block title %}
-    {{ content_object.display_name|title|default:"unknown" }} |
+    {% trans "Make a correction to" %} {{ content_object.display_name|title|default:"unknown" }} |
     {% trans "NYCommons" %}
 {% endblock %}
 
@@ -15,14 +15,15 @@
         </li>
         <li>
             <a href="{{ content_object.get_absolute_url }}">
+                {{ content_object.display_name }}
                 {{ content_object.display_name|title|default:"unknown" }}
             </a>
         </li>
-        <li>{% trans "Make a correction" %}</li>
+        <li>{% trans "Make a correction to" %} {{ content_object.display_name }}</li>
     </ul>
 {% endblock %}
 
 {% block content %}
-    <h1>{% trans "Make a correction" %}</h1>
+    <h1>{% trans "Make a correction to" %} {{ content_object.display_name|title|default:"unknown" }}</h1>
     {% include "_form.html" with form=form %}
 {% endblock %}

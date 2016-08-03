@@ -11,14 +11,10 @@ class GroundtruthRecordForm(GroundtruthRecordFormMixin, forms.ModelForm):
         user = kwargs.pop('user')
         super(GroundtruthRecordForm, self).__init__(*args, **kwargs)
 
-        # Users who have permission can set the use from this form
-        if not (user and user.has_perm('groundtruth.moderate_groundtruthrecord')):
-            self.fields['use'].widget = forms.HiddenInput()
-
     class Meta:
         model = GroundtruthRecord
-        fields = ('content_type', 'object_id', 'actual_use', 'contact_email',
-                  'contact_name', 'contact_phone', 'use')
+        fields = ('content_type', 'object_id', 'contact_name', 'contact_email',
+                  'contact_phone', 'actual_use',)
         widgets = {
             'content_type': forms.HiddenInput(),
             'object_id': forms.HiddenInput(),
