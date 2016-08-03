@@ -25,7 +25,7 @@ class CollapsibleSectionContent(RichTextContent):
 
     def render(self, **kwargs):
         return render_to_string('cms/collapsiblesection/default.html',
-            { 'content': self }, context_instance=kwargs.get('context'))
+            { 'content': self }, request=kwargs.get('request'))
 
 
 class RecentActivitiesContent(models.Model):
@@ -38,7 +38,7 @@ class RecentActivitiesContent(models.Model):
     def render(self, **kwargs):
         return render_to_string([
             'activity/plugin.html',
-        ], {}, context_instance=kwargs.get('context'))
+        ], {}, request=kwargs.get('request'))
 
 
 class ExternallyLinkedMediaFileContent(ContentWithMediaFile):
@@ -59,7 +59,7 @@ class ExternallyLinkedMediaFileContent(ContentWithMediaFile):
         return render_to_string([
             'content/externallylinkedmediafile/%s.html' % self.mediafile.type,
             'content/externallylinkedmediafile/default.html',
-        ], ctx, context_instance=kwargs.get('context'))
+        ], ctx, request=kwargs.get('request'))
 
 
 class MailchimpSignup(models.Model):
@@ -92,7 +92,7 @@ class MailchimpSignup(models.Model):
         ctx.update(kwargs)
         return render_to_string([
             'content/mailchimp/signup.html',
-        ], ctx, context_instance=kwargs.get('context'))
+        ], ctx, request=kwargs.get('request'))
 
 
 Page.register_extensions(
