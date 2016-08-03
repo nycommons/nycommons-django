@@ -7048,8 +7048,7 @@ footer .footer-right {
 }
 .lot-detail-header-streetview-error {
   display: none;
-  float: left;
-  margin-left: 25%;
+  float: right;
 }
 .lot-detail-info-box {
   background-color: #ffffff;
