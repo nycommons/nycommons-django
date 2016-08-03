@@ -5700,6 +5700,16 @@ body {
 .map-header-content-admin .action-list li {
   margin-bottom: 10px;
 }
+.email-participants-container {
+  display: none;
+}
+.email-participants-container .email-participants-failure-container,
+.email-participants-container .email-participants-success-container {
+  display: none;
+}
+.email-participants-container h2 {
+  float: none;
+}
 .collapse-indicator {
   background-image: url("/static/img/collapse-arrow.png");
   background-repeat: no-repeat;

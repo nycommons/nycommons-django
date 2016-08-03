@@ -18,4 +18,31 @@
             </a>
         </li>
     </ul>
+
+    <div class="email-participants-container">
+        <h1>Email Subscribers</h1>
+        <div class="email-participants-form-container">
+            <div class="map-mail-status">
+                You are sending email to <span class="email-participants-form-watchers"></span> subscribers (<span class="email-participants-form-emails"></span> unique addresses).
+            </div>
+            <form class="email-participants-form">
+                <input type="hidden" name="emails" value="" />
+                <input type="text" class="form-control" name="subject" placeholder="subject" value="" />
+                <textarea class="form-control" name="text" placeholder="text"></textarea>
+            </form>
+            <div class="map-mail-actions">
+                <a href="#" class="email-participants-cancel btn btn-default">cancel</a>
+                <button type="submit" class="email-participants-submit btn btn-default" disabled>send emails</button>
+            </div>
+        </div>
+        <div class="email-participants-failure-container">
+            <h2>Failure</h2>
+            <p>Something went wrong while trying to email subscribers. Sorry about that.</p>
+            <p>Please try again and let us know if it continues to fail.</p>
+        </div>
+        <div class="email-participants-success-container">
+            <h2>Success</h2>
+            <p>Successfully sent your emails with subject "<span class="email-participants-success-subject"></span>" to <span class="email-participants-success-watchers"></span> subscribers (<span class="email-participants-success-emails"></span>  unique addresses).</p>
+        </div>
+    </div>
 </div>

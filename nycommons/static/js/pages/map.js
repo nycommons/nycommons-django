@@ -14,6 +14,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 var activities = require('../components/activities');
+var adminSection = require('../components/admin-sidebar').adminSection;
 var adminSidebar = require('../components/admin-sidebar').adminSidebar;
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
@@ -116,7 +117,8 @@ $(document).ready(function () {
 
         activities.activities.attachTo('.map-header-content-activities');
         activities.recentActivity.attachTo('.recent-activity');
-        adminSidebar.attachTo('.sidebar-section-admin');
+        adminSection.attachTo('.sidebar-section-admin');
+        adminSidebar.attachTo('.map-header-content-admin', { map: map });
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         printButton.attachTo('.details-print');

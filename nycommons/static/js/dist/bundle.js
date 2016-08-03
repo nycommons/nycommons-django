@@ -85,15 +85,127 @@ module.exports = {
 };
 
 },{"../data/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/data/activities.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","handlebars":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/handlebars/lib/index.js","moment":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/moment/moment.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/admin-sidebar.js":[function(require,module,exports){
+var _ = require('underscore');
 var flight = require('flightjs');
+var Spinner = require('spin.js');
+var spinnerOptions = _.extend({}, require('../lib/spinner-options'), {
+    top: '8px'
+});
 
-var adminSidebar = flight.component(function () {
+var emailParticipants = flight.component(function () {
+    this.attributes({
+        failureContainerSelector: '.email-participants-failure-container',
+        formContainerSelector: '.email-participants-form-container',
+        formEmailsSelector: '.email-participants-form-emails',
+        formWatchersSelector: '.email-participants-form-watchers',
+        formSelector: '.email-participants-form',
+        map: null,
+        submitButtonSelector: '.email-participants-submit',
+        subjectSelector: ':input[name=subject]',
+        successContainerSelector: '.email-participants-success-container',
+        successEmailsSelector: '.email-participants-success-emails',
+        successSubjectSelector: '.email-participants-success-subject',
+        successWatchersSelector: '.email-participants-success-watchers',
+        textSelector: ':input[name=text]'
+    });
+
+    this.submitDisabled = function () {
+        var subject = this.select('subjectSelector').val(),
+            text = this.select('textSelector').val();
+        return subject === '' || text === '' || this.emailCount === 0;
+    };
+
+    this.updateSubmitDisabled = function () {
+        this.select('submitButtonSelector').prop('disabled', this.submitDisabled());
+    };
+
+    this.updateMailCount = function () {
+        var params = this.attr.map.getParamsQueryString({}, {
+            bbox: this.attr.map.getBounds().toBBoxString()
+        });
+        $.getJSON(this.emailOrganizersCountUrl + '?' + params, this.mailCountReceived.bind(this));
+    };
+
+    this.mailCountReceived = function (data) {
+        this.emailCount = data.emails;
+        this.select('formEmailsSelector').text(data.emails);
+        this.select('formWatchersSelector').text(data.watchers);
+        this.updateSubmitDisabled();
+    };
+
+    this.sendMail = function () {
+        var params = this.attr.map.getParamsQueryString({}, {
+            bbox: this.attr.map.getBounds().toBBoxString(),
+            subject: this.select('subjectSelector').val(),
+            text: this.select('textSelector').val()
+        });
+
+        var spinner = new Spinner(spinnerOptions)
+            .spin(this.select('submitButtonSelector')[0]);
+
+        $.getJSON(this.sendEmailUrl + '?' + params)
+            .always(function () {
+                spinner.stop();
+            })
+            .done((function (data) {
+                this.select('successEmailsSelector').text(data.emails);
+                this.select('successSubjectSelector').text(data.subject);
+                this.select('successWatchersSelector').text(data.watchers);
+                this.select('formContainerSelector').hide();
+                this.select('successContainerSelector').show();
+            }).bind(this))
+            .fail((function (data) {
+                this.select('formContainerSelector').hide();
+                this.select('failureContainerSelector').show();
+            }).bind(this));
+    };
+
+    this.onSubmit = function (e) {
+        // If already disabled, don't send mail
+        if (this.select('submitButtonSelector').is('disabled')) {
+            return false;
+        }
+        this.select('submitButtonSelector').prop('disabled', true);
+        this.sendMail();
+        e.stopPropagation();
+        return false;
+    };
+
+    this.onKeyUp = function (e) {
+        this.updateSubmitDisabled();
+    };
+
+    this.onReset = function (e) {
+        this.select('subjectSelector').val('');
+        this.select('textSelector').val('');
+        this.select('formContainerSelector').show();
+        this.select('failureContainerSelector').hide();
+        this.select('successContainerSelector').hide();
+    };
+
+    this.after('initialize', function () {
+        this.on('reset', this.onReset.bind(this));
+        this.select('submitButtonSelector').on('click', this.onSubmit.bind(this));
+        this.select('subjectSelector').on('keyup', this.onKeyUp.bind(this));
+        this.select('textSelector').on('keyup', this.onKeyUp.bind(this));
+        this.sendEmailUrl = Django.url('lots:lot_email_watchers');
+        this.emailOrganizersCountUrl = Django.url('lots:lot_count_watchers');
+        this.updateMailCount();
+
+        this.attr.map.on({
+            'filterschanged': this.updateMailCount.bind(this),
+            'moveend': this.updateMailCount.bind(this),
+            'zoomend': this.updateMailCount.bind(this)
+        });
+    });
+});
+
+var adminSection = flight.component(function () {
     this.attributes({
         expandSelector: '.sidebar-section-admin-expand'
     });
 
     this.expand = function (e) {
-        e.preventDefault();
         $(document).trigger('sidebarHeaderContentShown', {
             name: 'admin'
         });
@@ -105,11 +217,32 @@ var adminSidebar = flight.component(function () {
     });
 });
 
+var adminSidebar = flight.component(function () {
+    this.attributes({
+        emailButton: '.admin-button-email-participants',
+        emailContainer: '.email-participants-container',
+        expandSelector: '.sidebar-section-admin-expand',
+        map: null
+    });
+
+    this.enterEmailMode = function (e) {
+        this.select('emailContainer').show();
+        this.select('emailContainer').trigger('reset');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.select('emailButton').on('click', this.enterEmailMode.bind(this));
+        emailParticipants.attachTo('.email-participants-container', { map: this.attr.map });
+    });
+});
+
 module.exports = {
+    adminSection: adminSection,
     adminSidebar: adminSidebar
 };
 
-},{"flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
+},{"../lib/spinner-options":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/spinner-options.js","flightjs":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/flightjs/build/flight.js","spin.js":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/spin.js/spin.js","underscore":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/underscore/underscore.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/components/collapse.js":[function(require,module,exports){
 var flight = require('flightjs');
 
 var collapsibleSection = flight.component(function () {
@@ -2339,6 +2472,7 @@ require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 var activities = require('../components/activities');
+var adminSection = require('../components/admin-sidebar').adminSection;
 var adminSidebar = require('../components/admin-sidebar').adminSidebar;
 var details = require('../components/details');
 var exportLink = require('../components/export').exportLink;
@@ -2441,7 +2575,8 @@ $(document).ready(function () {
 
         activities.activities.attachTo('.map-header-content-activities');
         activities.recentActivity.attachTo('.recent-activity');
-        adminSidebar.attachTo('.sidebar-section-admin');
+        adminSection.attachTo('.sidebar-section-admin');
+        adminSidebar.attachTo('.map-header-content-admin', { map: map });
         legend.attachTo('#map-legend');
         locateButton.attachTo('.map-header-locate-btn', { map: map });
         printButton.attachTo('.details-print');
@@ -63525,7 +63660,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
