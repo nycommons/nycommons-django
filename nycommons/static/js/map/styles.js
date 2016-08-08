@@ -3,10 +3,10 @@
 //
 
 var fillColors = {
-    library: '#00AEEF',
+    library: '#057FC6',
     'public housing': '#F5A623',
     'post office': '#662D91',
-    waterfront: '#e64c9b',
+    waterfront: '#E669EE',
     default: '#000000'
 };
 

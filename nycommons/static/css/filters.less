@@ -110,10 +110,10 @@
 
     .filter-priority-organizing-list-item input[type=checkbox] {
         &:checked + label:before {
-            background: @red;
+            background: @lot-priority-color;
         }
         & + label:before {
-            border-color: @red;
+            border-color: @lot-priority-color;
         }
     }
     .filter-post-offices-item input[type=checkbox] {
@@ -138,6 +138,14 @@
         }
         & + label:before {
             border-color: @lot-public-housing-color;
+        }
+    }
+    .filter-waterfront-item input[type=checkbox] {
+        &:checked + label:before {
+            background: @lot-waterfront-color;
+        }
+        & + label:before {
+            border-color: @lot-waterfront-color;
         }
     }
 }
