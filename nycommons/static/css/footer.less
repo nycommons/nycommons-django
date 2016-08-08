@@ -94,11 +94,24 @@ footer {
 }
 
 @media (max-width: @screen-xs-max) {
-    footer .footer-row .footer-column {
-        &:nth-of-type(1),
-        &:nth-of-type(2),
-        &:nth-of-type(3) {
+    footer {
+        padding: 32px;
+
+        .footer-left,
+        .footer-right {
             padding: 0;
+        }
+
+        .footer-row .footer-column {
+            &:nth-of-type(1),
+            &:nth-of-type(2),
+            &:nth-of-type(3) {
+                padding: 0;
+            }
+        }
+
+        .footer-right {
+            margin-top: 25px;
         }
     }
 }
