@@ -3,7 +3,7 @@
         .make-row(0);
 
         &-actions {
-            .make-sm-column(6);
+            float: right;
             .details-header-action {
                 float: right;
                 padding: 0 5px;
@@ -15,15 +15,14 @@
         margin-bottom: 15px;
         margin-top: 15px;
         min-height: 400px;
-        width: 900px;
+        width: 565px;
 
         @media (max-width: @screen-sm-max) {
             min-width: 700px;
         }
     }
     .details-header-text {
-        .make-sm-column(6);
-        font-size: 18px;
+        float: left;
         padding: 0;
     }
 
