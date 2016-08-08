@@ -109,6 +109,7 @@ Page.register_templates({
     'regions': (
         ('main', _('Main content area')),
         ('sidebar', _('Sidebar'), 'inherited'),
+        ('sidebar_left', _('Sidebar Left'), 'inherited'),
         ('footer_main', _('Footer Main'), 'inherited'),
         ('footer_column_left', _('Footer Left Column'), 'inherited'),
         ('footer_column_middle', _('Footer Middle Column'), 'inherited'),
@@ -125,6 +126,7 @@ Page.register_templates({
         ('main', _('Main content area')),
         ('welcome', _('Welcome text')),
         ('sidebar', _('Sidebar'), 'inherited'),
+        ('sidebar_left', _('Sidebar Left'), 'inherited'),
         ('footer_main', _('Footer Main'), 'inherited'),
         ('footer_column_left', _('Footer Left Column'), 'inherited'),
         ('footer_column_middle', _('Footer Middle Column'), 'inherited'),

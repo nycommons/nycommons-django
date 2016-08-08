@@ -65,6 +65,7 @@
                             {% else %}
                                 <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
                             {% endif %}
+                            {% feincms_render_region feincms_page "sidebar_left" request %}
                         </aside>
                     {% endblock %}
 
