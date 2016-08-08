@@ -113,13 +113,16 @@
         display: inline-block;
 
         @media (max-width: @screen-xs-max) {
+            font-size: 12px;
+            font-weight: bold;
+
             &::after {
                 .collapse-indicator();
                 .collapse-indicator-expanded();
                 float: right;
-                height: 15px;
+                height: 12px;
                 margin-left: 7px;
-                margin-top: 4px;
+                margin-top: 3px;
                 width: 15px;
             }
         }
