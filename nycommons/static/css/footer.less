@@ -1,13 +1,16 @@
 footer {
     background: @footer-color;
-    color: @text-color;
+    color: @footer-text-color;
+    font-size: 12px;
     padding: 25px 0;
 
     @media (max-width: @screen-xs-max) {
         padding: @xs-padding;
     }
 
-    h2 {
+    .footer-column h2 {
+        color: @footer-text-color;
+        font-size: 20px;
         font-weight: normal;
         margin-bottom: 0;
     }
@@ -15,7 +18,7 @@ footer {
     a {
         &:link, &:visited, &:hover, &:active {
             color: @text-color;
-            font-weight: bold;
+            font-weight: normal;
             text-decoration: none;
         }
     }
@@ -26,10 +29,13 @@ footer {
 
     .footer-left {
         .make-sm-column(9);
+        padding-left: 32px;
     }
 
     .footer-main {
-        font-size: 20px;
+        font-size: 18px;
+        font-weight: 300;
+        line-height: 24px;
 
         p:nth-of-type(1) {
             margin-top: 0;
@@ -57,6 +63,32 @@ footer {
 
     .footer-right {
         .make-sm-column(3);
+        padding-right: 32px;
+    }
+
+    .social-media {
+        float: none;
+        margin-left: 0;
+
+        a {
+            background-position: center;
+            height: 20px;
+            margin-right: 15px;
+            margin-top: 5px;
+            width: 20px;
+        }
+
+        &-facebook {
+            background-image: data-uri("/static/img/facebook-footer.png");
+        }
+
+        &-instagram {
+            background-image: data-uri("/static/img/instagram-footer.png");
+        }
+
+        &-twitter {
+            background-image: data-uri("/static/img/twitter-footer.png");
+        }
     }
 
 }
