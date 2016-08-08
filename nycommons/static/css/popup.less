@@ -1,11 +1,14 @@
 #popup {
-    color: @gray;
+    color: @header-color;
+    font-size: 11px;
+    line-height: 14px;
     min-height: 120px;
     width: 300px;
 
     header {
-        font-size: 16px;
-        font-weight: bold;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 18px;
 
         a {
             color: @gray;
@@ -18,7 +21,7 @@
 
     .popup {
         &-streetview {
-            .make-xs-column(5);
+            .make-xs-column(6);
 
             img {
                 max-width: 100%;
@@ -26,7 +29,7 @@
         }
 
         &-lot-details {
-            .make-xs-column(7);
+            .make-xs-column(6);
 
             .owner {
                 margin-bottom: 3px;
