@@ -28,7 +28,7 @@
                         {% if entry.first_richtext %}{{ entry.first_richtext.render }}{% endif %}
                     </div>
                     <div class="share">
-                        <a href="{{ entry.get_absolute_url }}" rel="bookmark">Permalink</a>
+                        <a href="{{ entry.get_absolute_url }}" rel="bookmark">{% trans "Read more / Permalink" %}</a>
                     </div>
                     <span class="byline small">
                         {% if entry.author.get_full_name %}
@@ -45,6 +45,7 @@
 
     {% block pagination %}
         <div class="pagination">
+            {% trans "Jump to page" %}:
             {% if page_obj.has_previous %}
                 <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
             {% endif %}
