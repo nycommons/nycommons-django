@@ -7,3 +7,52 @@
     list-style: none;
     padding: 0;
 }
+
+.blog-entry-detail,
+.blog-entry-archive {
+    .entry-title a {
+        color: @header-color;
+        font-size: 24px;
+        line-height: 33px;
+    }
+
+    h2 {
+        color: @header-color;
+        font-size: 18px;
+        line-height: 20px;
+    }
+
+    article.hentry {
+        border-bottom: 3px solid @purple;
+        color: @header-color;
+        font-size: 12px;
+        margin-bottom: 40px;
+        padding-bottom: 10px;
+    }
+
+    .byline {
+        .author .fn {
+            font-weight: 600;
+        }
+
+        time {
+            padding-left: 10px;
+        }
+    }
+
+    .share {
+        float: right;
+    }
+
+    #aside-right {
+        a {
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 16px;
+        }
+
+        h2:not(:first-of-type) {
+            margin-top: 50px;
+        }
+    }
+}
