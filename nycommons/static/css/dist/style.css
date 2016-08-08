@@ -6752,11 +6752,12 @@ footer .footer-right {
   }
 }
 .header-home-link {
-  margin-left: 25px;
+  margin-left: 31px;
+  width: 120px;
 }
 .header-bar {
-  height: 25px;
-  margin-top: -25px;
+  height: 17px;
+  margin-top: -17px;
   width: 100%;
 }
 .header-bar-left {
@@ -7383,8 +7384,8 @@ fieldset[disabled] .btn-show-details.active {
   }
 }
 .map-logo-bar {
-  height: 25px;
-  margin-top: -25px;
+  height: 17px;
+  margin-top: -17px;
   width: 100%;
 }
 .map-logo-bar-left {
@@ -7404,9 +7405,9 @@ fieldset[disabled] .btn-show-details.active {
   background-size: contain;
   display: none;
   float: right;
-  height: 25px;
-  margin-top: -50px;
-  width: 25px;
+  height: 17px;
+  margin-top: -34px;
+  width: 17px;
 }
 .map-page .map-header-btn {
   display: block;
@@ -7430,8 +7431,8 @@ fieldset[disabled] .btn-show-details.active {
 }
 .map-header-search-btn {
   background-image: url("../../img/search.png");
-  margin-right: 25px;
-  margin-top: -49px;
+  margin-right: 17px;
+  margin-top: -33px;
   width: 22px;
 }
 @media (max-width: 767px) {
