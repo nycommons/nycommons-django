@@ -28,7 +28,7 @@
                 {% endfor %}
                 {% if entry.author.get_full_name %}
                     <span class="author source-org vcard">
-                        {% trans 'by' %} <span class="fn">{{ entry.author.get_full_name }}</span> |
+                        {% trans "Posted by" %} <span class="fn">{{ entry.author.get_full_name }}</span>
                     </span>
                 {% endif %}
                 <time datetime="{{ entry.published_on|date:'c' }}" pubdate>{{ entry.published_on|date:"SHORT_DATE_FORMAT" }}</time>
