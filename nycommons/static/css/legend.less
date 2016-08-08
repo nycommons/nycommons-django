@@ -20,6 +20,7 @@
 
     &-button {
         float: right;
+        font-size: 12px;
         margin-right: 15px;
 
         &:first-of-type {
@@ -84,8 +85,8 @@
 
     &-label {
         display: inline;
-        font-weight: 300;
-        line-height: 22px;
+        font-weight: normal;
+        line-height: 24px;
         text-transform: capitalize;
         vertical-align: middle;
 
@@ -118,7 +119,9 @@
     }
 
     .legend-header {
+        color: @header-color;
         display: inline-block;
+        font-size: 16px;
 
         @media (max-width: @screen-xs-max) {
             &::after {
