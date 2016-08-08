@@ -165,6 +165,13 @@
 </div>
 
 <div class="menu-expanded">
+    <button type="button" class="hidden-xs navbar-toggle menu-button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </button>
+
     <ul class="nav navbar-nav">
         {% feincms_nav feincms_page level=2 depth=1 as mainmenu %}
         {% for page in mainmenu %}

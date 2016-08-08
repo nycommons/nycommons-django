@@ -25,16 +25,20 @@
     background: white;
     box-shadow: @box-shadow;
     min-width: 200px;
-    padding-top: 50px;
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 5000;
+    z-index: @ui-z-index + 1;
+    
+    .menu-button {
+        margin-right: 15px;
+        margin-top: 15px;
+    }
 
     .navbar-nav {
         float: none;
         margin-left: 0;
-        padding: 0 23px 34px 23px;
+        padding: 47px 23px 34px 23px;
 
         & > li {
             float: none;
