@@ -114,11 +114,15 @@
 .map-header-btn {
     background-repeat: no-repeat;
     background-size: contain;
-    display: block;
+    display: none;
     float: right;
     height: @header-bar-height;
     margin-top: -(2 * @header-bar-height);
     width: @header-bar-height;
+
+    .map-page & {
+        display: block;
+    }
 
     @media (max-width: @screen-xs-max) {
         height: 35px;
