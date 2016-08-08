@@ -6279,20 +6279,17 @@ section.collapsible > h6.collapsed::before {
 }
 #mc_embed_signup .email {
   background: transparent;
-  border: 1px solid #8e8e8e;
+  border: 1px solid #9b9b9b;
   border-radius: 0;
-  color: #8e8e8e;
-  font-size: 18px;
+  color: #9b9b9b;
+  font-size: 12px;
+  line-height: 20px;
   padding: 5px;
   width: 100%;
 }
 #mc_embed_signup .btn {
   background: none;
-  border: 1px solid #00aeef;
-  border-radius: 0;
-  color: #00aeef;
   float: right;
-  font-size: 22px;
   margin-top: 5px;
 }
 .usercontent-list {
@@ -6688,7 +6685,8 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 }
 footer {
   background: #f6f6f6;
-  color: #8e8e8e;
+  color: #9b9b9b;
+  font-size: 12px;
   padding: 25px 0;
 }
 @media (max-width: 767px) {
@@ -6696,7 +6694,9 @@ footer {
     padding: 15px;
   }
 }
-footer h2 {
+footer .footer-column h2 {
+  color: #9b9b9b;
+  font-size: 20px;
   font-weight: normal;
   margin-bottom: 0;
 }
@@ -6705,7 +6705,7 @@ footer a:visited,
 footer a:hover,
 footer a:active {
   color: #8e8e8e;
-  font-weight: bold;
+  font-weight: normal;
   text-decoration: none;
 }
 footer .footer-row {
@@ -6717,6 +6717,7 @@ footer .footer-left {
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
+  padding-left: 32px;
 }
 @media (min-width: 768px) {
   footer .footer-left {
@@ -6725,7 +6726,9 @@ footer .footer-left {
   }
 }
 footer .footer-main {
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 24px;
 }
 footer .footer-main p:nth-of-type(1) {
   margin-top: 0;
@@ -6778,6 +6781,7 @@ footer .footer-right {
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
+  padding-right: 32px;
 }
 @media (min-width: 768px) {
   footer .footer-right {
@@ -6785,11 +6789,41 @@ footer .footer-right {
     width: 25%;
   }
 }
+footer .social-media {
+  float: none;
+  margin-left: 0;
+}
+footer .social-media a {
+  background-position: center;
+  height: 20px;
+  margin-right: 15px;
+  margin-top: 5px;
+  width: 20px;
+}
+footer .social-media-facebook {
+  background-image: url("/static/img/facebook-footer.png");
+}
+footer .social-media-instagram {
+  background-image: url("/static/img/instagram-footer.png");
+}
+footer .social-media-twitter {
+  background-image: url("/static/img/twitter-footer.png");
+}
 @media (max-width: 767px) {
+  footer {
+    padding: 32px;
+  }
+  footer .footer-left,
+  footer .footer-right {
+    padding: 0;
+  }
   footer .footer-row .footer-column:nth-of-type(1),
   footer .footer-row .footer-column:nth-of-type(2),
   footer .footer-row .footer-column:nth-of-type(3) {
     padding: 0;
+  }
+  footer .footer-right {
+    margin-top: 25px;
   }
 }
 .form-group .control-label {
@@ -7015,6 +7049,10 @@ footer .footer-right {
   display: inline-block;
 }
 @media (max-width: 767px) {
+  .map-legend .legend-header {
+    font-size: 12px;
+    font-weight: bold;
+  }
   .map-legend .legend-header::after {
     background-image: url("/static/img/collapse-arrow.png");
     background-repeat: no-repeat;
@@ -7030,9 +7068,9 @@ footer .footer-right {
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
     float: right;
-    height: 15px;
+    height: 12px;
     margin-left: 7px;
-    margin-top: 7px;
+    margin-top: 3px;
     width: 15px;
   }
 }
@@ -7042,7 +7080,7 @@ footer .footer-right {
 }
 @media (max-width: 767px) {
   .map-legend.collapse {
-    height: 45px;
+    height: 35px;
     overflow: hidden;
   }
 }
@@ -7079,6 +7117,12 @@ footer .footer-right {
   width: 20%;
   z-index: 500;
 }
+@media (max-width: 767px) {
+  #lot-detail-map {
+    width: 35%;
+    margin-left: 30px;
+  }
+}
 .lot-detail-page {
   color: #666666;
   font-size: 12px;
@@ -7101,6 +7145,11 @@ footer .footer-right {
   line-height: 49px;
   margin-top: 15px;
 }
+@media (max-width: 767px) {
+  .lot-detail-page .content-wrapper {
+    clear: both;
+  }
+}
 .lot-detail-page .postal-code {
   font-size: 20px;
   margin-left: 10px;
@@ -7113,6 +7162,11 @@ footer .footer-right {
   font-weight: 600;
   line-height: 27px;
   margin-top: 15px;
+}
+@media (max-width: 767px) {
+  .lot-detail-page h2 {
+    margin: 18px 0;
+  }
 }
 .lot-detail-page .alert {
   margin-top: 20px;
@@ -7136,6 +7190,16 @@ footer .footer-right {
 .lot-detail-main {
   margin-left: 50px;
 }
+@media (max-width: 767px) {
+  .lot-detail-main {
+    margin-left: 0;
+  }
+}
+@media (max-width: 767px) {
+  .lot-detail-page #main {
+    padding: 0 30px;
+  }
+}
 .lot-detail-actions {
   float: right;
 }
@@ -7144,6 +7208,12 @@ footer .footer-right {
   font-weight: 600;
   padding: 15px;
   text-transform: uppercase;
+}
+@media (max-width: 767px) {
+  .lot-detail-actions a {
+    line-height: 20px;
+    padding: 0 15px;
+  }
 }
 .lot-detail-actions .btn-group {
   vertical-align: inherit;
@@ -7184,6 +7254,11 @@ footer .footer-right {
 }
 .lot-detail-header-image.no-streetview {
   height: 100px;
+}
+@media (max-width: 767px) {
+  .lot-detail-header-image {
+    height: 160px;
+  }
 }
 .lot-detail-header-streetview-error {
   display: none;
@@ -7271,6 +7346,11 @@ footer .footer-right {
   position: absolute;
   width: 25px;
 }
+@media (max-width: 767px) {
+  .lot-detail-page .lot-detail-icon {
+    margin-left: -25px;
+  }
+}
 .lot-detail-page .lot-detail-icon.library {
   background-image: url("/static/img/lot-detail-icons/library.png");
 }
@@ -7337,6 +7417,12 @@ footer .footer-right {
   margin-top: 0;
   position: inherit;
   width: 20px;
+}
+.lot-detail-page .lot-detail-same-owner ul {
+  list-style: none;
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
 }
 .nearby-lots-list {
   list-style: none;
@@ -7623,6 +7709,11 @@ fieldset[disabled] .btn-show-details.active {
   margin-bottom: 0;
   margin-top: 15px;
 }
+@media (max-width: 767px) {
+  .navbar-default {
+    margin-top: 0;
+  }
+}
 .navbar-default .navbar-toggle {
   border: 0;
 }
@@ -7672,7 +7763,7 @@ fieldset[disabled] .btn-show-details.active {
     width: 100%;
   }
   .navbar-default {
-    min-height: 75px;
+    min-height: 76px;
     z-index: 10000;
   }
   .navbar-collapse {
@@ -7761,25 +7852,6 @@ fieldset[disabled] .btn-show-details.active {
 }
 .social-media-twitter {
   background-image: url("/static/img/twitter.png");
-}
-footer .social-media {
-  float: none;
-  margin-left: 0;
-}
-footer .social-media a {
-  height: 20px;
-  margin-right: 15px;
-  margin-top: 5px;
-  width: 20px;
-}
-footer .social-media-facebook {
-  background-image: url("/static/img/facebook-footer.png");
-}
-footer .social-media-instagram {
-  background-image: url("/static/img/instagram-footer.png");
-}
-footer .social-media-twitter {
-  background-image: url("/static/img/twitter-footer.png");
 }
 .usercontent-list .note {
   padding-top: 35px;
@@ -7890,13 +7962,16 @@ footer .social-media-twitter {
   display: block;
 }
 #popup {
-  color: #8e8e8e;
+  color: #666666;
+  font-size: 11px;
+  line-height: 14px;
   min-height: 120px;
   width: 300px;
 }
 #popup header {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
 }
 #popup header a {
   color: #8e8e8e;
@@ -7907,7 +7982,7 @@ footer .social-media-twitter {
 #popup .popup-streetview {
   position: relative;
   float: left;
-  width: 41.66666667%;
+  width: 50%;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
@@ -7918,7 +7993,7 @@ footer .social-media-twitter {
 #popup .popup-lot-details {
   position: relative;
   float: left;
-  width: 58.33333333%;
+  width: 50%;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
@@ -8240,7 +8315,7 @@ footer .social-media-twitter {
     bottom: 160px;
   }
   .map-legend-collapsed .leaflet-bottom {
-    bottom: 45px;
+    bottom: 35px;
   }
 }
 .leaflet-bottom .leaflet-control {
