@@ -14,8 +14,8 @@ body {
 }
 
 .page-wrapper {
-    margin-bottom: 50px;
-    margin-top: 50px;
+    margin-bottom: @page-content-vertical-margin;
+    margin-top: @page-content-vertical-margin;
     min-height: 80vh;
 
     @media (max-width: @screen-xs-max) {
@@ -23,6 +23,16 @@ body {
         padding-left: 0;
         padding-right: 0;
     }
+
+    h1:first-of-type {
+        margin-top: 0;
+    }
+}
+
+h1 {
+    color: @header-color;
+    font-size: 36px;
+    line-height: 49px;
 }
 
 #aside-left {

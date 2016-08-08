@@ -5635,8 +5635,8 @@ body {
   }
 }
 .page-wrapper {
-  margin-bottom: 50px;
-  margin-top: 50px;
+  margin-bottom: 42px;
+  margin-top: 42px;
   min-height: 80vh;
 }
 @media (max-width: 767px) {
@@ -5645,6 +5645,14 @@ body {
     padding-left: 0;
     padding-right: 0;
   }
+}
+.page-wrapper h1:first-of-type {
+  margin-top: 0;
+}
+h1 {
+  color: #666666;
+  font-size: 36px;
+  line-height: 49px;
 }
 #aside-left .submenu {
   display: block;
