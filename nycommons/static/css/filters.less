@@ -1,3 +1,5 @@
+@filter-checkbox-size: 12px;
+
 .filter-select {
     width: 100%;
 }
@@ -84,7 +86,8 @@
         display: none;
 
         & + label {
-            margin-left: 15px;
+            margin-left: @filter-checkbox-size;
+            text-transform: capitalize;
         }
 
         & + label:before {
@@ -94,31 +97,47 @@
             color: black;
             content: " ";
             display: inline-block;
-            font-size: 15px;
-            line-height: 15px;
-            height: 15px;
-            margin-left: -15px;
+            font-size: @filter-checkbox-size;
+            line-height: @filter-checkbox-size;
+            height: @filter-checkbox-size;
+            margin-left: -@filter-checkbox-size;
             margin-right: 5px;
             text-align: center;
             vertical-align: top;
-            width: 15px;
+            width: @filter-checkbox-size;
         }
+    }
 
+    .filter-priority-organizing-list-item input[type=checkbox] {
         &:checked + label:before {
-            content: "\2713";
+            background: @red;
+        }
+        & + label:before {
+            border-color: @red;
         }
     }
-
-    .filter-priority-organizing-list-item input[type=checkbox] + label:before {
-        border-color: @red;
+    .filter-post-offices-item input[type=checkbox] {
+        &:checked + label:before {
+            background: @lot-post-office-color;
+        }
+        & + label:before {
+            border-color: @lot-post-office-color;
+        }
     }
-    .filter-post-offices-item input[type=checkbox] + label:before {
-        border-color: @lot-post-office-color;
+    .filter-library-item input[type=checkbox] {
+        &:checked + label:before {
+            background: @lot-library-color;
+        }
+        & + label:before {
+            border-color: @lot-library-color;
+        }
     }
-    .filter-library-item input[type=checkbox] + label:before {
-        border-color: @lot-library-color;
-    }
-    .filter-public-housing-item input[type=checkbox] + label:before {
-        border-color: @lot-public-housing-color;
+    .filter-public-housing-item input[type=checkbox] {
+        &:checked + label:before {
+            background: @lot-public-housing-color;
+        }
+        & + label:before {
+            border-color: @lot-public-housing-color;
+        }
     }
 }
