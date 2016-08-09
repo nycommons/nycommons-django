@@ -131,9 +131,7 @@
             {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}
         {% endifequal %}
 
-        <section class="collapsible">
-            <h2>{% trans "Why is this property part of NYCommons?" %}</h2>
-        </section>
+        {% include "inplace/lots/_lot_detail_part_of_nycommons.html" with lot=lot %}
 
         {% include "inplace/lots/_lot_detail_take_action.html" with lot=lot %}
 

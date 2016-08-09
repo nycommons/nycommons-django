@@ -1,0 +1,16 @@
+{% load i18n %}
+
+<section class="lot-detail-part-of-nycommons collapsible">
+    <h2>{% trans "Why is this property part of NYCommons?" %}</h2>
+    <div class="lot-detail-part-of-nycommons-content">
+        {% if lot.commons_type == "library" %}
+            {% trans "The property is a library according to city data." %}
+        {% elif lot.commons_type == "post office" %}
+            {% trans "The property is a post office according to city data." %}
+        {% elif lot.commons_type == "public housing" %}
+            {% trans "The property is part of a public housing development according to city data." %}
+        {% elif lot.commons_type == "waterfront" %}
+            {% trans "The property is publicly owned waterfront property according to city data." %}
+        {% endif %}
+    </div>
+</section>
