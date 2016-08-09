@@ -327,3 +327,6 @@ CONTACT_FORM_REASONS = OrderedDict([
     ('I want to reach 596 Acres, the team that made this site.', ['paula@596acres.org',]),
     ('I have a press inquiry.', ['info@example.com',]),
 ])
+
+BLOG_TITLE = 'NYCommons Updates'
+BLOG_DESCRIPTION = 'Updates from the NYCommons project'
