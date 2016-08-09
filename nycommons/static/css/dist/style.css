@@ -7194,10 +7194,8 @@ footer .social-media-twitter {
   line-height: 49px;
   margin-top: 15px;
 }
-@media (max-width: 767px) {
-  .lot-detail-page .content-wrapper {
-    clear: both;
-  }
+.lot-detail-page .content-wrapper {
+  clear: both;
 }
 .lot-detail-page .postal-code {
   font-size: 20px;
