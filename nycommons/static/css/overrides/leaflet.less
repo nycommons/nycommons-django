@@ -63,6 +63,11 @@
         width: @leaflet-button-size;
     }
 
+    a:hover {
+        background-color: transparent;
+        color: transparent;
+    }
+
     @media (max-width: @screen-xs-max) {
         display: none;
     }
@@ -70,8 +75,25 @@
 
 .leaflet-control-zoom {
     a {
-        background-color: @foreground-color;
-        color: @white;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+        color: transparent;
+
+        .zoom-in {
+            background-image: data-uri("../../img/zoom-in.png");
+        }
+        .zoom-out {
+            background-image: data-uri("../../img/zoom-out.png");
+        }
+    }
+
+    &-in {
+        background-image: data-uri("../../img/zoom-in.png");
+    }
+    &-out {
+        background-image: data-uri("../../img/zoom-out.png");
     }
 }
 
@@ -147,5 +169,8 @@
     }
     .leaflet-control-layers {
         .leaflet-control-layers();
+    }
+    .leaflet-control-zoom {
+        .leaflet-control-zoom();
     }
 }
