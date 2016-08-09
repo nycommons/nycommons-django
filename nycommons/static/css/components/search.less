@@ -1,12 +1,8 @@
 .map-search {
-    background: white;
     display: none;
     height: @map-search-height;
-    left: 0;
-    position: absolute;
-    top: 0;
+    margin-top: 15px;
     width: 100%;
-    z-index: 5000;
 
     @media (max-width: @screen-xs-max) {
         height: 100%;
@@ -25,7 +21,7 @@
 
     &-form {
         float: left;
-        margin-left: 15px;
+        margin-left: 5px;
         width: 80%;
 
         @media (max-width: @screen-xs-max) {
@@ -40,10 +36,8 @@
         background-size: contain;
         display: inline-block;
         float: right;
-        height: 35px;
-        margin-right: @map-overlay-side;
-        margin-top: 12.5px;
-        width: 35px;
+        height: 15px;
+        width: 15px;
 
         @media (max-width: @screen-xs-max) {
             position: absolute;
@@ -54,11 +48,9 @@
 
     input[type=text] {
         border: 0;
-        float: left;
-        font-size: 24px;
-        line-height: @map-search-height;
+        font-size: 16px;
+        line-height: 24px;
         padding: 0;
-        width: 80%;
 
         &:focus {
             outline: none;
@@ -66,9 +58,10 @@
     }
 
     button {
-        float: right;
+        display: block;
         margin-bottom: 10px;
         margin-top: 10px;
+
         @media (max-width: @screen-xs-max) {
             margin-left: 35%;
             width: 30%;
@@ -77,9 +70,7 @@
 
     img {
         float: left;
-        margin-left: @map-overlay-side;
-        margin-top: 12.5px;
-        max-width: @map-search-height - 25px;
+        max-width: 25px;
 
         @media (max-width: @screen-xs-max) {
             display: none;
