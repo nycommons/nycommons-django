@@ -14,7 +14,7 @@ var collapsibleSection = flight.component(function () {
     };
 
     this.after('initialize', function () {
-        this.$header = this.$node.find('h1,h2,h3,h4,h5,h6:eq(0)');
+        this.$header = this.$node.find('h1,h2,h3,h4,h5,h6').first();
         this.$content = this.$header.next();
         this.$header.on('click', this.toggle.bind(this));
 
