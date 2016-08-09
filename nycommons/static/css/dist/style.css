@@ -6004,14 +6004,10 @@ section.collapsible > h6.collapsed::before {
   width: 12px;
 }
 .map-search {
-  background: white;
   display: none;
   height: 60px;
-  left: 0;
-  position: absolute;
-  top: 0;
+  margin-top: 15px;
   width: 100%;
-  z-index: 5000;
 }
 @media (max-width: 767px) {
   .map-search {
@@ -6029,7 +6025,7 @@ section.collapsible > h6.collapsed::before {
 }
 .map-search-form {
   float: left;
-  margin-left: 15px;
+  margin-left: 5px;
   width: 80%;
 }
 @media (max-width: 767px) {
@@ -6044,10 +6040,8 @@ section.collapsible > h6.collapsed::before {
   background-size: contain;
   display: inline-block;
   float: right;
-  height: 35px;
-  margin-right: 15px;
-  margin-top: 12.5px;
-  width: 35px;
+  height: 15px;
+  width: 15px;
 }
 @media (max-width: 767px) {
   .map-search-close {
@@ -6058,17 +6052,15 @@ section.collapsible > h6.collapsed::before {
 }
 .map-search input[type=text] {
   border: 0;
-  float: left;
-  font-size: 24px;
-  line-height: 60px;
+  font-size: 16px;
+  line-height: 24px;
   padding: 0;
-  width: 80%;
 }
 .map-search input[type=text]:focus {
   outline: none;
 }
 .map-search button {
-  float: right;
+  display: block;
   margin-bottom: 10px;
   margin-top: 10px;
 }
@@ -6080,9 +6072,7 @@ section.collapsible > h6.collapsed::before {
 }
 .map-search img {
   float: left;
-  margin-left: 15px;
-  margin-top: 12.5px;
-  max-width: 35px;
+  max-width: 25px;
 }
 @media (max-width: 767px) {
   .map-search img {
@@ -6258,14 +6248,6 @@ section.collapsible > h6.collapsed::before {
   }
   .map-filters-open .map-sidebar .map-header-content {
     display: block;
-  }
-}
-.search-enabled .map-sidebar {
-  top: 75px;
-}
-@media (max-width: 767px) {
-  .search-enabled .map-sidebar {
-    top: inherit;
   }
 }
 #mc_embed_signup label {
@@ -6450,6 +6432,10 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   font-size: 12px;
   margin-bottom: 40px;
   padding-bottom: 10px;
+}
+.blog-entry-detail article.hentry img,
+.blog-entry-archive article.hentry img {
+  max-width: 100%;
 }
 .blog-entry-detail .byline .author .fn,
 .blog-entry-archive .byline .author .fn {
@@ -7636,9 +7622,6 @@ fieldset[disabled] .btn-show-details.active {
 .map-menu .social-media a {
   margin-right: 5px;
   margin-top: 0;
-}
-.search-enabled .map-menu {
-  top: 75px;
 }
 .menu-expanded {
   display: none;
