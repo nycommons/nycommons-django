@@ -152,6 +152,7 @@ Page.create_content_type(BlogArchiveContent)
 Page.create_content_type(RecentPostsContent)
 
 Page.create_content_type(ApplicationContent, APPLICATIONS=(
+    ('faq.urls', _('FAQ')),
     ('livinglots_lots.map_urls', _('Lots map')),
     ('elephantblog.urls', _('Blog')),
     ('extraadmin.cms_urls', _('Extra admin functions')),

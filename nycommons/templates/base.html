@@ -51,21 +51,23 @@
                 <div class="content-wrapper clearfix">
                     {% block sidebar_left %}
                         <aside id="aside-left" class="col-sm-2">
-                            {% feincms_nav feincms_page.parent level=3 depth=1 as submenu %}
-                            {% if submenu %}
-                                {# Don't link to top-level items with subpages #}
-                                <a class="mainmenu-item-parent">{{ page.title }}</a>
-                                <ul class="submenu">
-                                    {% for submenupage in submenu %}
-                                        <li>
-                                            <a href="{{ submenupage.get_absolute_url }}">{{ submenupage.title }}</a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
-                            {% endif %}
-                            {% feincms_render_region feincms_page "sidebar_left" request %}
+                            {% block sidebar_left_content %}
+                                {% feincms_nav feincms_page.parent level=3 depth=1 as submenu %}
+                                {% if submenu %}
+                                    {# Don't link to top-level items with subpages #}
+                                    <a class="mainmenu-item-parent">{{ page.title }}</a>
+                                    <ul class="submenu">
+                                        {% for submenupage in submenu %}
+                                            <li>
+                                                <a href="{{ submenupage.get_absolute_url }}">{{ submenupage.title }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
+                                {% endif %}
+                                {% feincms_render_region feincms_page "sidebar_left" request %}
+                            {% endblock %}
                         </aside>
                     {% endblock %}
 

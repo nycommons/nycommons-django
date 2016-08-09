@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load faq_tags feincms_tags i18n %}
+
+{% block page_title %}{% trans "FAQ" %}{% endblock %}
+
+{% block sidebar_left_content %}
+    <div class="faq-tags">
+        {% faq_tags as tags %}
+        <ul>
+            {% for tag in tags %}
+                <li>
+                    <a href="#{{ tag.slug }}">{{ tag }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    <section class="faq-body">
+        <h1>{% trans "Frequently Asked Questions" %}</h1>
+
+        {% faqs_tag_groups as grouped_faqs %}
+        {% for tag, faqs in grouped_faqs.items %}
+            <section class="faq-tag-section">
+                <h2 id="{{ tag.slug }}">{{ tag }}</h2>
+
+                {% for faq in faqs %}  
+                    <div class="faq short" id="{{ faq.slug }}">
+                        <div class="faq-actions">
+                            <a href="#{{ faq.slug }}" class="faq-actions-permalink"></a>
+                        </div>
+                        <div class="faq-question">
+                            {% feincms_render_region faq 'question' request %}
+                        </div>
+                        <div class="faq-answer">
+                            {% feincms_render_region faq 'answer' request %}
+                        </div>
+                        <div class="faq-separator"></div>
+                    </div>
+                {% endfor %}
+            </section>
+        {% endfor %}
+{% endblock %}

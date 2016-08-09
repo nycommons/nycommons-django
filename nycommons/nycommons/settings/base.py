@@ -147,6 +147,7 @@ INSTALLED_APPS = (
     #
     'actstream',
     'admin_enhancer',
+    'articles',
     'contact_form',
     'django_monitor',
     'djangojs',
@@ -165,6 +166,7 @@ INSTALLED_APPS = (
     'reversion',
     'svg',
     #'reversion_compare',
+    'taggit',
     'widget_tweaks',
 
     #
@@ -206,6 +208,7 @@ INSTALLED_APPS = (
     'blog',
     'cms',
     'contact',
+    'faq',
     'groundtruth',
     'lots',
     'organize',
@@ -289,6 +292,7 @@ ABSOLUTE_URL_OVERRIDES = {
 }
 
 MIGRATION_MODULES = {
+    'articles': 'faq.migrate.article',
     'elephantblog': 'blog.migrate.elephantblog',
     'medialibrary': 'cms.migrate.medialibrary',
     'page': 'cms.migrate.page',
