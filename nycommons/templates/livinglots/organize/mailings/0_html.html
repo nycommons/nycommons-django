@@ -1,0 +1,7 @@
+{% extends "livinglots/organize/mailings/base.html" %}
+
+{% block title %}[NYCommons] {% include "livinglots/organize/mailings/0_subject.txt" %}{% endblock %}
+
+{% block content %}
+    {% load flatblocks %}{% flatblock "organize.mailings.0.html" evaluated=True using="flatblocks/flatblock.html" %}
+{% endblock %}

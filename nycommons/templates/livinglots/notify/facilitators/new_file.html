@@ -1,0 +1,8 @@
+{% extends "livinglots/notify/facilitators/base.html" %}
+{% load flatblocks %}
+
+{% block title %}{{ block.super }}--new file{% endblock %}
+
+{% block content %}
+    {% flatblock "notify.facilitators.new_file_html" evaluated=True using="flatblocks/flatblock.html" %}
+{% endblock %}

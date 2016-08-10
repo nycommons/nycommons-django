@@ -1,0 +1,9 @@
+{% extends "email/base.html" %}
+
+{% block title %}[NYCommons] Lot updated{% endblock %}
+
+{% block preheader %}There has been a change to {{ obj.content_object.display_name }}{% endblock %}
+
+{% block footer %}
+    {% include "livinglots/notify/facilitators/_footer.html" %}
+{% endblock %}

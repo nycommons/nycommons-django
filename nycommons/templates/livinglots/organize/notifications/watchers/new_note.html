@@ -1,0 +1,6 @@
+{% extends "livinglots/organize/notifications/watchers/base.html" %}
+{% load flatblocks %}
+
+{% block content %}
+    {% flatblock "organize.notifications.watchers.new_note_html" evaluated=True using="flatblocks/flatblock.html" %}
+{% endblock %}
