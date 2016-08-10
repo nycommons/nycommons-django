@@ -4,5 +4,5 @@
 {% block title %}{{ block.super }}--new file{% endblock %}
 
 {% block content %}
-    {% flatblock "notify.facilitators.new_file_html" evaluated=True using="flatblocks/flatblock.html" %}
+    {% flatblock "notify.facilitators.new_file_html" evaluated=True using="flatblocks/flatblock_safe.html" %}
 {% endblock %}
