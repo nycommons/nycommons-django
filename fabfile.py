@@ -7,22 +7,19 @@ env.hosts = ['nycommons_nycommons',]
 env.use_ssh_config = True
 
 
-# TODO set
 server_project_dirs = {
     'dev': '/webapps/nycommons_dev/nycommons-django/',
-    'prod': '',
+    'prod': '/webapps/nycommons/nycommons-django/',
 }
 
-# TODO set
 server_virtualenvs = {
     'dev': 'nycommons_dev',
-    'prod': '',
+    'prod': 'nycommons',
 }
 
-# TODO set
 supervisord_programs = {
     'dev': 'django_dev',
-    'prod': '',
+    'prod': 'django',
 }
 
 supervisord_conf = '/etc/supervisor/supervisord.conf'
