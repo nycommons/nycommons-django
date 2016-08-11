@@ -2,9 +2,8 @@ import os
 
 from .base import *
 
-# TODO Fill with appropriate admins
 ADMINS = (
-    ('', 'admin@example.com'),
+    ('', 'eric@596acres.org'),
 )
 
 # TODO Fill with appropriate managers
