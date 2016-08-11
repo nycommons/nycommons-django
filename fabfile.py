@@ -73,11 +73,6 @@ def restart_django(version='prod'):
 
 
 @task
-def restart_memcached():
-    run('supervisorctl -c %s restart memcached' % supervisord_conf)
-
-
-@task
 def status():
     run('supervisorctl -c %s status' % supervisord_conf)
 
