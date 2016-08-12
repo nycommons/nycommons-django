@@ -147,8 +147,6 @@
             {% endif %}
         {% endif %}
 
-        {% include "inplace/lots/_lot_detail_same_owner.html" with lot=lot %}
-
         {% include "inplace/lots/_add_groundtruthrecord.html" with lot=lot %}
 
         {% if "lots.view_all_details" in perms %}

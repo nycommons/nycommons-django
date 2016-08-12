@@ -7472,6 +7472,13 @@ footer .social-media-twitter {
   -webkit-column-count: 2;
   column-count: 2;
 }
+.lot-detail-page .lot-detail-organizing-networks h2.collapse-collapsing ~ div h3::before,
+.lot-detail-page .lot-detail-organizing-networks h2.collapse-expanding ~ div h3::before {
+  display: none;
+}
+.lot-detail-page .lot-detail-organizing-networks-content {
+  margin-left: 25px;
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;

@@ -1,7 +1,8 @@
 {% load i18n organize_tags %}
 
-<section class="collapsible">
+<section class="lot-detail-organizing-networks collapsible">
     <h2>{% trans "Organizing Networks" %}</h2>
-    <div>
+    <div class="lot-detail-organizing-networks-content">
+        {% include "inplace/lots/_lot_detail_same_owner.html" with lot=lot %}
     </div>
 </section>

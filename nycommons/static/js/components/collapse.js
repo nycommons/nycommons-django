@@ -3,12 +3,18 @@ var flight = require('flightjs');
 var collapsibleSection = flight.component(function () {
     this.toggle = function (event) {
         if (!this.$header.is('.collapsed')) {
-            this.$content.slideUp();
+            this.$header.addClass('collapse-collapsing');
             this.$header.addClass('collapsed');
+            this.$content.slideUp(400, (function () {
+                this.$header.removeClass('collapse-collapsing');
+            }).bind(this));
         }
         else {
-            this.$content.slideDown();
+            this.$header.addClass('collapse-expanding');
             this.$header.removeClass('collapsed');
+            this.$content.slideDown(400, (function () {
+                this.$header.removeClass('collapse-expanding');
+            }).bind(this));
         }
         return false;
     };

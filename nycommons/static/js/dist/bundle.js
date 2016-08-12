@@ -248,12 +248,18 @@ var flight = require('flightjs');
 var collapsibleSection = flight.component(function () {
     this.toggle = function (event) {
         if (!this.$header.is('.collapsed')) {
-            this.$content.slideUp();
+            this.$header.addClass('collapse-collapsing');
             this.$header.addClass('collapsed');
+            this.$content.slideUp(400, (function () {
+                this.$header.removeClass('collapse-collapsing');
+            }).bind(this));
         }
         else {
-            this.$content.slideDown();
+            this.$header.addClass('collapse-expanding');
             this.$header.removeClass('collapsed');
+            this.$content.slideDown(400, (function () {
+                this.$header.removeClass('collapse-expanding');
+            }).bind(this));
         }
         return false;
     };
@@ -988,7 +994,7 @@ var spinnerOptions = _.extend({}, require('../lib/spinner-options'), {
 var sameOwnerSection = flight.component(function () {
     this.attributes({
         contentSelector: '.lot-detail-same-owner-content',
-        expandSelector: 'h2'
+        expandSelector: 'h3'
     });
 
     this.loadDetails = function (e) {
@@ -63660,7 +63666,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

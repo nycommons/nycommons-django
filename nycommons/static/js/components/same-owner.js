@@ -9,7 +9,7 @@ var spinnerOptions = _.extend({}, require('../lib/spinner-options'), {
 var sameOwnerSection = flight.component(function () {
     this.attributes({
         contentSelector: '.lot-detail-same-owner-content',
-        expandSelector: 'h2'
+        expandSelector: 'h3'
     });
 
     this.loadDetails = function (e) {
