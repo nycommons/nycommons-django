@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrastyle %}
+    {{ block.super }}
+
+    <style>
+        .form-row.field-centroid {
+            width: 100%;
+        }
+        .field-box.field-centroid,
+        .field-box.field-polygon {
+            margin-right: 1%;
+            width: 48%;
+        }
+    </style>
+{% endblock %}

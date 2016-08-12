@@ -166,6 +166,7 @@ INSTALLED_APPS = (
     'inplace.boundaries',
     'inplace_activity_stream',
     'jsonfield',
+    'leaflet',
     'mptt',
     'reversion',
     'svg',
@@ -334,3 +335,8 @@ CONTACT_FORM_REASONS = OrderedDict([
 
 BLOG_TITLE = 'NYCommons Updates'
 BLOG_DESCRIPTION = 'Updates from the NYCommons project'
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (40.78, -73.92),
+    'DEFAULT_ZOOM': 18,
+}

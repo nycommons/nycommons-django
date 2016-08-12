@@ -31,8 +31,10 @@ class LotAdmin(BaseLotAdmin):
             'fields': ('stewards_list', 'steward_inclusion_opt_in',),
         }),
         ('Geography', {
-            'classes': ('collapse',),
-            'fields': ('centroid', 'polygon', 'polygon_area', 'polygon_width',),
+            'fields': (
+                ('centroid', 'polygon'),
+                ('polygon_area', 'polygon_width',),
+            ),
         }),
     )
 
