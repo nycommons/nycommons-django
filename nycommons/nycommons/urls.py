@@ -55,6 +55,7 @@ urlpatterns += (
     url(r'', include('feincms.urls')),
 
     url(r'^updates/', include('elephantblog.urls')),
+    url(r'^tinymce/', include('tinymce.urls')),
 )
 
 

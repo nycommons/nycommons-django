@@ -123,9 +123,7 @@
             {% include "inplace/lots/_lot_detail_info.html" with lot=lot %}
         </div>
 
-        <section class="collapsible">
-            <h2>{% trans "Why do we think that development is pending?" %}</h2>
-        </section>
+        {% include "inplace/lots/_lot_detail_development_pending.html" with lot=lot %}
 
         {% ifequal lot.owners|length 1 %}
             {% include "inplace/lots/_lot_detail_owner.html" with owner=lot.owners.0 owner_contact=lot.owner_contacts.0 %}

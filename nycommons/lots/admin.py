@@ -19,8 +19,12 @@ class LotAdmin(BaseLotAdmin):
                 'group',
             ),
         }),
-        ('Commmons', {
-            'fields': ('commons_type', 'priority',),
+        ('Commons', {
+            'fields': (
+                'commons_type',
+                'priority',
+                'development_pending_explanation',
+            ),
         }),
         ('Known use', {
             'classes': ('collapse',),

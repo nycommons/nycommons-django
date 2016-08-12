@@ -1,0 +1,10 @@
+{% load i18n %}
+
+{% if lot.priority %}
+    <section class="lot-detail-development-pending collapsible">
+        <h2>{% trans "Why do we think that development is pending?" %}</h2>
+        <div class="lot-detail-development-pending-content">
+            {{ lot.development_pending_explanation|safe }}
+        </div>
+    </section>
+{% endif %}

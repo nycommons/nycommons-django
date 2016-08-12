@@ -6,6 +6,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
+from tinymce import models as tinymce_models
+
 from livinglots import get_owner_model, get_stewardproject_model
 from livinglots_lots.models import (BaseLot, BaseLotGroup, BaseLotLayer,
                                     BaseLotManager)
@@ -172,6 +174,11 @@ class LotMixin(models.Model):
     commons_content_object = GenericForeignKey('commons_content_type', 'commons_object_id')
     commons_type = models.CharField(max_length=25, choices=COMMONS_TYPES)
     priority = models.BooleanField(default=False)
+    development_pending_explanation = tinymce_models.HTMLField(
+        blank=True,
+        null=True,
+        help_text=_('If development is pending, let visitors to the site know why.'),
+    )
 
     files = GenericRelation('files.File')
     groundtruth_records = GenericRelation('groundtruth.GroundtruthRecord')

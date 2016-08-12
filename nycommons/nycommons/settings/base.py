@@ -172,6 +172,7 @@ INSTALLED_APPS = (
     'svg',
     #'reversion_compare',
     'taggit',
+    'tinymce',
     'widget_tweaks',
 
     #
@@ -269,9 +270,21 @@ MAILREADER_HOST = get_env_variable('MAILREADER_HOST')
 MAILREADER_HOST_USER = get_env_variable('MAILREADER_HOST_USER')
 MAILREADER_HOST_PASSWORD = get_env_variable('MAILREADER_HOST_PASSWORD')
 
+TINYMCE_JS_URL = STATIC_URL + 'node_modules/tinymce/tinymce.min.js'
+TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, 'node_modules/tinymce')
+TINYMCE_DEFAULT_CONFIG = {
+    'plugins': 'link',
+    'theme': "modern",
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 10,
+    'menubar': False,
+    'statusbar': False,
+    'toolbar': 'undo redo | bold italic | bullist numlist | link unlink | help',
+}
+
 FEINCMS_RICHTEXT_INIT_TEMPLATE = 'admin/content/richtext/init_richtext.html'
 FEINCMS_RICHTEXT_INIT_CONTEXT = {
-    'TINYMCE_JS_URL': STATIC_URL + 'node_modules/tinymce/tinymce.min.js',
+    'TINYMCE_JS_URL': TINYMCE_JS_URL,
 }
 
 def elephantblog_entry_url_app(self):
