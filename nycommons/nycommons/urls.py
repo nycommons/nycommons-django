@@ -9,7 +9,7 @@ import autocomplete_light
 
 from registration.forms import AuthenticationForm
 
-autocomplete_light.registry.autodiscover()
+autocomplete_light.shortcuts.autodiscover()
 admin.autodiscover()
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT,

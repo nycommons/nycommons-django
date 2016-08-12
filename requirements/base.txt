@@ -30,6 +30,7 @@ django-braces==1.9.0
 django-cache-machine==0.9.1
 git+git://github.com/ebrelsford/django-chosen/@master
 django-contact-form-gv==0.4.3
+django-easy-select2==1.3.3
 django-extensions==1.6.6
 django-filter==0.13.0
 git+git://github.com/funkybob/django-flatblocks/@205eb81435

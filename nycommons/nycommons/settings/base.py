@@ -129,6 +129,9 @@ INSTALLED_APPS = (
     'admin_tools.menu',
     'admin_tools.dashboard',
 
+    # Has to come before django.contrib.admin
+    'autocomplete_light',
+
     #
     # django contrib
     #
@@ -151,6 +154,7 @@ INSTALLED_APPS = (
     'contact_form',
     'django_monitor',
     'djangojs',
+    'easy_select2',
     'elephantblog',
     'feincms',
     'feincms.module.medialibrary',
