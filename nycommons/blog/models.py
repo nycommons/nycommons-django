@@ -55,3 +55,8 @@ Entry.create_content_type(
 Entry.create_content_type(MediaFileContent, TYPE_CHOICES=(
     ('default', _('default')),
 ))
+
+
+class BlogPost(Entry):
+    class Meta:
+        proxy = True

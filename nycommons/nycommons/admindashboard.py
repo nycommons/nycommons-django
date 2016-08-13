@@ -12,7 +12,7 @@ class LivingLotsDashboard(Dashboard):
         self.children.append(modules.ModelList(
             title=_('Site Content'),
             models=(
-                'elephantblog.*',
+                'blog.*',
                 'feincms.module.page.*',
                 'organizingpathways.*',
                 'reviewpathways.*',
@@ -22,6 +22,7 @@ class LivingLotsDashboard(Dashboard):
         self.children.append(modules.AppList(
             title=_('Applications'),
             exclude=(
+                'blog.*',
                 'django.contrib.*',
                 'elephantblog.*',
                 'feincms.module.page.*',
