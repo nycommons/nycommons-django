@@ -14,6 +14,8 @@ class LivingLotsDashboard(Dashboard):
             models=(
                 'elephantblog.*',
                 'feincms.module.page.*',
+                'organizingpathways.*',
+                'reviewpathways.*',
             ),
         ))
 
