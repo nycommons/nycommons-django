@@ -13,6 +13,7 @@ class LivingLotsDashboard(Dashboard):
             title=_('Site Content'),
             models=(
                 'blog.*',
+                'faq.*',
                 'feincms.module.page.*',
                 'organizingpathways.*',
                 'reviewpathways.*',
@@ -22,13 +23,21 @@ class LivingLotsDashboard(Dashboard):
         self.children.append(modules.AppList(
             title=_('Applications'),
             exclude=(
+                'actstream.*',
+                'articles.*',
                 'blog.*',
                 'django.contrib.*',
                 'elephantblog.*',
+                'faq.*',
+                'feincms.module.medialibrary.*',
                 'feincms.module.page.*',
+                'flatblocks.*',
+                'inplace.boundaries.*',
+                'livinglots_mailings.*',
                 'livinglots_usercontent.*',
                 'organizingpathways.*',
                 'reviewpathways.*',
+                'taggit.*',
             ),
         ))
 
@@ -40,6 +49,18 @@ class LivingLotsDashboard(Dashboard):
         self.children.append(modules.AppList(
             title=_('Administration'),
             models=('django.contrib.*',),
+        ))
+
+        self.children.append(modules.AppList(
+            title=_('Advanced'),
+            models=(
+                'actstream.*',
+                'feincms.module.medialibrary.*',
+                'flatblocks.*',
+                'inplace.boundaries.*',
+                'livinglots_mailings.*',
+                'taggit.*',
+            ),
         ))
 
         self.children.append(modules.RecentActions(
