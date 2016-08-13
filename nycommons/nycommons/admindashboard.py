@@ -26,6 +26,8 @@ class LivingLotsDashboard(Dashboard):
                 'elephantblog.*',
                 'feincms.module.page.*',
                 'livinglots_usercontent.*',
+                'organizingpathways.*',
+                'reviewpathways.*',
             ),
         ))
 
