@@ -100,18 +100,24 @@
         
         </section>
 
-        <section>
-            <h3>{% trans "Public Review Processes That Might Be Required" %}</h3>
-            <div>
-                {% render_review_pathway_summary_list for lot %}
-            </div>
-        </section>
+        {% get_review_pathways for lot as review_pathways %}
+        {% if review_pathways %}
+            <section>
+                <h3>{% trans "Public Review Processes That Might Be Required" %}</h3>
+                <div>
+                    {% render_review_pathway_summary_list for lot %}
+                </div>
+            </section>
+        {% endif %}
 
-        <section>
-            <h3>{% trans "How to Organize" %}</h3>
-            <div>
-                {% render_organizing_pathway_summary_list for lot %}
-            </div>
-        </section>
+        {% get_organizing_pathways for lot as organizing_pathways %}
+        {% if organizing_pathways %}
+            <section>
+                <h3>{% trans "How to Organize" %}</h3>
+                <div>
+                    {% render_organizing_pathway_summary_list for lot %}
+                </div>
+            </section>
+        {% endif %}
     </div>
 </section>
