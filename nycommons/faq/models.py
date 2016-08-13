@@ -21,3 +21,8 @@ Article.create_content_type(MediaFileContent, TYPE_CHOICES=(
     ('default', _('default')),
 ))
 Article.create_content_type(VideoContent)
+
+
+class FrequentlyAskedQuestion(Article):
+    class Meta:
+        proxy = True
