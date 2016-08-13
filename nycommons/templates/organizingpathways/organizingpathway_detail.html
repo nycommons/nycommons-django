@@ -1,0 +1,36 @@
+{% extends feincms_page.template.path|default:"base.html" %}
+{% load feincms_tags i18n %}
+
+{% block page_title %}{{ organizingpathway.name }}{% endblock %}
+
+{% block breadcrumbs_wrapper %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans "Home" %}</a>
+        </li>
+        <li>
+            <a href="{{ feincms_page.parent.get_absolute_url }}">
+                {{ feincms_page.parent.title }}
+            </a>
+        </li>
+        <li>{{ organizingpathway.name }}</li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <article>
+        <header>
+            <h1>{{ organizingpathway.name }}</h1>
+        </header>
+
+        {% if "organizingpathways.change_organizingpathway" in perms %}
+            <div class="lot-detail-admin admin-only grid">
+                <a class="btn btn-warning" href="{% url "admin:organizingpathways_organizingpathway_change" organizingpathway.pk %}">{% trans "Edit" %}</a>
+            </div>
+        {% endif %}
+
+        <div class="pathway-content">
+            {% feincms_render_region object "main" request %}
+        </div>
+    </article>
+{% endblock %}

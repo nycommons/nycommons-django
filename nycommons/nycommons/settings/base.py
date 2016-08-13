@@ -218,8 +218,9 @@ INSTALLED_APPS = (
     'groundtruth',
     'lots',
     'organize',
+    'organizingpathways',
     'owners',
-    'pathways',
+    'reviewpathways',
     'steward',
     'usercontent',
 )
@@ -330,7 +331,6 @@ LIVING_LOTS = {
         'owner': 'owners.Owner',
         'owner_contact': 'owners.OwnerContact',
         'owner_group': 'owners.OwnerGroup',
-        'pathway': 'pathways.Pathway',
         'stewardproject': 'steward.StewardProject',
         'watcher': 'organize.Watcher',
     },

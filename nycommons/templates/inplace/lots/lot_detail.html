@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load flatblocks i18n inplace_tags steward_tags pathways_tags usercontent_tags %}
+{% load flatblocks i18n inplace_tags steward_tags usercontent_tags %}
 
 {% block title %}
     {{ lot.display_name|title|default:"unknown" }} |
@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block pre_content %}
-    <div class="lot-detail-header-image" 
+    <div class="lot-detail-header-image"
         data-lat="{{ lot.centroid.y }}"
         data-lon="{{ lot.centroid.x }}"
     >
@@ -37,7 +37,7 @@
     <div class="lot-detail-map-container">
         <a href="/#map=18/{{ lot.centroid.y|floatformat:"4" }}/{{ lot.centroid.x|floatformat:"4" }}" target="_blank">
             <div id="lot-detail-map"
-                data-l-zoom="16" 
+                data-l-zoom="16"
                 data-l-center="[{{ lot.centroid.y }}, {{ lot.centroid.x }}]"
                 data-l-bbox="{{ lot.bbox }}"
                 data-l-zoom-control="false"

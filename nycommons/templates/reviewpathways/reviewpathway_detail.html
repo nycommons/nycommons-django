@@ -1,0 +1,36 @@
+{% extends feincms_page.template.path|default:"base.html" %}
+{% load feincms_tags i18n %}
+
+{% block page_title %}{{ reviewpathway.name }}{% endblock %}
+
+{% block breadcrumbs_wrapper %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans "Home" %}</a>
+        </li>
+        <li>
+            <a href="{{ feincms_page.parent.get_absolute_url }}">
+                {{ feincms_page.parent.title }}
+            </a>
+        </li>
+        <li>{{ reviewpathway.name }}</li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <article>
+        <header>
+            <h1>{{ reviewpathway.name }}</h1>
+        </header>
+
+        {% if "reviewpathways.change_reviewpathway" in perms %}
+            <div class="lot-detail-admin admin-only grid">
+                <a class="btn btn-warning" href="{% url "admin:reviewpathways_reviewpathway_change" reviewpathway.pk %}">{% trans "Edit" %}</a>
+            </div>
+        {% endif %}
+
+        <div class="pathway-content">
+            {% feincms_render_region object "main" request %}
+        </div>
+    </article>
+{% endblock %}

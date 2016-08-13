@@ -1,4 +1,4 @@
-{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags flatblocks i18n organize_tags steward_tags %}
+{% load boundaries_tags citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags flatblocks i18n organize_tags organizingpathways_tags reviewpathways_tags steward_tags %}
 
 <section class="collapsible">
     <h2>{% trans "Take action" %}</h2>
@@ -102,10 +102,16 @@
 
         <section>
             <h3>{% trans "Public Review Processes That Might Be Required" %}</h3>
+            <div>
+                {% render_review_pathway_summary_list for lot %}
+            </div>
         </section>
 
         <section>
             <h3>{% trans "How to Organize" %}</h3>
+            <div>
+                {% render_organizing_pathway_summary_list for lot %}
+            </div>
         </section>
     </div>
 </section>
