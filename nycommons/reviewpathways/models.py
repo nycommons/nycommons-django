@@ -19,6 +19,9 @@ class ReviewPathwayManager(BasePathwayManager):
 class ReviewPathway(CachingMixin, ContentModelMixin, BasePathway, Base):
     objects = ReviewPathwayManager()
 
+    class Meta:
+        verbose_name = _('"Public Review Processes" pathway')
+
     @app_models.permalink
     def get_absolute_url(self):
         return ('review_pathway_detail', 'reviewpathways.urls', (), {

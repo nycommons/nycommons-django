@@ -19,6 +19,9 @@ class OrganizingPathwayManager(BasePathwayManager):
 class OrganizingPathway(CachingMixin, ContentModelMixin, BasePathway, Base):
     objects = OrganizingPathwayManager()
 
+    class Meta:
+        verbose_name = _('"How to Organize" pathway')
+
     @app_models.permalink
     def get_absolute_url(self):
         return ('organizing_pathway_detail', 'organizingpathways.urls', (), {
