@@ -33,9 +33,15 @@ class LivingLotsDashboard(Dashboard):
                 'feincms.module.page.*',
                 'flatblocks.*',
                 'inplace.boundaries.*',
+                'livinglots_lots.*',
                 'livinglots_mailings.*',
+                'livinglots_organize.*',
+                'livinglots_owners.*',
                 'livinglots_usercontent.*',
+                'lots.*',
+                'organize.*',
                 'organizingpathways.*',
+                'owners.*',
                 'reviewpathways.*',
                 'taggit.*',
             ),
@@ -44,6 +50,30 @@ class LivingLotsDashboard(Dashboard):
         self.children.append(modules.ModelList(
             title=_('Lot Content'),
             models=('livinglots_usercontent.*',),
+        ))
+
+        self.children.append(modules.ModelList(
+            title=_('Lots'),
+            models=(
+                'livinglots_lots.*',
+                'lots.*',
+            ),
+        ))
+
+        self.children.append(modules.ModelList(
+            title=_('Owners'),
+            models=(
+                'livinglots_owners.*',
+                'owners.*',
+            ),
+        ))
+
+        self.children.append(modules.ModelList(
+            title=_('Participants'),
+            models=(
+                'livinglots_organize.*',
+                'organize.*',
+            ),
         ))
 
         self.children.append(modules.AppList(
