@@ -39,6 +39,8 @@ class LivingLotsDashboard(Dashboard):
                 'livinglots_owners.*',
                 'livinglots_usercontent.*',
                 'lots.*',
+                'nycdata.citycouncildistricts.*',
+                'nycdata.communitydistricts.*',
                 'organize.*',
                 'organizingpathways.*',
                 'owners.*',
@@ -73,6 +75,14 @@ class LivingLotsDashboard(Dashboard):
             models=(
                 'livinglots_organize.*',
                 'organize.*',
+            ),
+        ))
+
+        self.children.append(modules.ModelList(
+            title=_('Political Representation'),
+            models=(
+                'nycdata.citycouncildistricts.*',
+                'nycdata.communitydistricts.*',
             ),
         ))
 
