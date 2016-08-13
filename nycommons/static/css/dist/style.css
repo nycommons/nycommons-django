@@ -6119,7 +6119,7 @@ section.collapsible > h6.collapsed::before {
   left: 15px;
   max-height: 75%;
   top: 15px;
-  min-width: 260px;
+  min-width: 280px;
   z-index: 5000;
 }
 @media (max-width: 767px) {

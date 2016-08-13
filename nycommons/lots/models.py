@@ -173,7 +173,10 @@ class LotMixin(models.Model):
     commons_object_id = models.PositiveIntegerField(null=True)
     commons_content_object = GenericForeignKey('commons_content_type', 'commons_object_id')
     commons_type = models.CharField(max_length=25, choices=COMMONS_TYPES)
-    priority = models.BooleanField(default=False)
+    priority = models.BooleanField(
+        default=False,
+        verbose_name=_('Development pending'),
+    )
     development_pending_explanation = tinymce_models.HTMLField(
         blank=True,
         null=True,

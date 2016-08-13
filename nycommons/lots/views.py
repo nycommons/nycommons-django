@@ -232,9 +232,9 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
 
     layer_labels = {
         'organizing': 'organizing',
-        'organizing_priority': 'organizing & priority',
+        'organizing_priority': 'organizing & development pending',
         'community_project': 'community project',
-        'priority': 'priority',
+        'priority': 'development pending',
         'library': 'library',
         'public_housing': 'public housing site',
         'post_office': 'post office',
