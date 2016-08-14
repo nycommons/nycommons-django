@@ -267,12 +267,25 @@ class LotMixin(models.Model):
     def _owner_contacts(self):
         contacts = [self.owner_contact,]
         contacts += [l.owner_contact for l in self.lots]
-        contacts += [l.owner.default_contact for l in self.lots if l.owner]
+
+        for l in self.lots:
+            if not l.owner:
+                continue
+            if l.owner.default_contact:
+                contacts.append(l.owner.default_contact)
+            elif l.owner.ownercontact_set.count() == 1:
+                contacts.append(l.owner.ownercontact_set.all()[0])
 
         # Dedupe while keeping correct order
-        return sorted(list(set(contacts)), key=contacts.index)
+        return sorted(list(set(filter(None, contacts))), key=contacts.index)
 
     owner_contacts = property(_owner_contacts)
+
+    def get_owner_contact(self):
+        if self.owner_contact:
+            return self.owner_contact
+        if len(self.owner_contacts) == 1:
+            return self.owner_contacts[0]
 
     def _bbox(self):
         try:
