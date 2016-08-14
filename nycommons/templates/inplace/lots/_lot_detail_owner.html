@@ -3,55 +3,53 @@
 <section class="collapsible">
     <h2>{% trans "Who decides what happens to this property?" %}</h2>
     <div>
-        {% ifequal lot.owners|length 1 %}
-            {% with owner=lot.owners.0 %}
-                <section class="lot-detail-details">
-                    <h3>{% trans "Official Owner" %}</h2>
-                    <div>
-                        {{ owner|default:"unknown" }}
+        {% if lot.owner %}
+            <section class="lot-detail-details">
+                <h3>{% trans "Official Owner" %}</h2>
+                <div>
+                    {{ lot.owner|default:"unknown" }}
 
-                        {% if owner_contact %}
-                            <div class="owner-contact">
-                                <div class="owner-contact-name">
-                                    <span class="owner-contact-label">{% trans "Contact" %}:</span>
-                                    <span>
-                                        {{owner_contact.name}}
-                                        {% if owner_contact.phone or owner_contact.email %}
-                                            {% spaceless %}
-                                                <span>(</span>
-                                                    {% if owner_contact.phone %}
-                                                        <span class="owner-contact-phone">{{ owner_contact.phone }}</span>
-                                                    {% endif %}
+                    {% if owner_contact %}
+                        <div class="owner-contact">
+                            <div class="owner-contact-name">
+                                <span class="owner-contact-label">{% trans "Contact" %}:</span>
+                                <span>
+                                    {{owner_contact.name}}
+                                    {% if owner_contact.phone or owner_contact.email %}
+                                        {% spaceless %}
+                                            <span>(</span>
+                                                {% if owner_contact.phone %}
+                                                    <span class="owner-contact-phone">{{ owner_contact.phone }}</span>
+                                                {% endif %}
 
-                                                    {% if owner_contact.phone and owner_contact.email %} / {% endif %}
+                                                {% if owner_contact.phone and owner_contact.email %} / {% endif %}
 
-                                                    {% if owner_contact.email %}
-                                                        <span class="owner-contact-email">{{ owner_contact.email }}</span>
-                                                    {% endif %}
-                                                <span>)</span>
-                                            {% endspaceless %}
-                                        {% endif %}
-                                    </span>
+                                                {% if owner_contact.email %}
+                                                    <span class="owner-contact-email">{{ owner_contact.email }}</span>
+                                                {% endif %}
+                                            <span>)</span>
+                                        {% endspaceless %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if owner_contact.notes %}
+                                <div class="owner-contact-notes">
+                                    {{ owner_contact.notes|urlize|linebreaks }}
                                 </div>
-                                {% if owner_contact.notes %}
-                                    <div class="owner-contact-notes">
-                                        {{ owner_contact.notes|urlize|linebreaks }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
 
-                        {% if owner and "owners.change_owner" in perms %}
-                            <div class="lot-detail-admin admin-only">
-                                <a class="btn btn-small btn-warning" href="{% url "admin:lots_lot_changelist" %}?owner={{ owner.pk }}">
-                                    {% trans "View all lots this owner owns" %}
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </section>
-            {% endwith %}
-        {% endifequal %}
+                    {% if lot.owner and "owners.change_owner" in perms %}
+                        <div class="lot-detail-admin admin-only">
+                            <a class="btn btn-small btn-warning" href="{% url "admin:lots_lot_changelist" %}?owner={{ lot.owner.pk }}">
+                                {% trans "View all lots this owner owns" %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        {% endif %}
 
         {% include "inplace/lots/_lot_detail_part_of_nycommons.html" with lot=lot %}
     </div>
