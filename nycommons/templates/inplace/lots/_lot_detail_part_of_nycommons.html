@@ -1,7 +1,7 @@
 {% load i18n %}
 
-<section class="lot-detail-part-of-nycommons collapsible">
-    <h2>{% trans "Why is this property part of NYCommons?" %}</h2>
+<section class="lot-detail-part-of-nycommons">
+    <h3>{% trans "Why is this property part of NYCommons?" %}</h3>
     <div class="lot-detail-part-of-nycommons-content">
         {% if lot.commons_type == "library" %}
             {% trans "The property is a library according to city data." %}
