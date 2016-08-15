@@ -55,9 +55,11 @@ var filter = flight.component(function () {
     });
 
     this.handleChange = function (event) {
+        /*
         if (this.type === 'layer') {
             this.toggleLayerOwners();
         }
+        */
         this.attr.filterList.trigger('filterChanged', {
             name: this.name,
             type: this.type,
