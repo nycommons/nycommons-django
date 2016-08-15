@@ -336,6 +336,13 @@ LIVING_LOTS = {
     },
 }
 
+REMOTE_LOTS = {
+    'llnyc': {
+        'api_lots_url': 'http://localhost:8002/lot/geojson/visible/',
+        'lot_permalink_url_pattern': 'http://localhost:8002/lot/%d/',
+    },
+}
+
 # TODO replace with project reasons and email addresses
 CONTACT_FORM_REASONS = OrderedDict([
     ('The lot I want permission to use is not here.', ['info@example.com',]),

@@ -343,6 +343,35 @@ class LotMixin(models.Model):
         abstract = True
 
 
+class RemoteLotMixin(models.Model):
+    """
+    A mixin adding data to track remote lots--lots that are largely hosted on
+    another site but are mirrored here.
+    """
+    remote = models.BooleanField(
+        default=False,
+        help_text=_('Is the lot from a remote site?'),
+    )
+    remote_site = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text=_('Which remote site is the lot from?'),
+    )
+    remote_pk = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text=_('What is the id of the lot on the remote site?'),
+    )
+    remote_locked = models.BooleanField(
+        default=False,
+        help_text=_('When refreshing lots from the remote site, can we update this one?'),
+    )
+
+    class Meta:
+        abstract = True
+
+
 class VisibleLotManager(LotManager):
     """A manager that only retrieves lots that are publicly viewable."""
 
@@ -350,7 +379,7 @@ class VisibleLotManager(LotManager):
         return self.get_visible()
 
 
-class Lot(LotMixin, LotGroupLotMixin, BaseLot):
+class Lot(RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
     objects = LotManager()
     visible = VisibleLotManager()
 

@@ -111,3 +111,14 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 MAP_SCREENSHOT_URL = "https://nycommons.org/screenshot/"
 LOT_TILES_URL = "https://tiles.nycommons.org/lots/{z}/{x}/{y}.json"
+
+
+#
+# Remote lots
+#
+REMOTE_LOTS = {
+    'llnyc': {
+        'api_lots_url': 'http://livinglotsnyc.org/lot/geojson/visible/',
+        'lot_permalink_url_pattern': 'http://livinglotsnyc.org/lot/%d/',
+    },
+}

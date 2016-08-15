@@ -34,6 +34,14 @@ class LotAdmin(BaseLotAdmin):
             'classes': ('collapse',),
             'fields': ('stewards_list', 'steward_inclusion_opt_in',),
         }),
+        ('Remote', {
+            'classes': ('collapse',),
+            'fields': (
+                'remote',
+                'remote_locked',
+                ('remote_site', 'remote_pk',),
+            ),
+        }),
         ('Geography', {
             'fields': (
                 ('centroid', 'polygon'),
