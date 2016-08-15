@@ -4,7 +4,7 @@
     <ul>
         {% for owner_lot in lots %}
             <li>
-                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.name }}</a>
+                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.display_name }}</a>
             </li>
         {% empty %}
         None.
