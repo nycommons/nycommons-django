@@ -1,5 +1,6 @@
 from pint import UnitRegistry
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -367,6 +368,12 @@ class RemoteLotMixin(models.Model):
         default=False,
         help_text=_('When refreshing lots from the remote site, can we update this one?'),
     )
+
+    def _remote_url(self):
+        pattern = settings.REMOTE_LOTS[self.remote_site]['lot_permalink_url_pattern']
+        return pattern % self.remote_pk
+    remote_url = property(_remote_url)
+
 
     class Meta:
         abstract = True
