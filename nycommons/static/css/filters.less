@@ -124,6 +124,14 @@
             border-color: @lot-priority-color;
         }
     }
+    .filter-vacant-lot-item input[type=checkbox] {
+        &:checked + label:before {
+            background: @lot-vacant-lot-color;
+        }
+        & + label:before {
+            border-color: @lot-vacant-lot-color;
+        }
+    }
     .filter-post-offices-item input[type=checkbox] {
         &:checked + label:before {
             background: @lot-post-office-color;
