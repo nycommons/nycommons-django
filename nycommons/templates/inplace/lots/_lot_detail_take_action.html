@@ -7,9 +7,16 @@
             <h3>{% trans "Stay Up to Date" %}</h3>
             <p>{% trans "Get updates about this property." %}
             <div>
-                <a class="btn btn-small btn-default" href="{% url "organize:subscribe" pk=lot.pk %}">
-                    {% trans "subscribe" %}
-                </a>
+                {% if lot.remote and lot.remote_site == "llnyc" %}
+                    <p>This lot is hosted on Living Lots NYC. Please subscribe there for updates to this lot.</p>
+                    <a class="btn btn-default" href="{{ lot.remote_url }}" target="_blank">
+                        {% trans "view the lot on living lots NYC" %}
+                    </a>
+                {% else %}
+                    <a class="btn btn-small btn-default" href="{% url "organize:subscribe" pk=lot.pk %}">
+                        {% trans "subscribe" %}
+                    </a>
+                {% endif %}
             </div>
         </section>
 
