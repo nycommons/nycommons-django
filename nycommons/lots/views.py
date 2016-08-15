@@ -396,7 +396,9 @@ class SameOwner(DetailView):
         organizing = (self.request.GET.get('organizing', False) == 'true')
         priority = (self.request.GET.get('priority', False) == 'true')
 
-        lots = lot.owner.lot_set.exclude(pk=lot.pk)
+        lots = lot.owner.lot_set \
+            .filter(commons_type=lot.commons_type) \
+            .exclude(pk=lot.pk)
         if organizing:
             lots = lots.filter(organizing=True)
         if priority:
