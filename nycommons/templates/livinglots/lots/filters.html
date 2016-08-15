@@ -35,6 +35,21 @@
                 {% endfor %}
             </ul>
         </li>
+        <li class="filters-list-item filter-vacant-lot-item">
+            <input id="layer-vacant-lot" type="checkbox" class="filter filter-layer" name="vacant lot / garden" data-type="layer" checked />
+            <label for="layer-vacant-lot">{% trans "vacant lot / garden" %}</label>
+            <a href="#" class="filter-layer-collapse"></a>
+
+            <ul class="filter-owners-list">
+                {% get_owners_by_commons_type "vacant lot / garden" as owners %}
+                {% for owner in owners %}
+                    <li>
+                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
         <li class="filters-list-item filter-library-item">
             <input id="layer-libraries" type="checkbox" class="filter filter-layer" name="library" data-type="layer" checked />
             <label for="layer-libraries">{% trans "libraries" %}</label>
