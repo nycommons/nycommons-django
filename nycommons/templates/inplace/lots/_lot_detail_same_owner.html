@@ -1,27 +1,25 @@
-{% load i18n lots_tags %}
+{% load i18n %}
 
-{% with owner_lots=lot.owner.lot_set.all %}
-    <section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}">
-        <h3 class="collapsed">
-            <span class="lot-detail-icon {{ lot.commons_type|slugify }}"></span>
-            {% trans "Properties with the Same Official Owner"%}
-        </h3>
-        <div class="lot-detail-same-owner-content"></div>
-    </section>
+<section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}">
+    <h3 class="collapsed">
+        <span class="lot-detail-icon {{ lot.commons_type|slugify }}"></span>
+        {% trans "Properties with the Same Official Owner"%}
+    </h3>
+    <div class="lot-detail-same-owner-content"></div>
+</section>
 
-    <section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}" data-priority="true">
-        <h3 class="collapsed">
-            <span class="lot-detail-icon {{ lot.commons_type|slugify }} priority"></span>
-            {% trans "Properties with the Same Official Owner Where Development is Pending"%}
-        </h3>
-        <div class="lot-detail-same-owner-content"></div>
-    </section>
+<section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}" data-priority="true">
+    <h3 class="collapsed">
+        <span class="lot-detail-icon {{ lot.commons_type|slugify }} priority"></span>
+        {% trans "Properties with the Same Official Owner Where Development is Pending"%}
+    </h3>
+    <div class="lot-detail-same-owner-content"></div>
+</section>
 
-    <section class="lot-detail-same-owner collapsible collapsed" data-lot="{{ lot.pk }}" data-organizing="true">
-        <h3 class="collapsed">
-            <span class="lot-detail-icon {{ lot.commons_type|slugify }} organizing"></span>
-            {% trans "Properties with the Same Official Owner Where Others Are Organizing"%}
-        </h2>
-        <div class="lot-detail-same-owner-content"></div>
-    </section>
-{% endwith %}
+<section class="lot-detail-same-owner collapsible collapsed" data-lot="{{ lot.pk }}" data-organizing="true">
+    <h3 class="collapsed">
+        <span class="lot-detail-icon {{ lot.commons_type|slugify }} organizing"></span>
+        {% trans "Properties with the Same Official Owner Where Others Are Organizing"%}
+    </h2>
+    <div class="lot-detail-same-owner-content"></div>
+</section>
