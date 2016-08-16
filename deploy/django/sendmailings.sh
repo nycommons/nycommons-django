@@ -1,5 +1,5 @@
 #!/bin/bash
 
 source $HOME/.bashrc
-source $HOME/.virtualenvs/$NYCOMMONS_VIRTUAL_ENV/bin/activate
+workon $NYCOMMONS_VIRTUAL_ENV
 django-admin sendmailings
