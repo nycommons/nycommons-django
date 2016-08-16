@@ -6709,6 +6709,12 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .filters-section .filter-priority-organizing-list-item input[type=checkbox] + label:before {
   border-color: #ec1d24;
 }
+.filters-section .filter-vacant-lot-item input[type=checkbox]:checked + label:before {
+  background: #1f9e48;
+}
+.filters-section .filter-vacant-lot-item input[type=checkbox] + label:before {
+  border-color: #1f9e48;
+}
 .filters-section .filter-post-offices-item input[type=checkbox]:checked + label:before {
   background: #662d91;
 }
