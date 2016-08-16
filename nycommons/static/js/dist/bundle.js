@@ -1928,8 +1928,9 @@ L.LotMap = L.Map.extend({
             }).addTo(this);
         }
         else {
-            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/cirxogajr0023g6m8iewwksfh/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
-                attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/cirxogajr0023g6m8iewwksfh/tiles/256/{z}/{x}/{y}{retina}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
+                attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                retina: L.Browser.retina ? '@2x' : ''
             }).addTo(this);
         }
         var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
@@ -63674,7 +63675,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
