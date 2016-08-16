@@ -397,6 +397,10 @@ module.exports = {
             return $(layer).attr('name');
         }).join();
 
+        if (map) {
+            filters.owners = JSON.stringify(map.currentFilters.owners);
+        }
+
         // Add boundary, if any
         $.each($('.filter-boundaries'), function () {
             if ($(this).val() !== '') {

@@ -1,4 +1,5 @@
 from hashlib import sha1
+import json
 
 from django.db.models import Q
 
@@ -78,6 +79,21 @@ class OwnerFilter(django_filters.Filter):
         return qs.filter(owner_query | other_owners_query)
 
 
+class OwnersFilter(django_filters.Filter):
+
+    def filter(self, qs, value):
+        try:
+            owners_query = Q()
+            for commons_type, owner_pks in json.loads(value).items():
+                owners_query |= Q(
+                    commons_type=commons_type,
+                    owner__pk__in=owner_pks,
+                )
+            return qs.filter(owners_query)
+        except ValueError:
+            return qs
+
+
 class PriorityFilter(django_filters.Filter):
 
     def filter(self, qs, value):
@@ -110,6 +126,7 @@ class ProjectFilter(django_filters.Filter):
 
 
 class LotFilter(django_filters.FilterSet):
+    # TODO add owners!
 
     bbox = BoundingBoxFilter()
     boundary = BoundaryFilter()
@@ -119,6 +136,7 @@ class LotFilter(django_filters.FilterSet):
     )
     lot_center = LotCenterFilter()
     organizing = OrganizingFilter()
+    owners = OwnersFilter()
     parents_only = LotGroupParentFilter()
     priority = PriorityFilter()
     priority_organizing = PriorityOrganizingFilter()
@@ -143,6 +161,7 @@ class LotFilter(django_filters.FilterSet):
             'known_use',
             'lot_center',
             'organizing',
+            'owners',
             'parents_only',
             'priority',
             'priority_organizing',
