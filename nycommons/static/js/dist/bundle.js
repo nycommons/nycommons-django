@@ -402,9 +402,11 @@ var filter = flight.component(function () {
     });
 
     this.handleChange = function (event) {
+        /*
         if (this.type === 'layer') {
             this.toggleLayerOwners();
         }
+        */
         this.attr.filterList.trigger('filterChanged', {
             name: this.name,
             type: this.type,
@@ -742,6 +744,10 @@ module.exports = {
             return $(layer).attr('name');
         }).join();
 
+        if (map) {
+            filters.owners = JSON.stringify(map.currentFilters.owners);
+        }
+
         // Add boundary, if any
         $.each($('.filter-boundaries'), function () {
             if ($(this).val() !== '') {
@@ -857,6 +863,7 @@ var legend = flight.component(function () {
     };
 
     this.receivedOwnerCount = function (event, data) {
+        this.$node.find('.legend-count').text('0');
         _.each(data.results, function (element) {
             this.$node.find('.legend-count[data-type="' + element.type + '"]').text(element.count);
         }, this);
