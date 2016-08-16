@@ -90,10 +90,14 @@ class Command(BaseCommand):
 
     def create_lot(self, feature, dry_run=False):
         self.create_count += 1
+        bbl = feature['properties']['bbl']
         if dry_run:
-            self.stdout.write('Create lot for bbl %s' % feature['properties']['bbl'])
+            self.stdout.write('Create lot for bbl %s' % bbl)
             lot = None
         else:
+            # Delete waterfront lots on the same parcel
+            Lot.objects.filter(bbl=bbl, commons_type='waterfront').delete()
+
             lot = Lot.objects.create_lot_for_geom(
                 GEOSGeometry(str(feature['geometry'])),
                 **self.lot_kwargs(feature)
