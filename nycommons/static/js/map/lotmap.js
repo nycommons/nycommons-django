@@ -117,7 +117,7 @@ L.LotMap = L.Map.extend({
             }).addTo(this);
         }
         else {
-            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/ciqb8ncgp000jc2nos35k88tc/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
+            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/cirxogajr0023g6m8iewwksfh/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
                 attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(this);
         }
