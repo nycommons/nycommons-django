@@ -9,6 +9,12 @@
             {% trans "The property is a post office according to city data." %}
         {% elif lot.commons_type == "public housing" %}
             {% trans "The property is part of a public housing development according to city data." %}
+        {% elif lot.remote and lot.remote_site == "llnyc" %}
+            {% with remote_url=lot.remote_url %}
+                {% blocktrans %}
+                The property appears on <a href="https://livinglotsnyc.org">livinglotsnyc.org</a>. <a href="{{ remote_url }}">Visit the property there</a> to learn about organizing to create or preserve it as open space.
+                {% endblocktrans %}
+            {% endwith %}
         {% elif lot.commons_type == "waterfront" %}
             {% trans "The property is publicly owned waterfront property according to city data." %}
         {% endif %}
