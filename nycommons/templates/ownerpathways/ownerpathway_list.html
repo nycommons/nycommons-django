@@ -1,0 +1,13 @@
+{% load i18n %}
+
+<p>Learn more about how these owners make decisions about property:</p>
+
+<ul class="pathway-list owner-pathway-list">
+    {% for pathway in ownerpathway_list %}
+        <li class="pathway">
+            <a href="{{ pathway.get_absolute_url }}">
+                {{ pathway.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
