@@ -30,7 +30,6 @@ class RecentPostsContent(models.Model):
         verbose_name_plural = _('recent posts')
 
     def render(self, **kwargs):
-        # TODO get 10 most recent posts, pass in context
         return render_to_string([
             'elephantblog/recent_posts_plugin.html',
         ], {}, request=kwargs.get('request'))
