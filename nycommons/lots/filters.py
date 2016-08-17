@@ -126,8 +126,6 @@ class ProjectFilter(django_filters.Filter):
 
 
 class LotFilter(django_filters.FilterSet):
-    # TODO add owners!
-
     bbox = BoundingBoxFilter()
     boundary = BoundaryFilter()
     commons_type = django_filters.MultipleChoiceFilter(
