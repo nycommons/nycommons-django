@@ -16,6 +16,7 @@ class LivingLotsDashboard(Dashboard):
                 'faq.*',
                 'feincms.module.page.*',
                 'organizingpathways.*',
+                'ownerpathways.*',
                 'reviewpathways.*',
             ),
         ))
@@ -43,6 +44,7 @@ class LivingLotsDashboard(Dashboard):
                 'nycdata.communitydistricts.*',
                 'organize.*',
                 'organizingpathways.*',
+                'ownerpathways.*',
                 'owners.*',
                 'reviewpathways.*',
                 'taggit.*',

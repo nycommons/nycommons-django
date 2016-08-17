@@ -219,6 +219,7 @@ INSTALLED_APPS = (
     'lots',
     'organize',
     'organizingpathways',
+    'ownerpathways',
     'owners',
     'reviewpathways',
     'steward',

@@ -7485,6 +7485,11 @@ footer .social-media-twitter {
 .lot-detail-page .lot-detail-organizing-networks-content {
   margin-left: 25px;
 }
+.lot-detail-page .owner-pathway-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;

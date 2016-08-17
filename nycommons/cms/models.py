@@ -156,5 +156,6 @@ Page.create_content_type(ApplicationContent, APPLICATIONS=(
         'urls': 'contact.form_urls',
     }),
     ('organizingpathways.urls', _('Organizing Pathways')),
+    ('ownerpathways.urls', _('Owner Pathways')),
     ('reviewpathways.urls', _('Review Pathways')),
 ))

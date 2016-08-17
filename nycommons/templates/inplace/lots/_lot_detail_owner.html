@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n ownerpathways_tags %}
 
 <section class="collapsible">
     <h2>{% trans "Who decides what happens to this property?" %}</h2>
@@ -41,15 +41,9 @@
                             </div>
                         {% endif %}
                     {% endwith %}
-
-                    {% if lot.owner and "owners.change_owner" in perms %}
-                        <div class="lot-detail-admin admin-only">
-                            <a class="btn btn-small btn-warning" href="{% url "admin:lots_lot_changelist" %}?owner={{ lot.owner.pk }}">
-                                {% trans "View all lots this owner owns" %}
-                            </a>
-                        </div>
-                    {% endif %}
                 </div>
+
+                {% render_owner_pathway_summary_list for lot %}
             </section>
         {% endif %}
 
