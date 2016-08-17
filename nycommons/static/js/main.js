@@ -8,6 +8,7 @@ require('bootstrap_dropdown');
 require('bootstrap_transition');
 require('bootstrap_collapse');
 require('fancybox')($);
+var header = require('./components/header');
 require('./maplinks');
 
 var pathwayRecentActivity = require('./components/activities').pathwayRecentActivity;
@@ -101,6 +102,7 @@ $(document).ready(function () {
     });
 
     pathwayRecentActivity.attachTo('.pathway-recent-activities-list');
+    header.header.attachTo('header');
 });
 
 

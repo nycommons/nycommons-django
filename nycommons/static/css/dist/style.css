@@ -6939,6 +6939,9 @@ footer .social-media-twitter {
   height: 100%;
   width: 95%;
 }
+.header-wrapper {
+  transition: margin .5s;
+}
 #page-header {
   margin-top: 20px;
 }
@@ -7768,9 +7771,10 @@ fieldset[disabled] .btn-show-details.active {
 }
 .navbar-default {
   border: none;
-  float: right;
-  margin-bottom: 0;
-  margin-top: 15px;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 30px;
 }
 @media (max-width: 767px) {
   .navbar-default {
@@ -7853,20 +7857,22 @@ fieldset[disabled] .btn-show-details.active {
 }
 .mainmenu-item:hover .submenu,
 .mainmenu-item.open .submenu {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 .mainmenu-item-parent {
   cursor: default;
 }
 .submenu {
-  background-color: white;
-  display: none;
   font-size: 12px;
   line-height: 14px;
   list-style: none;
+  opacity: 0;
   padding: 10px;
   padding-left: 0;
   position: absolute;
+  transition: visibility 0s, opacity .25s linear;
+  visibility: hidden;
   z-index: 5010;
 }
 .submenu li {
@@ -7887,7 +7893,9 @@ fieldset[disabled] .btn-show-details.active {
 @media (max-width: 767px) {
   .submenu {
     margin-left: 15px;
+    opacity: 1;
     position: static;
+    visibility: visible;
   }
 }
 .social-media {
