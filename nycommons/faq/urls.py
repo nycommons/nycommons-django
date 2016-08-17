@@ -1,4 +1,3 @@
-
 from django.conf.urls import patterns, url
 
 from articles.views import ArticleList
