@@ -5691,6 +5691,9 @@ h1 {
     margin-left: 0;
     padding: 15px;
   }
+  #aside-left #mc_embed_signup {
+    display: none;
+  }
 }
 .sidebar-section-admin h2,
 .map-header-content-admin h2 {
