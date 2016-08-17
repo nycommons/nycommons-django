@@ -10,6 +10,7 @@ require('bootstrap_collapse');
 require('fancybox')($);
 require('./maplinks');
 
+var pathwayRecentActivity = require('./components/activities').pathwayRecentActivity;
 
 /*
  * Global form-related scripts
@@ -98,6 +99,8 @@ $(document).ready(function () {
     $('.menu-button').click(function () {
         $('.menu-expanded').toggle();
     });
+
+    pathwayRecentActivity.attachTo('.pathway-recent-activities-list');
 });
 
 

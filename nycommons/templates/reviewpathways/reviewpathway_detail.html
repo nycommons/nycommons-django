@@ -34,3 +34,8 @@
         </div>
     </article>
 {% endblock %}
+
+{% block sidebar %}
+    {% include "livinglots/pathways/recent_activities.html" with pathway=reviewpathway %}
+    {{ block.super }}
+{% endblock %}

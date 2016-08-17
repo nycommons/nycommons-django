@@ -78,7 +78,35 @@ var activities = flight.component(function () {
     });
 }, activityMixin);
 
+
+/*
+ * This component is used on pathway details pages to show recent activity for
+ * lots that pathway applies to.
+ */
+var pathwayRecentActivity = flight.component(function () {
+    this.loadNextPage = function () {
+        activitiesData.loadPathwayActivities(this.app, this.model, this.id, ++this.page);
+    }
+
+    this.receivedActivities = function (e, data) {
+        var content = this.template({
+            actions: data.activities
+        });
+        this.select('listSelector').append(content);
+    };
+
+    this.after('initialize', function () {
+        $(document).on('receivedPathwayActivities', this.receivedActivities.bind(this));
+        this.app = this.$node.data('app');
+        this.model = this.$node.data('model');
+        this.id = this.$node.data('id');
+        this.page = 0;
+        this.loadNextPage();
+    });
+}, activityMixin);
+
 module.exports = {
     activities: activities,
+    pathwayRecentActivity: pathwayRecentActivity,
     recentActivity: recentActivity
 };

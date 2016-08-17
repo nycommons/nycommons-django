@@ -27,7 +27,24 @@ function loadNextActivitiesPage () {
     }
 }
 
+function loadPathwayActivities (app, model, id, requestedPage) {
+    var url = Django.url('pathway_activity_list') + '?' + $.param({
+        app: app,
+        model: model,
+        id: id,
+        page: requestedPage
+    });
+    singleminded.remember({
+        name: 'loadPathwayActivities' + requestedPage,
+        jqxhr: $.getJSON(url, function (data) {
+            $(document).trigger('receivedPathwayActivities', { activities: data.actions });
+        })
+    });
+}
+
 module.exports = {
     loadActivities: loadActivities,
-    loadNextActivitiesPage: loadNextActivitiesPage
+    loadNextActivitiesPage: loadNextActivitiesPage,
+
+    loadPathwayActivities: loadPathwayActivities
 };

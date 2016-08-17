@@ -9,6 +9,8 @@ from feincms.module.mixins import ContentModelMixin
 
 from livinglots_pathways.models import BasePathway, BasePathwayManager
 
+from pathways.models import PathwayLotMixin
+
 
 class OrganizingPathwayManager(BasePathwayManager):
 
@@ -16,7 +18,8 @@ class OrganizingPathwayManager(BasePathwayManager):
         return CachingQuerySet(self.model, self._db)
 
 
-class OrganizingPathway(CachingMixin, ContentModelMixin, BasePathway, Base):
+class OrganizingPathway(PathwayLotMixin, CachingMixin, ContentModelMixin,
+        BasePathway, Base):
     objects = OrganizingPathwayManager()
 
     class Meta:

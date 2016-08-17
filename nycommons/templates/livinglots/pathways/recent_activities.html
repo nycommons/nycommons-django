@@ -1,0 +1,9 @@
+<div class="pathway-recent-activities">
+    <h2>Recent Activities on Related Properties</h2>
+    <div class="pathway-recent-activities-list recent-activity" data-app="{{ pathway.app_label }}" data-model="{{ pathway.model_name }}" data-id="{{ pathway.pk }}">
+        <div class="activity-stream">
+            <ul class="action-list"></ul>
+        </div>
+    </div>
+</div>
+{% include "actstream/_activity_list_template.html" %}

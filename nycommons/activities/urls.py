@@ -1,11 +1,13 @@
 from django.conf.urls import url
 
-from .views import ActivityJSONListView
+from .views import ActivityJSONListView, PathwayActivityJSONListView
 
 
 urlpatterns = [
 
     url(r'^list/json/', ActivityJSONListView.as_view(), name='activity_list'),
+    url(r'^pathway/list/json/', PathwayActivityJSONListView.as_view(),
+        name='pathway_activity_list'),
 
 ]
 

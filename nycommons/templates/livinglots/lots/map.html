@@ -28,43 +28,7 @@
     {% endverbatim %}
 </script>
 
-<script id="activity-list-template" type="text/x-handlebars-template">
-    {% verbatim %}
-        {{#*inline "activityPartial"}}
-            <div class="action">
-                <span class="actor">{{actor}}</span>
-                <span class="verb">{{verb}}</span>
-                {{#if details}}
-                    {{{details}}}
-                {{/if}}
-                on
-                {{#if target_url}}
-                    <a href="{{target_url}}" target="_blank">{{target}}</a>
-                {{else}}
-                    {{target}}
-                {{/if}}
-                {{#if file_url}}
-                    <div class="file">
-                        <a href="{{file_url}}" target="_blank">
-                            {{action_object}}
-                        </a>
-                    </div>
-                {{/if}}
-                {{#if thumbnail_url}}
-                    <div class="thumbnail">
-                        <img src="{{thumbnail_url}}" />
-                    </div>
-                {{/if}}
-                <div class="action-timestamp">
-                    {{formatTimestamp timestamp}}
-                </div>
-            </div>
-        {{/inline}}
-        {{#each actions}}
-            {{> activityPartial}}
-        {{/each}}
-    {% endverbatim %}
-</script>
+{% include "actstream/_activity_list_template.html" %}
 
 <script>
     {% if debug %}

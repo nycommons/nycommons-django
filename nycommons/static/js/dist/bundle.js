@@ -79,8 +79,36 @@ var activities = flight.component(function () {
     });
 }, activityMixin);
 
+
+/*
+ * This component is used on pathway details pages to show recent activity for
+ * lots that pathway applies to.
+ */
+var pathwayRecentActivity = flight.component(function () {
+    this.loadNextPage = function () {
+        activitiesData.loadPathwayActivities(this.app, this.model, this.id, ++this.page);
+    }
+
+    this.receivedActivities = function (e, data) {
+        var content = this.template({
+            actions: data.activities
+        });
+        this.select('listSelector').append(content);
+    };
+
+    this.after('initialize', function () {
+        $(document).on('receivedPathwayActivities', this.receivedActivities.bind(this));
+        this.app = this.$node.data('app');
+        this.model = this.$node.data('model');
+        this.id = this.$node.data('id');
+        this.page = 0;
+        this.loadNextPage();
+    });
+}, activityMixin);
+
 module.exports = {
     activities: activities,
+    pathwayRecentActivity: pathwayRecentActivity,
     recentActivity: recentActivity
 };
 
@@ -1313,9 +1341,26 @@ function loadNextActivitiesPage () {
     }
 }
 
+function loadPathwayActivities (app, model, id, requestedPage) {
+    var url = Django.url('pathway_activity_list') + '?' + $.param({
+        app: app,
+        model: model,
+        id: id,
+        page: requestedPage
+    });
+    singleminded.remember({
+        name: 'loadPathwayActivities' + requestedPage,
+        jqxhr: $.getJSON(url, function (data) {
+            $(document).trigger('receivedPathwayActivities', { activities: data.actions });
+        })
+    });
+}
+
 module.exports = {
     loadActivities: loadActivities,
-    loadNextActivitiesPage: loadNextActivitiesPage
+    loadNextActivitiesPage: loadNextActivitiesPage,
+
+    loadPathwayActivities: loadPathwayActivities
 };
 
 },{"../lib/singleminded":"/home/eric/Documents/596/nycommons/nycommons/static/js/lib/singleminded.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/data/lotcounts.js":[function(require,module,exports){
@@ -1603,6 +1648,7 @@ require('bootstrap_collapse');
 require('fancybox')($);
 require('./maplinks');
 
+var pathwayRecentActivity = require('./components/activities').pathwayRecentActivity;
 
 /*
  * Global form-related scripts
@@ -1691,6 +1737,8 @@ $(document).ready(function () {
     $('.menu-button').click(function () {
         $('.menu-expanded').toggle();
     });
+
+    pathwayRecentActivity.attachTo('.pathway-recent-activities-list');
 });
 
 
@@ -1701,7 +1749,7 @@ require('./pages/addorganizer.js');
 require('./pages/map.js');
 require('./pages/lotdetail.js');
 
-},{"./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./pages/addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js","./pages/lotdetail.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js","./pages/map.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js":[function(require,module,exports){
+},{"./components/activities":"/home/eric/Documents/596/nycommons/nycommons/static/js/components/activities.js","./maplinks":"/home/eric/Documents/596/nycommons/nycommons/static/js/maplinks.js","./pages/addorganizer.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/addorganizer.js","./pages/lotdetail.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/lotdetail.js","./pages/map.js":"/home/eric/Documents/596/nycommons/nycommons/static/js/pages/map.js","bootstrap_collapse":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/collapse.js","bootstrap_dropdown":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/dropdown.js","bootstrap_transition":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/bootstrap/js/transition.js","fancybox":"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/fancybox/dist/js/jquery.fancybox.cjs.js"}],"/home/eric/Documents/596/nycommons/nycommons/static/js/map/lotlayer.js":[function(require,module,exports){
 var L = require('leaflet');
 var _ = require('underscore');
 
@@ -63675,7 +63723,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

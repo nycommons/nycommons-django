@@ -87,7 +87,9 @@
 
                     {% block sidebar %}
                         <aside id="aside-right" class="col-sm-3">
-                            {% feincms_render_region feincms_page "sidebar" request %}
+                            {% block sidebar_content %}
+                                {% feincms_render_region feincms_page "sidebar" request %}
+                            {% endblock %}
                         </aside>
                     {% endblock %}
 
