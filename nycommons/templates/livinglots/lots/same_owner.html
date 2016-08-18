@@ -4,7 +4,8 @@
     <ul>
         {% for owner_lot in lots %}
             <li>
-                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.display_name }}</a>
+                <span class="lot-detail-icon {{ owner_lot.commons_type|slugify }} {% if owner_lot.priority %}priority {% endif %} {% if owner_lot.organizing %}organizing {% endif %}"></span>
+                <a href="{{ owner_lot.get_absolute_url }}">{{ owner_lot.display_name|default:"unknown name" }}</a>
             </li>
         {% empty %}
         None.

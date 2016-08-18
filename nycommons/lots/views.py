@@ -398,15 +398,13 @@ class SameOwner(DetailView):
         organizing = (self.request.GET.get('organizing', False) == 'true')
         priority = (self.request.GET.get('priority', False) == 'true')
 
-        lots = lot.owner.lot_set \
-            .filter(commons_type=lot.commons_type) \
-            .exclude(pk=lot.pk)
+        lots = lot.owner.lot_set.exclude(pk=lot.pk)
         if organizing:
             lots = lots.filter(organizing=True)
         if priority:
             lots = lots.filter(priority=True)
         context = super(SameOwner, self).get_context_data(**kwargs)
-        context['lots'] = lots
+        context['lots'] = sorted(lots, key=lambda l: l.display_name)
         context['lot'] = lot
         context['organizing'] = organizing
         context['priority'] = priority
