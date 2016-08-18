@@ -42,14 +42,12 @@
         {% endif %}
 
         <div>
-            {% trans "Address" %}:
             {% if lot.address_line1 %}{{ lot.address_line1|default:"(street address unknown)" }},{% endif %}
             {{ lot.borough }}{% if lot.postal_code %}, {{ lot.postal_code }}{% endif %}
         </div>
 
         {% if lot.bbl and not lot.bbl_is_fake %}
             <div>
-                {% trans "Block and Lot" %}:
                 {{ lot.borough }}, block {{ lot.block }}, lot {{ lot.lot_number }}
             </div>
         {% endif %}
