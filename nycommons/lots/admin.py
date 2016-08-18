@@ -8,14 +8,14 @@ from .models import Lot
 class LotAdmin(BaseLotAdmin):
     list_display = ('address_line1', 'city', 'name', 'commons_type',)
     list_filter = ('commons_type', 'added', 'owner',)
-    readonly_fields = ('added', 'group', 'stewards_list',)
+    readonly_fields = ('added', 'group', 'stewards_list', 'updated',)
     fieldsets = (
         (None, {
             'fields': (
                 ('bbl', 'name',),
                 ('address_line1', 'address_line2', 'city', 'borough',),
                 ('state_province', 'postal_code',),
-                ('added', 'added_reason',),
+                ('added', 'added_reason', 'updated',),
                 'group',
             ),
         }),
