@@ -7,7 +7,10 @@ from random import shuffle
 import re
 
 from django.contrib.contenttypes.models import ContentType
+from django.contrib import messages
 from django.db.models import Count, Sum
+from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, View
 
 from caching.base import cached
@@ -398,7 +401,7 @@ class SameOwner(DetailView):
         organizing = (self.request.GET.get('organizing', False) == 'true')
         priority = (self.request.GET.get('priority', False) == 'true')
 
-        lots = lot.owner.lot_set.exclude(pk=lot.pk)
+        lots = lot.owner.lot_set.filter(group=None).exclude(pk=lot.pk)
         if organizing:
             lots = lots.filter(organizing=True)
         if priority:
