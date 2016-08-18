@@ -12,7 +12,7 @@
         {% elif lot.remote and lot.remote_site == "llnyc" %}
             {% with remote_url=lot.remote_url %}
                 {% blocktrans %}
-                The property appears on <a href="https://livinglotsnyc.org">livinglotsnyc.org</a>. <a href="{{ remote_url }}">Visit the property there</a> to learn about organizing to create or preserve it as open space.
+                The property appears on <a href="https://livinglotsnyc.org" target="_blank">livinglotsnyc.org</a>. <a href="{{ remote_url }}" target="_blank">Visit the property there</a> to learn about organizing to create or preserve it as open space.
                 {% endblocktrans %}
             {% endwith %}
         {% elif lot.commons_type == "waterfront" %}
