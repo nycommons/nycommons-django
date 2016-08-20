@@ -11,8 +11,7 @@
                 {% for child in lot.lots %}
                     <li>
                         <div>
-                            {{ child.display_name }}
-                            ({{ child.address_line1 }}).
+                            {{ child.display_name }}{% if child.address_line1 %} ({{ child.address_line1 }}){% endif %}.
                             {% get_oasis_url for child as oasis_url %}
                             {% if oasis_url %}
                                 {% trans "More details at" %}
