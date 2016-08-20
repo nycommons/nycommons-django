@@ -29,8 +29,8 @@
                 {% get_owners_by_commons_type "post office" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="post-office-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="post-office-owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -44,8 +44,8 @@
                 {% get_owners_by_commons_type "vacant lot / garden" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="vacant-lot-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="vacant-lot-owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -59,8 +59,8 @@
                 {% get_owners_by_commons_type "library" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="library-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="library-owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -74,8 +74,8 @@
                 {% get_owners_by_commons_type "public housing" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="public-housing-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="public-housing-owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
@@ -89,8 +89,8 @@
                 {% get_owners_by_commons_type "waterfront" as owners %}
                 {% for owner in owners %}
                     <li>
-                        <input type="checkbox" class="filter filter-owner" id="owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="owner-{{owner.pk }}">{{ owner.name }}</label>
+                        <input type="checkbox" class="filter filter-owner" id="waterfront-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="waterfront-owner-{{owner.pk }}">{{ owner.name }}</label>
                     </li>
                 {% endfor %}
             </ul>
