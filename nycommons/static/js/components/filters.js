@@ -94,10 +94,6 @@ var filter = flight.component(function () {
             this.findLayerOwners().each(function () {
                 $(this).prop('checked', true);
             });
-            $filterItem.removeClass('collapse');
-        }
-        else {
-            $filterItem.addClass('collapse');
         }
     };
 
