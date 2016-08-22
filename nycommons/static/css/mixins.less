@@ -68,3 +68,18 @@
     font-weight: 600;
     line-height: 16px;
 }
+
+.make-lot-icon(@name) {
+    & {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}.png");
+    }
+    &.organizing {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-organizing.png");
+    }
+    &.priority {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-priority.png");
+    }
+    &.organizing.priority {
+        background-image: data-uri("/static/img/lot-detail-icons/@{name}-organizing-priority.png");
+    }
+}

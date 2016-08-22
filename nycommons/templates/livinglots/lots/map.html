@@ -12,13 +12,9 @@
                     </div>
                     <div class="popup-lot-details">
                         <header>
+                            <span class="lot-popup-icon{{#if priority}} priority {{/if}}{{#if organizing}} organizing {{/if}} {{commons_type_slug}}"></span>
                             <a target="_blank" href="{{url}}">{{name}}</a>
                         </header>
-                        {{#if part_of_group}}
-                            <div class="lot-count">
-                                {{number_of_lots}} lots
-                            </div>
-                        {{/if}}
                         <div class="owner">Owned by <span class="owner-value">{{owner}}</span></div>
                         <a target="_blank" href="{{url}}" class="btn btn-default">learn more</a>
                     </div>

@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.db.models import Count, Sum
 from django.http import HttpResponseRedirect
+from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, View
 
@@ -121,9 +122,13 @@ class LotDetailViewJSON(JSONResponseMixin, BaseLotDetailView):
                 'x': lot.centroid.x,
                 'y': lot.centroid.y,
             },
+            'commons_type': lot.commons_type,
+            'commons_type_slug': slugify(lot.commons_type),
+            'organizing': lot.organizing,
             'name': lot.display_name,
             'number_of_lots': lot.number_of_lots,
             'part_of_group': lot.group is not None,
+            'priority': lot.priority,
             'url': lot.get_absolute_url(),
         }
         if lot.owner:
