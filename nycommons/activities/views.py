@@ -23,6 +23,10 @@ class ActivityJSONListView(BaseActivityJSONListView):
             d['details'] = action.action_object.text
         if action.action_object and type(action.action_object) is Photo:
             d['thumbnail_url'] = action.action_object.thumbnail.url
+        try:
+            d['actor'] = action.action_object.added_by_name
+        except AttributeError:
+            pass
         return d
 
 
