@@ -6476,6 +6476,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   font-size: 12px;
   margin-top: 5px;
 }
+.recent-activity {
+  max-width: 280px;
+}
 .blog-archive-list {
   list-style: none;
   padding: 0;
@@ -7529,6 +7532,10 @@ footer .social-media-twitter {
   margin: 0;
   padding: 0;
 }
+.lot-detail-page .user-content-actions {
+  left: -50px;
+  width: 60px;
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;
@@ -7769,8 +7776,10 @@ fieldset[disabled] .btn-show-details.active {
 }
 .menu-expanded .submenu {
   display: block;
+  opacity: 1;
   padding-left: 15px;
   position: inherit;
+  visibility: visible;
   z-index: inherit;
 }
 .menu-button {
@@ -8113,6 +8122,74 @@ fieldset[disabled] .btn-show-details.active {
 }
 #popup .popup-lot-details .size {
   margin-bottom: 3px;
+}
+#popup .lot-popup-icon {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+#popup .lot-popup-icon.library {
+  background-image: url("/static/img/lot-detail-icons/library.png");
+}
+#popup .lot-popup-icon.library.organizing {
+  background-image: url("/static/img/lot-detail-icons/library-organizing.png");
+}
+#popup .lot-popup-icon.library.priority {
+  background-image: url("/static/img/lot-detail-icons/library-priority.png");
+}
+#popup .lot-popup-icon.library.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/library-organizing-priority.png");
+}
+#popup .lot-popup-icon.post-office {
+  background-image: url("/static/img/lot-detail-icons/post-office.png");
+}
+#popup .lot-popup-icon.post-office.organizing {
+  background-image: url("/static/img/lot-detail-icons/post-office-organizing.png");
+}
+#popup .lot-popup-icon.post-office.priority {
+  background-image: url("/static/img/lot-detail-icons/post-office-priority.png");
+}
+#popup .lot-popup-icon.post-office.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/post-office-organizing-priority.png");
+}
+#popup .lot-popup-icon.public-housing {
+  background-image: url("/static/img/lot-detail-icons/public-housing.png");
+}
+#popup .lot-popup-icon.public-housing.organizing {
+  background-image: url("/static/img/lot-detail-icons/public-housing-organizing.png");
+}
+#popup .lot-popup-icon.public-housing.priority {
+  background-image: url("/static/img/lot-detail-icons/public-housing-priority.png");
+}
+#popup .lot-popup-icon.public-housing.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/public-housing-organizing-priority.png");
+}
+#popup .lot-popup-icon.vacant-lot-garden {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden.png");
+}
+#popup .lot-popup-icon.vacant-lot-garden.organizing {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-organizing.png");
+}
+#popup .lot-popup-icon.vacant-lot-garden.priority {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-priority.png");
+}
+#popup .lot-popup-icon.vacant-lot-garden.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/vacant-lot-garden-organizing-priority.png");
+}
+#popup .lot-popup-icon.waterfront {
+  background-image: url("/static/img/lot-detail-icons/waterfront.png");
+}
+#popup .lot-popup-icon.waterfront.organizing {
+  background-image: url("/static/img/lot-detail-icons/waterfront-organizing.png");
+}
+#popup .lot-popup-icon.waterfront.priority {
+  background-image: url("/static/img/lot-detail-icons/waterfront-priority.png");
+}
+#popup .lot-popup-icon.waterfront.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/waterfront-organizing-priority.png");
 }
 .leaflet-popup-content-wrapper {
   border-left: 1px #f6f6f6 solid;
