@@ -5889,12 +5889,28 @@ section.collapsible > h6.collapsed::before {
 .details-section .waterfront-row {
   border-bottom-color: #e669ee;
 }
+.details-section .details-lot-count,
 .details-section .details-organizer-count,
 .details-section .details-owner-count {
   display: inline-block;
   font-weight: 600;
   min-width: 35px;
   text-align: right;
+}
+.details-section .details-organizer-count,
+.details-section .details-owner-count {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-right: 0;
+}
+@media (min-width: 768px) {
+  .details-section .details-organizer-count,
+  .details-section .details-owner-count {
+    float: left;
+    width: 41.66666667%;
+  }
 }
 .details-section .details-organizer-list,
 .details-section .details-owner-list {
@@ -5914,6 +5930,22 @@ section.collapsible > h6.collapsed::before {
   .details-section .details-owner-list {
     float: left;
     width: 100%;
+  }
+}
+.details-section .details-toggle-organizer-list,
+.details-section .details-toggle-owner-list {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-left: 0;
+  padding-right: 0;
+}
+@media (min-width: 768px) {
+  .details-section .details-toggle-organizer-list,
+  .details-section .details-toggle-owner-list {
+    float: left;
+    width: 50%;
   }
 }
 .details-section .details-label-wrapper {

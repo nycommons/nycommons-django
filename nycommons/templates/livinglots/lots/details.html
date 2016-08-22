@@ -3,19 +3,23 @@
 <script id="details-template" type="text/x-handlebars-template">
     {% verbatim %}
         {{#*inline "layerPartial"}}
-            <li class="row {{type}}-row">
+            <li class="row details-row {{type}}-row">
                 <span class="details-label-wrapper">
                     <span class="legend-marker legend-marker-{{type}}"></span>
-                    <span class="details-owner-count">{{count}}</span>
-                    <span class="details-owner-label">{{label}}</span>
+                    <span class="details-lot-count">{{count}}</span>
+                    <span class="details-lot-label">{{label}}</span>
                 </span>
                 <span class="details-toggle-organizer-list-wrapper">
-                    <span class="details-organizer-count">{{organizers_count}}</span>
-                    <span class="details-toggle-organizer-list">Organizers</span>
+                    <div class="row">
+                        <span class="details-organizer-count">{{organizers_count}}</span>
+                        <span class="details-toggle-organizer-list">{{plural organizers_count "Organizer(s)"}}</span>
+                    </div>
                 </span>
                 <span class="details-toggle-owner-list-wrapper">
-                    <span class="details-owner-count">{{owners.length}}</span>
-                    <a href="#" class="details-toggle-owner-list">Owners</a>
+                    <div class="row">
+                        <span class="details-owner-count">{{owners.length}}</span>
+                        <a href="#" class="details-toggle-owner-list">{{plural owners.length "Owner(s)"}}</a>
+                    </div>
                 </span>
                 <ul class="details-owner-list">
                     {{#each owners}}

@@ -319,6 +319,21 @@ Handlebars.registerHelper('formatArea', function (area) {
     return formatSquareFeet(area);
 });
 
+// Via https://gist.github.com/drmercer/c3e0b2e174718787dac5a181b2be83f6
+Handlebars.registerHelper('plural', function(number, text) {
+	var singular = number === 1;
+	// If no text parameter was given, just return a conditional s.
+	if (typeof text !== 'string') return singular ? '' : 's';
+	// Split with regex into group1/group2 or group1(group3)
+	var match = text.match(/^([^()\/]+)(?:\/(.+))?(?:\((\w+)\))?/);
+	// If no match, just append a conditional s.
+	if (!match) return text + (singular ? '' : 's');
+	// We have a good match, so fire away
+	return singular && match[1] // Singular case
+		|| match[2] // Plural case: 'bagel/bagels' --> bagels
+		|| match[1] + (match[3] || 's'); // Plural case: 'bagel(s)' or 'bagel' --> bagels
+});
+
 var details = flight.component(function () {
     this.receivedLotCount = function (event, data) {
         this.$node.find('.details-header-property-count').text(data.count);
@@ -331,7 +346,7 @@ var details = flight.component(function () {
 
         this.$node.find('.details-toggle-owner-list').on('click', function () {
             $(this).toggleClass('expanded');
-            $(this).parent().parent().find('.details-owner-list').slideToggle();
+            $(this).parents('.details-row').find('.details-owner-list').slideToggle();
             return false;
         });
     };
@@ -63757,7 +63772,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
