@@ -251,6 +251,18 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
             object_id__in=lots_qs.values_list('pk', flat=True)
         ).count()
 
+    def get_organizers(self, lots_qs):
+        organizers = []
+        organizers_qs = Organizer.objects.filter(
+            content_type=ContentType.objects.get_for_model(Lot),
+            object_id__in=lots_qs.values_list('pk', flat=True)
+        )
+        for organizer in organizers_qs:
+            organizers.append({
+                'name': organizer.name,
+            })
+        return organizers
+
     def get_owners(self, lots_qs):
         owners = []
         for row in lots_qs.values('owner__name').annotate(count=Count('pk'), area=Sum('polygon_area')).order_by():
@@ -281,12 +293,14 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
     def get_layer_counts(self, layers):
         counts = []
         for layer, qs in layers.items():
+            organizers = self.get_organizers(qs)
             owners = self.get_owners(qs)
-            if owners:
+            if organizers or owners:
                 counts.append({
                     'count': sum([o['count'] for o in owners]),
                     'label': self.layer_labels[layer],
                     'organizers_count': self.count_organizers(qs),
+                    'organizers': organizers,
                     'owners': owners,
                     'priority': layer in ('community_project', 'priority',),
                     'type': layer,
