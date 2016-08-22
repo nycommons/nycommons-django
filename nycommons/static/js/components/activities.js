@@ -50,7 +50,7 @@ var recentActivity = flight.component(function () {
 var activities = flight.component(function () {
     this.collapse = function (e) {
         this.$node.hide();
-        $(document).trigger('sidebarHeaderContentHidden');
+        $(document).trigger('sidebarHeaderContentHidden', { name: 'activities' });
         return false;
     };
 
