@@ -161,28 +161,21 @@
             </h2>
             {% if user.is_authenticated %}
                 <div class="usercontent-actions">
-                    {% if lot.remote and lot.remote_site == "llnyc" %}
-                        <p>This property is hosted on Living Lots NYC. Please add notes, photos, and documents there.</p>
-                        <a class="btn btn-default" href="{{ lot.remote_url }}" target="_blank">
-                            {% trans "view this property on living lots NYC" %}
+                    <span>{% trans "Add a" %}</span>
+                    {% if perms.notes.add_note %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
+                            {% trans "note" %}
                         </a>
-                    {% else %}
-                        <span>{% trans "Add a" %}</span>
-                        {% if perms.notes.add_note %}
-                            <a class="btn btn-default" href="{% url "usercontent:add_note" pk=lot.pk %}">
-                                {% trans "note" %}
-                            </a>
-                        {% endif %}
-                        {% if perms.files.add_file %}
-                            <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
-                                {% trans "file" %}
-                            </a>
-                        {% endif %}
-                        {% if perms.photos.add_photo %}
-                            <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
-                                {% trans "photo" %}
-                            </a>
-                        {% endif %}
+                    {% endif %}
+                    {% if perms.files.add_file %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_file" pk=lot.pk %}">
+                            {% trans "file" %}
+                        </a>
+                    {% endif %}
+                    {% if perms.photos.add_photo %}
+                        <a class="btn btn-default" href="{% url "usercontent:add_photo" pk=lot.pk %}">
+                            {% trans "photo" %}
+                        </a>
                     {% endif %}
                 </div>
             {% endif %}
