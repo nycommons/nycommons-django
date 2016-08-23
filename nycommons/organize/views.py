@@ -2,11 +2,12 @@ from django.contrib import messages
 
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 
-from livinglots import get_organizer_model, get_watcher_model
+from livinglots import get_organizer_model
 from livinglots_organize.forms import OrganizerForm
+from livinglots_organize.models import OrganizerType
 from livinglots_organize.views import AddParticipantView
 from lots.models import Lot
-from .forms import WatcherForm
+from .forms import SubscribeForm
 
 
 class AddOrganizerView(LoginRequiredMixin, PermissionRequiredMixin,
@@ -20,8 +21,12 @@ class AddOrganizerView(LoginRequiredMixin, PermissionRequiredMixin,
 
 class SubscribeView(AddParticipantView):
     content_type_model = Lot
-    form_class = WatcherForm
-    model = get_watcher_model()
+    form_class = SubscribeForm
+    initial = {
+        'post_publicly': False,
+        'type': OrganizerType.objects.get(name='individual'),
+    }
+    model = get_organizer_model()
     template_name = 'livinglots/organize/subscribe.html'
 
     def get_success_url(self):

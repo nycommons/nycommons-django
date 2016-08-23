@@ -147,7 +147,7 @@
             <div class="lot-detail-details lot-detail-section lot-detail-main-section">
                 <h2>{% trans "Admin Details" %}</h2>
                 <div class="help-text">{% trans "(This section is only visible to admins.)" %}</div>
-                <a class="btn btn-default" href="{% url "admin:organize_watcher_changelist" %}?object_id={{ lot.pk }}">View subscribers to this lot</a>
+                <a class="btn btn-default" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">View subscribers to this lot</a>
             </div>
         {% endif %}
     </div>

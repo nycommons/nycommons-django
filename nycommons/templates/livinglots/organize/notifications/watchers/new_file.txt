@@ -1,2 +1,0 @@
-{% load flatblocks %}{% flatblock "organize.notifications.watchers.new_file" evaluated=True using="flatblocks/flatblock.txt" %}
-{% include "livinglots/organize/notifications/watchers/_footer.txt" %}

@@ -1,12 +1,9 @@
 from django.core.urlresolvers import reverse
 
-from livinglots_organize.models import BaseOrganizer, BaseWatcher
+from livinglots_organize.models import BaseOrganizer
 
 
 class Organizer(BaseOrganizer):
-    pass
-
-class Watcher(BaseWatcher):
 
     def get_edit_url(self):
         return reverse('organize:edit_participant', kwargs={
@@ -15,6 +12,5 @@ class Watcher(BaseWatcher):
         })
 
 
-# Require email fields for both Organizer and Watcher instances
+# Require email fields for Organizer instances
 Organizer._meta.get_field('email').blank = False
-Watcher._meta.get_field('email').blank = False
