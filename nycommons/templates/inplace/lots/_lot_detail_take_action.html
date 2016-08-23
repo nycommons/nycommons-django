@@ -7,16 +7,9 @@
             <h3>{% trans "Stay Up to Date" %}</h3>
             <p>{% trans "Get updates about this property." %}
             <div>
-                {% if lot.remote and lot.remote_site == "llnyc" %}
-                    <p>This property is hosted on Living Lots NYC. Please subscribe there for updates to this property.</p>
-                    <a class="btn btn-default" href="{{ lot.remote_url }}" target="_blank">
-                        {% trans "view this property on living lots NYC" %}
-                    </a>
-                {% else %}
-                    <a class="btn btn-small btn-default" href="{% url "organize:subscribe" pk=lot.pk %}">
-                        {% trans "subscribe" %}
-                    </a>
-                {% endif %}
+                <a class="btn btn-small btn-default" href="{% url "organize:subscribe" pk=lot.pk %}">
+                    {% trans "subscribe" %}
+                </a>
             </div>
         </section>
 
@@ -96,20 +89,13 @@
                 {% render_organizer_list for lot %}
 
                 {% if perms.organizers.add_organizer %}
-                    {% if lot.remote and lot.remote_site == "llnyc" %}
-                        <p>This property is hosted on Living Lots NYC. Please subscribe there for updates to this property.</p>
-                        <a class="btn btn-default" href="{{ lot.remote_url }}" target="_blank">
-                            {% trans "view this property on living lots NYC" %}
+                    <a class="btn btn-small btn-default" href="{% url "organize:add_organizer" pk=lot.pk %}">
+                        {% trans "add an organizer" %}
+                    </a>
+                    {% if "lots.change_lot" in perms %}
+                        <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
+                            {% trans "View all in admin" %}
                         </a>
-                    {% else %}
-                        <a class="btn btn-small btn-default" href="{% url "organize:add_organizer" pk=lot.pk %}">
-                            {% trans "add an organizer" %}
-                        </a>
-                        {% if "lots.change_lot" in perms %}
-                            <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
-                                {% trans "View all in admin" %}
-                            </a>
-                        {% endif %}
                     {% endif %}
                 {% endif %}
             </div>
