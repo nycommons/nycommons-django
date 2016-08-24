@@ -3,11 +3,10 @@ from django.contrib import messages
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 
 from livinglots import get_organizer_model
-from livinglots_organize.forms import OrganizerForm
 from livinglots_organize.models import OrganizerType
 from livinglots_organize.views import AddParticipantView
 from lots.models import Lot
-from .forms import SubscribeForm
+from .forms import OrganizerForm, SubscribeForm
 
 
 class AddOrganizerView(LoginRequiredMixin, PermissionRequiredMixin,

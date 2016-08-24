@@ -1,8 +1,21 @@
 from django.forms import HiddenInput
 
-from livinglots_organize.forms import ParticipantForm
+from livinglots_organize.forms import ParticipantForm, OrganizerForm as BaseOrganizerForm
 
 from .models import Organizer
+
+
+class OrganizerForm(BaseOrganizerForm):
+
+    class Meta(BaseOrganizerForm.Meta):
+        exclude = (
+            'added',
+            'remote',
+            'remote_locked',
+            'remote_pk',
+            'remote_site',
+            'remote_url',
+        )
 
 
 class SubscribeForm(ParticipantForm):
@@ -12,6 +25,11 @@ class SubscribeForm(ParticipantForm):
             'added',
             'facebook_page',
             'notes',
+            'remote',
+            'remote_locked',
+            'remote_pk',
+            'remote_site',
+            'remote_url',
             'url',
         )
         widgets = {

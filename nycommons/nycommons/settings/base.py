@@ -340,7 +340,10 @@ LIVING_LOTS = {
 REMOTE_LOTS = {
     'llnyc': {
         'api_lots_url': 'http://localhost:8002/lot/geojson/visible/',
+        'api_organizers_url': 'http://localhost:8002/organize/export/json/',
+        'api_key': get_env_variable('LLNYC_API_KEY'),
         'lot_permalink_url_pattern': 'http://localhost:8002/lot/%d/',
+        'organizer_permalink_url_pattern': 'http://localhost:8002/lot/%d/grow-community/organize/%s/edit/',
     },
 }
 

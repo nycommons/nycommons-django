@@ -16,6 +16,7 @@ from nycdata.boroughs import find_borough, get_borough_number
 from nycdata.bbls import build_bbl
 
 from organize.models import Organizer
+from remote.models import RemoteMixin
 
 
 ureg = UnitRegistry()
@@ -344,36 +345,15 @@ class LotMixin(models.Model):
         abstract = True
 
 
-class RemoteLotMixin(models.Model):
+class RemoteLotMixin(RemoteMixin, models.Model):
     """
     A mixin adding data to track remote lots--lots that are largely hosted on
     another site but are mirrored here.
     """
-    remote = models.BooleanField(
-        default=False,
-        help_text=_('Is the lot from a remote site?'),
-    )
-    remote_site = models.CharField(
-        blank=True,
-        null=True,
-        max_length=50,
-        help_text=_('Which remote site is the lot from?'),
-    )
-    remote_pk = models.PositiveIntegerField(
-        blank=True,
-        null=True,
-        help_text=_('What is the id of the lot on the remote site?'),
-    )
-    remote_locked = models.BooleanField(
-        default=False,
-        help_text=_('When refreshing lots from the remote site, can we update this one?'),
-    )
-
     def _remote_url(self):
         pattern = settings.REMOTE_LOTS[self.remote_site]['lot_permalink_url_pattern']
         return pattern % self.remote_pk
     remote_url = property(_remote_url)
-
 
     class Meta:
         abstract = True
