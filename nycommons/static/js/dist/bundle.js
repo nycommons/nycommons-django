@@ -125,7 +125,7 @@ var emailParticipants = flight.component(function () {
         failureContainerSelector: '.email-participants-failure-container',
         formContainerSelector: '.email-participants-form-container',
         formEmailsSelector: '.email-participants-form-emails',
-        formWatchersSelector: '.email-participants-form-watchers',
+        formOrganizersSelector: '.email-participants-form-organizers',
         formSelector: '.email-participants-form',
         map: null,
         submitButtonSelector: '.email-participants-submit',
@@ -133,7 +133,7 @@ var emailParticipants = flight.component(function () {
         successContainerSelector: '.email-participants-success-container',
         successEmailsSelector: '.email-participants-success-emails',
         successSubjectSelector: '.email-participants-success-subject',
-        successWatchersSelector: '.email-participants-success-watchers',
+        successOrganizersSelector: '.email-participants-success-organizers',
         textSelector: ':input[name=text]'
     });
 
@@ -157,7 +157,7 @@ var emailParticipants = flight.component(function () {
     this.mailCountReceived = function (data) {
         this.emailCount = data.emails;
         this.select('formEmailsSelector').text(data.emails);
-        this.select('formWatchersSelector').text(data.watchers);
+        this.select('formOrganizersSelector').text(data.organizers);
         this.updateSubmitDisabled();
     };
 
@@ -178,7 +178,7 @@ var emailParticipants = flight.component(function () {
             .done((function (data) {
                 this.select('successEmailsSelector').text(data.emails);
                 this.select('successSubjectSelector').text(data.subject);
-                this.select('successWatchersSelector').text(data.watchers);
+                this.select('successOrganizersSelector').text(data.organizers);
                 this.select('formContainerSelector').hide();
                 this.select('successContainerSelector').show();
             }).bind(this))
@@ -216,8 +216,8 @@ var emailParticipants = flight.component(function () {
         this.select('submitButtonSelector').on('click', this.onSubmit.bind(this));
         this.select('subjectSelector').on('keyup', this.onKeyUp.bind(this));
         this.select('textSelector').on('keyup', this.onKeyUp.bind(this));
-        this.sendEmailUrl = Django.url('lots:lot_email_watchers');
-        this.emailOrganizersCountUrl = Django.url('lots:lot_count_watchers');
+        this.sendEmailUrl = Django.url('lots:lot_email_organizers');
+        this.emailOrganizersCountUrl = Django.url('lots:lot_count_organizers');
         this.updateMailCount();
 
         this.attr.map.on({
@@ -63772,7 +63772,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
