@@ -117,10 +117,12 @@
         {% include "livinglots/lots/_activities.html" %}
     </div>
 
-    <div class="sidebar-section sidebar-section-admin hidden-xs hidden-print">
-        <h2>{% trans "Admin" %}</h2>
-        <a href="#" class="sidebar-section-admin-expand"></a>
-    </div>
+    {% if user.is_authenticated %}
+        <div class="sidebar-section sidebar-section-admin hidden-xs hidden-print">
+            <h2>{% trans "Admin" %}</h2>
+            <a href="#" class="sidebar-section-admin-expand"></a>
+        </div>
+    {% endif %}
 </div>
 
 <div class="menu-expanded">
