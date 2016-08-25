@@ -111,7 +111,7 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 MAP_SCREENSHOT_URL = "https://nycommons.org/screenshot/"
 LOT_TILES_URL = "https://tiles.nycommons.org/lots/{z}/{x}/{y}.json"
-PARCELS_URL = "http://tiles.nycommons.org/parcels/{z}/{x}/{y}.json"
+PARCELS_URL = "https://tiles.nycommons.org/parcels/{z}/{x}/{y}.json"
 
 
 #
