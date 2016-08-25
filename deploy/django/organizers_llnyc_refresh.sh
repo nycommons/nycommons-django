@@ -2,4 +2,4 @@
 
 source $HOME/.bashrc
 workon $NYCOMMONS_VIRTUAL_ENV
-django-admin lots_llnyc_refresh
+django-admin organizers_llnyc_refresh
