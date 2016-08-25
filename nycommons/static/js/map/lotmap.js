@@ -6,6 +6,7 @@ var Spinner = require('spin.js');
 require('livinglots.addlot');
 require('livinglots.emailparticipants');
 var livinglotsBoundaries = require('livinglots.boundaries');
+require('livinglots.parcels');
 require('leaflet-plugins-bing');
 require('leaflet-dataoptions');
 require('leaflet-geojson-gridlayer');

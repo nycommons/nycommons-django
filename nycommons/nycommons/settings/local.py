@@ -89,3 +89,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MAP_SCREENSHOT_URL = "http://localhost:8001/"
 LOT_TILES_URL = "http://localhost:8080/lots/{z}/{x}/{y}.json"
+PARCELS_URL = "http://localhost:8080/parcels/{z}/{x}/{y}.json"

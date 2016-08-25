@@ -78,6 +78,7 @@ $(document).ready(function () {
         var params;
 
         var mapOptions = {
+            addLotSuccessMessage: "<p>Don't forget to edit the lot and change the <strong>commons type</strong> for it, otherwise it will not show up correctly!</p>",
             filterParams: filters.filtersToParams(null, {}),
             onMouseOverFeature: function (feature) {},
             onMouseOutFeature: function (feature) {}
@@ -151,7 +152,12 @@ $(document).ready(function () {
         });
 
         $('.admin-button-add-lot').click(function () {
-            map.enterLotAddMode();
+            if ($('.map-add-lot-mode').is('.on')) {
+                map.exitLotAddMode();
+            }
+            else {
+                map.enterLotAddMode();
+            }
         });
 
         $('.admin-button-email').click(function () {

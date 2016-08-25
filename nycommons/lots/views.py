@@ -21,7 +21,8 @@ from groundtruth.forms import GroundtruthRecordForm
 from inplace.views import GeoJSONListView, PlacesDetailView
 from livinglots_genericviews.views import JSONResponseView
 from livinglots_lots.signals import lot_details_loaded
-from livinglots_lots.views import FilteredLotsMixin, LotsCountView
+from livinglots_lots.views import (BaseCreateLotView, FilteredLotsMixin,
+                                   LotsCountView)
 from livinglots_lots.views import LotDetailView as BaseLotDetailView
 from livinglots_lots.views import LotsCSV as BaseLotsCSV
 from livinglots_lots.views import LotsKML as BaseLotsKML
@@ -431,3 +432,9 @@ class SameOwner(DetailView):
         context['organizing'] = organizing
         context['priority'] = priority
         return context
+
+
+class CreateLotView(BaseCreateLotView):
+
+    def get_parcels(self, pks):
+        return Parcel.objects.filter(pk__in=pks)
