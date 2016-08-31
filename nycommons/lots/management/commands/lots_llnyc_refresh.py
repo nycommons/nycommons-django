@@ -139,7 +139,6 @@ class Command(BaseCommand):
             'known_use_certainty': feature['properties'].get('known_use_certainty', 0),
             'lot_number': feature['properties']['lot'],
             'name': feature['properties'].get('name', None),
-            'organizing': feature['properties'].get('organizing', False),
             'owner': self.get_owner(feature),
             'postal_code': feature['properties'].get('postal_code', False),
             'remote': True,
