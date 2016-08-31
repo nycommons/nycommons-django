@@ -10,7 +10,7 @@ def update_organizing(sender, instance, **kwargs):
     """
     Once a Organizer is moderated and approved, track that on the lot.
     """
-    if not instance:
+    if not (instance and instance.post_publicly):
         return
 
     lot = instance.content_object
@@ -28,8 +28,8 @@ def update_organizing_delete(sender, instance, **kwargs):
         return
 
     lot = instance.content_object
-    
-    if not lot.organizers.exclude(pk=instance.pk).exists():
+    public_organizers = lot.organizers.filter(post_publicly=True)
+    if not public_organizers.exclude(pk=instance.pk).exists():
         lot.organizing = False
         lot.save()
 
