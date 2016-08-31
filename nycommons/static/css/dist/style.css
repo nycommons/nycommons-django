@@ -6399,6 +6399,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   color: #cfb933;
   background-color: #ffffff;
 }
+.usercontent-list-error {
+  display: none;
+}
 .user-content-actions {
   display: none;
   left: -10px;
@@ -6476,7 +6479,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   font-size: 12px;
   margin-top: 5px;
 }
-.recent-activity {
+.map-page .recent-activity {
   max-width: 280px;
 }
 .blog-archive-list {
