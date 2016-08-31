@@ -355,6 +355,11 @@ class RemoteLotMixin(RemoteMixin, models.Model):
         return pattern % self.remote_pk
     remote_url = property(_remote_url)
 
+    def _remote_content_url(self):
+        pattern = settings.REMOTE_LOTS[self.remote_site]['lot_content_url_pattern']
+        return pattern % self.remote_pk
+    remote_content_url = property(_remote_content_url)
+
     class Meta:
         abstract = True
 

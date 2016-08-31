@@ -179,8 +179,114 @@
                     {% endif %}
                 </div>
             {% endif %}
-            <div class="usercontent-list">
-                {% render_user_content_list for lot %}
+            <div class="usercontent-list"
+                 {% if lot.get_usercontent_url %}data-local-content-url="{{ lot.get_usercontent_url }}"{% endif %}
+                 {% if lot.remote %}data-remote-content-url="{{ lot.remote_content_url }}"{% endif %}
+                >
+                <div class="usercontent-list-content">{% trans "Nothing yet." %}</div>
+                <div class="usercontent-list-error alert alert-warning">
+                    {% trans "Sorry, we are having a hard time loading content. Please try again later." %}
+                </div>
+
+                <script id="usercontent-file-template" type="text/x-handlebars-template">
+                    {% verbatim %}
+                        <div class="file" id="file-{{id}}">
+                            <div class="user-content-actions">
+                                <a href="#file-{{id}}" class="user-content-actions-permalink"></a>
+                            </div>
+                            <div class="file-meta">
+                                <div class="file-added">
+                                    {{contentTimestamp added}}
+                                </div>
+                                <div class="file-added-by">
+                                    <span class="file-added-by-name">
+                                        {{#if added_by_name}}
+                                            {{added_by_name}}
+                                        {{else}}
+                                            someone
+                                        {{/if}}
+                                    </span>
+                                    <span class="file-added-by-verb">uploaded</span>
+                                </div>
+                            </div>
+                            <span class="file-details">
+                                <span class="file-title">
+                                    <a href="{{url}}">
+                                        {{title}}
+                                    </a>
+                                </span>
+                                <span class="file-description">
+                                    {{description}}
+                                </span>
+                            </span>
+
+                            <div class="user-content-separator"></div>
+                        </div>
+                    {% endverbatim %}
+                </script>
+
+                <script id="usercontent-note-template" type="text/x-handlebars-template">
+                    {% verbatim %}
+                        <div class="note" id="note-{{id}}">
+                            <div class="user-content-actions">
+                                <a href="#note-{{id}}" class="user-content-actions-permalink"></a>
+                            </div>
+                            <div class="note-meta">
+                                <div class="note-added">
+                                    {{contentTimestamp added}}
+                                </div>
+                                <div class="note-added-by">
+                                    <span class="note-added-by-name">
+                                        {{#if added_by_name}}
+                                            {{added_by_name}}
+                                        {{else}}
+                                            someone
+                                        {{/if}}
+                                    </span>
+                                    <span class="note-added-by-verb">wrote</span>
+                                </div>
+                            </div>
+                            <span class="note-details">{{{text}}}</span>
+                            <div class="user-content-separator"></div>
+                        </div>
+                    {% endverbatim %}
+                </script>
+
+                <script id="usercontent-photo-template" type="text/x-handlebars-template">
+                    {% verbatim %}
+                        <div class="photo" id="photo-{{id}}">
+                            <div class="user-content-actions">
+                                <a href="#photo-{{id}}" class="user-content-actions-permalink"></a>
+                            </div>
+                            <div class="photo-meta">
+                                <div class="photo-added">
+                                    {{contentTimestamp added}}
+                                </div>
+                                <div class="photo-added-by">
+                                    <span class="photo-added-by-name">
+                                        {{#if added_by_name}}
+                                            {{added_by_name}}
+                                        {{else}}
+                                            someone
+                                        {{/if}}
+                                    </span>
+                                    <span class="photo-added-by-verb">
+                                        posted
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="photo-details">
+                                <div class="photo-image">
+                                    <img src="{{url}}" />
+                                </div>
+                                {{#if description}}
+                                    <span class="photo-description">{{description}}</span>
+                                {{/if}}
+                            </span>
+                            <div class="user-content-separator"></div>
+                        </div>
+                    {% endverbatim %}
+                </script>
             </div>
         </div>
     </aside>

@@ -13,6 +13,7 @@ var collapsibleSection = require('../components/collapse').collapsibleSection;
 var sameOwnerSection = require('../components/same-owner').sameOwnerSection;
 var mapstyles = require('../map/styles');
 var StreetView = require('../lib/streetview');
+var usercontent = require('../components/usercontent').usercontent;
 
 
 function getLotLayerOptions(lotPk) {
@@ -135,4 +136,5 @@ $(document).ready(function () {
 
     collapsibleSection.attachTo('section.collapsible');
     sameOwnerSection.attachTo('.lot-detail-same-owner');
+    usercontent.attachTo('.usercontent-list');
 });
