@@ -1,3 +1,5 @@
+{% load i18n %}
+
 <ul class="organizer-list">
     {% for organizer in organizers %}
         {% if organizer.post_publicly %}
@@ -16,6 +18,10 @@
             </li>
         {% endif %}
     {% empty %}
-        No one yet.
+        {% ifequal lot.known_use.name "community garden" %}
+            {% trans "No one is listed here yet, but it is part of a community garden. Drop by and say hi!" %}
+        {% else %}
+            {% trans "No one yet." %}
+        {% endifequal %}
     {% endfor %}
 </ul>
