@@ -37,7 +37,7 @@ function getLotLayerOptions(lotPk) {
 }
 
 function addBaseLayer(map) {
-    var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+    var streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 }
 
 function addLotsLayer(map) {
