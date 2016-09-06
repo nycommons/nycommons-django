@@ -87,6 +87,19 @@
         vertical-align: top;
     }
 
+    &-label-full {
+        @media (max-width: @screen-xs-max) {
+            display: none;
+        }
+    }
+
+    &-label-abbr {
+        display: none;
+        @media (max-width: @screen-xs-max) {
+            display: inline;;
+        }
+    }
+
     &-count {
         float: right;
 
