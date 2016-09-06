@@ -7126,6 +7126,19 @@ footer .social-media-twitter {
   text-transform: capitalize;
   vertical-align: top;
 }
+@media (max-width: 767px) {
+  .legend-label-full {
+    display: none;
+  }
+}
+.legend-label-abbr {
+  display: none;
+}
+@media (max-width: 767px) {
+  .legend-label-abbr {
+    display: inline;
+  }
+}
 .legend-count {
   float: right;
 }
