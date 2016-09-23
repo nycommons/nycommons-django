@@ -6482,6 +6482,18 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .map-page .recent-activity {
   max-width: 280px;
 }
+.pathway-recent-activities {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .pathway-recent-activities {
+    float: left;
+    width: 25%;
+  }
+}
 .blog-archive-list {
   list-style: none;
   padding: 0;
@@ -8028,6 +8040,7 @@ fieldset[disabled] .btn-show-details.active {
   padding-top: 35px;
   margin-left: -10px;
   padding-left: 10px;
+  padding-top: 0;
 }
 .organizer-list-item:last-of-type .user-content-separator {
   display: none;
