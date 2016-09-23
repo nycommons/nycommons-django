@@ -1,17 +1,24 @@
 {
     "version": 8,
-    "name": "Basic",
+    "name": "NYCommons",
     "metadata": {
         "mapbox:autocomposite": true
     },
+    "center": [
+        -73.95025285177366,
+        40.70518791082435
+    ],
+    "zoom": 16.30747954761431,
+    "bearing": 0,
+    "pitch": 0,
     "sources": {
         "composite": {
             "url": "mapbox://mapbox.mapbox-streets-v7",
             "type": "vector"
         }
     },
-    "sprite": "mapbox://sprites/newyorkcommons/ciqb8k12r000ic2nfknryenh5",
-    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "sprite": "mapbox://sprites/newyorkcommons/cirxogajr0023g6m8iewwksfh",
+    "glyphs": "mapbox://fonts/newyorkcommons/{fontstack}/{range}.pbf",
     "layers": [
         {
             "id": "background",
@@ -657,11 +664,71 @@
                 "text-halo-width": 1,
                 "text-halo-blur": 1
             }
+        },
+        {
+            "id": "road-label",
+            "type": "symbol",
+            "source": "composite",
+            "source-layer": "road_label",
+            "minzoom": 16,
+            "interactive": true,
+            "filter": [
+                "!in",
+                "class",
+                "",
+                "motorway",
+                "motorway_link",
+                "primary",
+                "secondary"
+            ],
+            "layout": {
+                "visibility": "visible",
+                "text-field": "{name_en}",
+                "symbol-placement": "line",
+                "text-rotation-alignment": "map",
+                "text-size": {
+                    "base": 1,
+                    "stops": [
+                        [
+                            0,
+                            5
+                        ],
+                        [
+                            22,
+                            9
+                        ]
+                    ]
+                },
+                "text-transform": "uppercase",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Regular"
+                ],
+                "text-letter-spacing": 0.1
+            },
+            "paint": {
+                "text-halo-width": 2,
+                "text-halo-color": "rgba(255,255,255,0.75)",
+                "text-opacity": {
+                    "base": 1,
+                    "stops": [
+                        [
+                            15,
+                            0.75
+                        ],
+                        [
+                            22,
+                            1
+                        ]
+                    ]
+                },
+                "text-color": "#666"
+            }
         }
     ],
-    "created": "2016-07-06T18:46:33.935Z",
-    "id": "ciqb8k12r000ic2nfknryenh5",
-    "modified": "2016-07-06T18:46:33.935Z",
+    "created": "2016-08-16T16:22:11.651Z",
+    "id": "cirxogajr0023g6m8iewwksfh",
+    "modified": "2016-09-23T20:59:23.289Z",
     "owner": "newyorkcommons",
     "draft": false
 }
