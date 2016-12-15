@@ -21,7 +21,7 @@ unicodecsv==0.14.1
 
 
 # Django-specific requirements
-Django==1.9.9
+Django==1.9.12
 FeinCMS==1.12.1
 django-activity-stream==0.6.1
 django-admin-enhancer==1.0.0
