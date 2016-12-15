@@ -98,7 +98,7 @@ class Command(BaseCommand):
             # Delete waterfront lots on the same parcel
             Lot.objects.filter(bbl=bbl, commons_type='waterfront').delete()
 
-            if Lot.objects.filter(bbl=bbl).exists() and bbl.startswith('6'):
+            if bbl and Lot.objects.filter(bbl=bbl).exists() and bbl.startswith('6'):
                 # If a lot already exists with this fake bbl make a new fake bbl
                 borough = feature['properties']['borough']
                 bbl, block, lot = Lot.objects.fake_bbl(borough)
