@@ -5622,6 +5622,7 @@ a.thumbnail.active {
 }
 .user-content-content {
   display: block;
+  word-wrap: break-word;
 }
 .close-button {
   background-image: url("../../img/close.png");
@@ -6635,6 +6636,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 }
 .usercontent-list .file-details {
   display: block;
+  word-wrap: break-word;
   margin-bottom: 10px;
   margin-top: 10px;
 }
@@ -8031,6 +8033,7 @@ fieldset[disabled] .btn-show-details.active {
 }
 .usercontent-list .note-details {
   display: block;
+  word-wrap: break-word;
 }
 .organizer-list {
   list-style: none;
@@ -8097,6 +8100,7 @@ fieldset[disabled] .btn-show-details.active {
 }
 .usercontent-list .photo-details {
   display: block;
+  word-wrap: break-word;
   margin-bottom: 10px;
   margin-top: 10px;
 }
