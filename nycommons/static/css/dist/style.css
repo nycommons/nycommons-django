@@ -6481,6 +6481,7 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   margin-top: 5px;
 }
 .map-page .recent-activity {
+  max-height: 30vh;
   max-width: 280px;
 }
 .pathway-recent-activities {
@@ -7579,6 +7580,7 @@ footer .social-media-twitter {
 }
 .map-page {
   height: 100%;
+  overflow: hidden;
   width: 100%;
 }
 @media (max-width: 767px) {
