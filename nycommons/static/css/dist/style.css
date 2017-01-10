@@ -6915,6 +6915,9 @@ footer .social-media a {
 footer .social-media-facebook {
   background-image: url("/static/img/facebook-footer.png");
 }
+footer .social-media-github {
+  background-image: url("/static/img/github-footer.png");
+}
 footer .social-media-instagram {
   background-image: url("/static/img/instagram-footer.png");
 }
@@ -7993,6 +7996,9 @@ fieldset[disabled] .btn-show-details.active {
 .social-media-facebook {
   background-image: url("/static/img/facebook.png");
 }
+.social-media-github {
+  background-image: url("/static/img/github.png");
+}
 .social-media-instagram {
   background-image: url("/static/img/instagram.png");
 }
@@ -8062,6 +8068,9 @@ fieldset[disabled] .btn-show-details.active {
 .add-organizer-page input[name=post_publicly] {
   box-shadow: none;
   width: 10%;
+}
+.pathway-content img {
+  max-width: 100%;
 }
 .usercontent-list .photo {
   padding-top: 35px;
