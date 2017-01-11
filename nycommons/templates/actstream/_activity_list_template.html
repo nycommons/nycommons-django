@@ -5,7 +5,10 @@
                 <span class="actor">{{actor}}</span>
                 <span class="verb">{{verb}}</span>
                 {{#if details}}
-                    {{{details}}}
+                    <div class="action-details-container">
+                        <div class="action-details">{{{details}}}</div>
+                        <div><a href="{{target_url}}" target="_blank">read more</a></div>
+                    </div>
                 {{/if}}
                 on
                 {{#if target_url}}

@@ -6454,14 +6454,6 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   margin-top: 5px;
   width: 20px;
 }
-.recent-activity.expanded .activity-list-expand::after,
-.map-header-content-activities.expanded .activity-list-expand::after {
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-  transform: rotate(90deg);
-}
 .recent-activity .action-list,
 .map-header-content-activities .action-list {
   list-style: none;
@@ -6480,10 +6472,37 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .map-header-content-activities .action-list .action .actor {
   font-weight: bold;
 }
+.recent-activity .action-list .action-details-container,
+.map-header-content-activities .action-list .action-details-container {
+  margin: 5px 0;
+}
+.recent-activity .action-list .action-details,
+.map-header-content-activities .action-list .action-details {
+  line-height: 17px;
+  max-height: 51px;
+  overflow-y: hidden;
+}
+.recent-activity .action-list .action-details p,
+.map-header-content-activities .action-list .action-details p {
+  display: none;
+}
+.recent-activity .action-list .action-details p:first-of-type,
+.map-header-content-activities .action-list .action-details p:first-of-type {
+  display: block;
+  margin-top: 0;
+}
 .recent-activity .action-list .action-timestamp,
 .map-header-content-activities .action-list .action-timestamp {
   font-size: 12px;
   margin-top: 5px;
+}
+.recent-activity.expanded .activity-list-expand::after,
+.map-header-content-activities.expanded .activity-list-expand::after {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 .map-page .recent-activity {
   max-width: 280px;

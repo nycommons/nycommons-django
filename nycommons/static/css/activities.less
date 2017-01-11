@@ -27,12 +27,6 @@
         }
     }
 
-    &.expanded {
-        .activity-list-expand::after {
-            .collapse-indicator-expanded();
-        }
-    }
-
     .action-list {
         list-style: none;
         padding-left: 0;
@@ -49,10 +43,35 @@
                 font-weight: bold;
             }
 
+            &-details-container {
+                margin: 5px 0;
+            }
+
+            &-details {
+                line-height: 17px;
+                max-height: 51px;
+                overflow-y: hidden;
+
+                p {
+                    display: none;
+                }
+
+                p:first-of-type {
+                    display: block;
+                    margin-top: 0;
+                }
+            }
+
             &-timestamp {
                 font-size: 12px;
                 margin-top: 5px;
             }
+        }
+    }
+
+    &.expanded {
+        .activity-list-expand::after {
+            .collapse-indicator-expanded();
         }
     }
 }
