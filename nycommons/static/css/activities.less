@@ -4,7 +4,12 @@
     padding-right: 0;
 
     .activity-stream {
-        min-height: 60px;
+        max-height: 30vh;
+        overflow-y: auto;
+    }
+
+    .activity-header {
+        margin: 10px 0;
     }
 
     .activity-header h2 {
@@ -53,7 +58,6 @@
 }
 
 .map-page .recent-activity {
-    max-height: 30vh;
     max-width: @sidebar-width;
     word-wrap: break-word;
 }

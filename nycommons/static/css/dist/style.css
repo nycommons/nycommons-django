@@ -6425,7 +6425,12 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 }
 .recent-activity .activity-stream,
 .map-header-content-activities .activity-stream {
-  min-height: 60px;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.recent-activity .activity-header,
+.map-header-content-activities .activity-header {
+  margin: 10px 0;
 }
 .recent-activity .activity-header h2,
 .map-header-content-activities .activity-header h2 {
@@ -6481,8 +6486,8 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   margin-top: 5px;
 }
 .map-page .recent-activity {
-  max-height: 30vh;
   max-width: 280px;
+  word-wrap: break-word;
 }
 .pathway-recent-activities {
   position: relative;
