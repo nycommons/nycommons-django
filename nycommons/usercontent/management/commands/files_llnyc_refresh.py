@@ -19,6 +19,7 @@ class Command(UsercontentRefreshCommand):
         response = requests.get(url)
         local_filename = os.path.join(
             settings.MEDIA_ROOT,
+            'files',
             'remote_llnyc_%d_%s' % (pk, url.split('/')[-1])
         )
         with open(local_filename, 'wb') as f:
