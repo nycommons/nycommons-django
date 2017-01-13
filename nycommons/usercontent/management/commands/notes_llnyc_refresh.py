@@ -11,7 +11,7 @@ class Command(UsercontentRefreshCommand):
     remote_url = settings.REMOTE_LOTS['llnyc']['api_notes_url']
     remote_object_key = 'notes'
 
-    def object_kwargs(self, note_json):
-        kwargs = super(Command, self).object_kwargs(note_json)
+    def object_kwargs(self, note_json, orig=None):
+        kwargs = super(Command, self).object_kwargs(note_json, orig=orig)
         kwargs['text'] = note_json['text']
         return kwargs

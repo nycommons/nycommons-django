@@ -339,6 +339,7 @@ LIVING_LOTS = {
 
 REMOTE_LOTS = {
     'llnyc': {
+        'api_files_url': 'http://localhost:8002/content/files/export/json/',
         'api_lots_url': 'http://localhost:8002/lot/geojson/visible/',
         'api_notes_url': 'http://localhost:8002/content/notes/export/json/',
         'api_organizers_url': 'http://localhost:8002/organize/export/json/',

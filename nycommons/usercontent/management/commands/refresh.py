@@ -123,7 +123,7 @@ class UsercontentRefreshCommand(BaseCommand):
                 lot.pk,
             ))
         else:
-            kwargs = self.object_kwargs(object_json)
+            kwargs = self.object_kwargs(object_json, orig=local_object)
             self.local_model.objects.filter(pk=local_object.pk).update(**kwargs)
         return local_object
 
@@ -180,7 +180,7 @@ class UsercontentRefreshCommand(BaseCommand):
         if not dry_run:
             to_delete.delete()
 
-    def object_kwargs(self, object_json):
+    def object_kwargs(self, object_json, orig=None):
         """
         Get kwargs for creating and updating the given object based on its JSON
         representation

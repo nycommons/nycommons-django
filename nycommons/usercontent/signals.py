@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 
 def add_remote_fields(sender, **kwargs):
 
-    if sender.__name__ not in ('Note',):
+    if sender.__name__ not in ('File', 'Note',):
         return
 
     models.BooleanField(
