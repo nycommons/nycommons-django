@@ -1390,13 +1390,6 @@ var usercontent = flight.component(function () {
             }).bind(this));
     };
 
-    this.loadRemoteContent = function () {
-        if (!this.$node.data('remoteContentUrl')) {
-            return;
-        }
-        this.loadContent(this.$node.data('remoteContentUrl'));
-    };
-
     this.loadLocalContent = function () {
         if (!this.$node.data('localContentUrl')) {
             return;
@@ -1448,7 +1441,6 @@ var usercontent = flight.component(function () {
         this.on('usercontent:contentloading', this.onContentLoading.bind(this));
 
         this.loadLocalContent();
-        this.loadRemoteContent();
     });
 });
 
