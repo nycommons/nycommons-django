@@ -342,6 +342,7 @@ REMOTE_LOTS = {
         'api_files_url': 'http://localhost:8002/content/files/export/json/',
         'api_lots_url': 'http://localhost:8002/lot/geojson/visible/',
         'api_notes_url': 'http://localhost:8002/content/notes/export/json/',
+        'api_photos_url': 'http://localhost:8002/content/photos/export/json/',
         'api_organizers_url': 'http://localhost:8002/organize/export/json/',
         'api_key': get_env_variable('LLNYC_API_KEY'),
         'lot_content_url_pattern': 'http://localhost:8002/lot/%d/content/json/',
