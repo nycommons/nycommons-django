@@ -6303,6 +6303,7 @@ section.collapsible > h6.collapsed::before {
 }
 .map-sidebar .map-header-content {
   margin-top: 0;
+  max-width: 80vw;
   -webkit-overflow-scrolling: touch;
 }
 .map-sidebar .map-header-content-details,
@@ -6481,6 +6482,11 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   line-height: 17px;
   max-height: 51px;
   overflow-y: hidden;
+  pointer-events: none;
+}
+.recent-activity .action-list .action-details a,
+.map-header-content-activities .action-list .action-details a {
+  pointer-events: auto;
 }
 .recent-activity .action-list .action-details p,
 .map-header-content-activities .action-list .action-details p {
