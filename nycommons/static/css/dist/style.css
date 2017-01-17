@@ -6514,18 +6514,6 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   max-width: 280px;
   word-wrap: break-word;
 }
-.pathway-recent-activities {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .pathway-recent-activities {
-    float: left;
-    width: 25%;
-  }
-}
 .blog-archive-list {
   list-style: none;
   padding: 0;
