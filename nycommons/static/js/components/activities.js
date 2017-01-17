@@ -62,7 +62,6 @@ var activities = flight.component(function () {
     };
 
     this.onScroll = function (e) {
-        console.log('onScroll');
         var actionTop = this.$node.find('.action:last-of-type').offset().top;
         var documentHeight = $(document).height();
         if (actionTop - documentHeight < 150) {
