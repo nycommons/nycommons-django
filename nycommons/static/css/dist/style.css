@@ -6514,6 +6514,10 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   max-width: 280px;
   word-wrap: break-word;
 }
+.pathway-recent-activities .activity-stream {
+  max-height: 80vh;
+  overflow-y: auto;
+}
 .blog-archive-list {
   list-style: none;
   padding: 0;
