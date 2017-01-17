@@ -62,6 +62,7 @@ var activities = flight.component(function () {
     };
 
     this.onScroll = function (e) {
+        console.log('onScroll');
         var actionTop = this.$node.find('.action:last-of-type').offset().top;
         var documentHeight = $(document).height();
         if (actionTop - documentHeight < 150) {
@@ -73,7 +74,7 @@ var activities = flight.component(function () {
         $(document).on('receivedActivities', this.receivedActivities.bind(this));
         this.select('expandSelector').on('click', this.collapse.bind(this));
 
-        this.scrollable = this.$node.parent();
+        this.scrollable = this.select('streamSelector');
         this.scrollable.on('scroll', _.debounce(this.onScroll.bind(this), 200));
     });
 }, activityMixin);
