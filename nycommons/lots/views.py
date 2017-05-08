@@ -9,7 +9,7 @@ import re
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.db.models import Count, Sum
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, View
