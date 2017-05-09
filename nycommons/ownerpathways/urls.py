@@ -1,10 +1,10 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from .views import OwnerPathwaysDetailView, OwnerPathwaysListView
                     
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', OwnerPathwaysListView.as_view(), name='owner_pathway_list'),
     url(r'^(?P<slug>[^/]+)/$', OwnerPathwaysDetailView.as_view(),
         name='owner_pathway_detail'),
-)
+]

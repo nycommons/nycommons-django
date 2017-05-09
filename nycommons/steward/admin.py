@@ -1,12 +1,14 @@
 from django.contrib import admin
 
+from django_monitor.admin import MonitorAdmin
+
 from livinglots_steward.admin import (StewardNotificationAdminMixin,
                                       StewardProjectAdminMixin)
 
 from .models import StewardNotification, StewardProject
 
 
-class StewardNotificationAdmin(StewardNotificationAdminMixin, admin.ModelAdmin):
+class StewardNotificationAdmin(StewardNotificationAdminMixin, MonitorAdmin):
     pass
 
 

@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from articles.views import ArticleList
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', ArticleList.as_view(), name='faq_index'),
-)
+]
