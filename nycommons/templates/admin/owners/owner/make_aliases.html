@@ -13,6 +13,7 @@
         }
 
         django.jQuery(document).ready(function() {
+            django.jQuery('input[name="owner-autocomplete"]').prop('required', false)
             django.jQuery('#id_owner').bind('DOMNodeInserted', function() {
                 window.setTimeout(updateChosen, 10);
             });
