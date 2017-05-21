@@ -19,9 +19,7 @@ Installation
 
 ## Install the NYCommons Django project
 
-This is the project that runs the website.
-
- 1. Clone [nycommons-django](https://github.com/nycommons/nycommons-django) locally.
+ 1. Clone this repo locally.
  1. Create a Python environment where your requirements will be saved with [virtualenv](https://virtualenv.pypa.io/en/stable/) and [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/).
  1. Install the requirements: `pip install -r requirements/base.txt` and `pip install -r requirements/local.txt`.
  1. Set all the required environment variables in your shell. Copy [deploy/templates/envvars.sh](https://github.com/nycommons/nycommons-django/blob/master/deploy/templates/envvars.sh) somewhere and source it when developing the project.
