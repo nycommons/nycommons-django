@@ -18,7 +18,7 @@ Prerequisites
     * Add a user and database specifically for NYCommons with PostGIS enabled on it. It may be easiest to keep both named `nycommons`.
 
     * Load a development database snapshot.
-    
+
  3. node LTS version 6.10.* and npm.
 
 Install the NYCommons Django project
@@ -27,7 +27,7 @@ Install the NYCommons Django project
  1. Clone this repo locally.
  2. Create a Python environment where your requirements will be saved with `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_.
  3. Install the requirements: `pip install -r requirements/base.txt` and `pip install -r requirements/local.txt`.
- 4. Set all the required environment variables in your shell. Copy [deploy/templates/envvars.sh](https://github.com/nycommons/nycommons-django/blob/master/deploy/templates/envvars.sh) somewhere and source it when developing the project.
+ 4. Set all the required environment variables in your shell. Copy `deploy/templates/envvars.sh <https://github.com/nycommons/nycommons-django/blob/master/deploy/templates/envvars.sh>`_ somewhere and source it when developing the project.
  5. With the virtualenv activated, try to run the Django project: `django-admin runserver_plus`. If there are issues with environment variables, the database, or other requirements, they should appear here.
  6. The database dump you loaded will have no useful superusers. Create one with `django-admin createsuperuser`.
 
