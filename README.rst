@@ -14,8 +14,11 @@ Prerequisites
 
  1. Python 2.x.
  2. `Postgres <https://www.postgresql.org/>`_ and `PostGIS <http://postgis.net/>`_. Depending on your OS this can be relatively painless.
+
     * Add a user and database specifically for NYCommons with PostGIS enabled on it. It may be easiest to keep both named `nycommons`.
+
     * Load a development database snapshot.
+    
  3. node LTS version 6.10.* and npm.
 
 Install the NYCommons Django project
@@ -40,18 +43,18 @@ Install TileStache
 Install the client-side requirements
 ************************************
 
- 1. `cd nycommons/static`
- 2. `npm install`
- 3. `grunt dev` should work without any errors.
+ 1. cd nycommons/static
+ 2. npm install
+ 3. grunt dev should work without any errors.
 
 Putting it all together
 ***********************
 
 Whenever you're developing for the site you'll want the following processes running:
 
- 1. Django: `django-admin runserver_plus`.
- 2. TileStache: `tilestache-server.py -c tilestache/tilestache.cfg`.
- 3. Grunt: `cd nycommons/static && grunt dev`.
+ 1. Django: django-admin runserver_plus.
+ 2. TileStache: tilestache-server.py -c tilestache/tilestache.cfg.
+ 3. Grunt: cd nycommons/static && grunt dev.
 
 
 Organization
