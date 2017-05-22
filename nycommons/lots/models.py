@@ -101,7 +101,7 @@ class LotManager(BaseLotManager):
         kwargs = super(LotManager, self).get_lot_kwargs_by_geom(geom, **defaults)
         if not borough:
             try:
-                borough = find_borough(kwargs['centroid']).label
+                borough = find_borough(kwargs['centroid'], polygon=geom).label
             except AttributeError:
                 raise ValueError('Could not find a borough for this lot. '
                                  'Either the lot is outside of NYC or the '
@@ -143,6 +143,7 @@ class LotGroupLotMixin(models.Model):
 
 COMMONS_TYPES = (
     ('library', 'library'),
+    ('park', 'park'),
     ('post office', 'post office'),
     ('public housing', 'public housing'),
     ('vacant lot / garden', 'vacant lot / garden'),

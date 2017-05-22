@@ -7,6 +7,8 @@
             {% trans "The property is a library according to city data." %}
         {% elif lot.commons_type == "post office" %}
             {% trans "The property is a post office according to city data." %}
+        {% elif lot.commons_type == "park" %}
+            {% trans "The property is a park according to city data." %}
         {% elif lot.commons_type == "public housing" %}
             {% trans "The property is part of a public housing development according to city data." %}
         {% elif lot.remote and lot.remote_site == "llnyc" %}

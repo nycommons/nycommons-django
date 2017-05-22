@@ -47,6 +47,9 @@ module.exports = function(grunt) {
         less: {
             dev: {
                 options: {
+                    plugins: [
+                        new (require('less-plugin-lists'))
+                    ],
                     sourceMap: true,
                     sourceMapFileInline: true
                 },
@@ -54,6 +57,11 @@ module.exports = function(grunt) {
                 dest: 'css/dist/style.dev.css'
             },
             production: {
+                options: {
+                    plugins: [
+                        new (require('less-plugin-lists'))
+                    ],
+                },
                 src: '<%= less.dev.src %>',
                 dest: 'css/dist/style.css'
             }

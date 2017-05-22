@@ -53,24 +53,11 @@
             background-image: data-uri("../img/legend-priority-organizing.png");
         }
 
-        &-library {
-            background-color: @lot-library-color;
-        }
-
-        &-post_office {
-            background-color: @lot-post-office-color;
-        }
-
-        &-public_housing {
-            background-color: @lot-public-housing-color;
-        }
-
-        &-vacant_lot {
-            background-color: @lot-vacant-lot-color;
-        }
-
-        &-waterfront {
-            background-color: @lot-waterfront-color;
+        .for-each(@pair in @legend-layers) {
+            @key: at(@pair, 1);
+            &-@{key} {
+                background-color: at(@pair, 2);
+            }
         }
 
         &-project {

@@ -53,20 +53,10 @@
         height: 10px;
         width: 10px;
 
-        &.library {
-            .make-lot-icon("library");
-        }
-        &.post-office {
-            .make-lot-icon("post-office");
-        }
-        &.public-housing {
-            .make-lot-icon("public-housing");
-        }
-        &.vacant-lot-garden {
-            .make-lot-icon("vacant-lot-garden");
-        }
-        &.waterfront {
-            .make-lot-icon("waterfront");
+        .for-each(@layer in @layers) {
+            &.@{layer} {
+                .make-lot-icon(@layer);
+            }
         }
     }
 }

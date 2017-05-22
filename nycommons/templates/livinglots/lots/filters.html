@@ -50,6 +50,21 @@
                 {% endfor %}
             </ul>
         </li>
+        <li class="filters-list-item filter-park-item">
+            <input id="layer-park" type="checkbox" class="filter filter-layer" name="park" data-type="layer" checked />
+            <label for="layer-park">{% trans "park" %}</label>
+            <a href="#" class="filter-layer-collapse"></a>
+
+            <ul class="filter-owners-list">
+                {% get_owners_by_commons_type "park" as owners %}
+                {% for owner in owners %}
+                    <li>
+                        <input type="checkbox" class="filter filter-owner" id="park-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                        <label for="park-owner-{{owner.pk }}">{{ owner.name }}</label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
         <li class="filters-list-item filter-library-item">
             <input id="layer-libraries" type="checkbox" class="filter filter-layer" name="library" data-type="layer" checked />
             <label for="layer-libraries">{% trans "libraries" %}</label>

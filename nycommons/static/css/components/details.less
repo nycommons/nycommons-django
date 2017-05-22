@@ -50,20 +50,11 @@
         border-bottom-color: @red;
     }
 
-    .library-row {
-        border-bottom-color: @lot-library-color;
-    }
-
-    .public_housing-row {
-        border-bottom-color: @lot-public-housing-color;
-    }
-
-    .post_office-row {
-        border-bottom-color: @lot-post-office-color;
-    }
-
-    .waterfront-row {
-        border-bottom-color: @lot-waterfront-color;
+    .for-each(@pair in @legend-layers) {
+        @key: at(@pair, 1);
+        .@{key}-row {
+            border-bottom-color: at(@pair, 2);
+        }
     }
 
     .details-lot-count,

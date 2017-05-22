@@ -39,6 +39,10 @@ L.LotMarker.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
+            // Send parks to the back, there are too many
+            if (this.feature.properties.commons_type === 'park') {
+                this.bringToBack();
+            }
         },
         'remove': function () {
             this.removeActionPath();

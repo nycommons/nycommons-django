@@ -124,44 +124,17 @@
             border-color: @lot-priority-color;
         }
     }
-    .filter-vacant-lot-item input[type=checkbox] {
-        &:checked + label:before {
-            background: @lot-vacant-lot-color;
-        }
-        & + label:before {
-            border-color: @lot-vacant-lot-color;
-        }
-    }
-    .filter-post-offices-item input[type=checkbox] {
-        &:checked + label:before {
-            background: @lot-post-office-color;
-        }
-        & + label:before {
-            border-color: @lot-post-office-color;
-        }
-    }
-    .filter-library-item input[type=checkbox] {
-        &:checked + label:before {
-            background: @lot-library-color;
-        }
-        & + label:before {
-            border-color: @lot-library-color;
-        }
-    }
-    .filter-public-housing-item input[type=checkbox] {
-        &:checked + label:before {
-            background: @lot-public-housing-color;
-        }
-        & + label:before {
-            border-color: @lot-public-housing-color;
-        }
-    }
-    .filter-waterfront-item input[type=checkbox] {
-        &:checked + label:before {
-            background: @lot-waterfront-color;
-        }
-        & + label:before {
-            border-color: @lot-waterfront-color;
+
+    .for-each(@pair in @filters-layers) {
+        @key: at(@pair, 1);
+
+        .filter-@{key}-item input[type=checkbox] {
+            &:checked + label:before {
+                background: at(@pair, 2);
+            }
+            & + label:before {
+                border-color: at(@pair, 2);
+            }
         }
     }
 }

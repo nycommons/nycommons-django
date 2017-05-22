@@ -2236,6 +2236,10 @@ L.LotMarker.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
+            // Send parks to the back, there are too many
+            if (this.feature.properties.commons_type === 'park') {
+                this.bringToBack();
+            }
         },
         'remove': function () {
             this.removeActionPath();
@@ -2424,6 +2428,7 @@ L.lotPolygon = function (latlngs, options) {
 
 var fillColors = {
     library: '#057FC6',
+    park: '#4def3e',
     'public housing': '#F5A623',
     'post office': '#662D91',
     'vacant lot / garden': '#1F9E48',
@@ -52962,7 +52967,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
