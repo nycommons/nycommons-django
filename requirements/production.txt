@@ -3,5 +3,15 @@ gunicorn==18.0
 python-memcached==1.53
 supervisor==3.0b1
 
+# Requests security for SSL
+certifi==2017.4.17
+cryptography==1.8.1
+idna==2.5
+ndg-httpsclient==0.4.2
+pyOpenSSL==17.0.0
+pyasn1==0.2.3
+pyparsing==2.2.0
+
+
 # Django requirements
 django-mailer==1.2.1
