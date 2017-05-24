@@ -144,6 +144,7 @@ class LotGroupLotMixin(models.Model):
 COMMONS_TYPES = (
     ('library', 'library'),
     ('park', 'park'),
+    ('park building', 'park building'),
     ('post office', 'post office'),
     ('public housing', 'public housing'),
     ('vacant lot / garden', 'vacant lot / garden'),

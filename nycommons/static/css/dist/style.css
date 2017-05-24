@@ -5886,6 +5886,9 @@ section.collapsible > h6.collapsed::before {
 .details-section .park-row {
   border-bottom-color: #4def3e;
 }
+.details-section .park-building-row {
+  border-bottom-color: #997940;
+}
 .details-section .library-row {
   border-bottom-color: #057FC6;
 }
@@ -6800,6 +6803,12 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .filters-section .filter-park-item input[type=checkbox] + label:before {
   border-color: #4def3e;
 }
+.filters-section .filter-park-building-item input[type=checkbox]:checked + label:before {
+  background: #997940;
+}
+.filters-section .filter-park-building-item input[type=checkbox] + label:before {
+  border-color: #997940;
+}
 .filters-section .filter-library-item input[type=checkbox]:checked + label:before {
   background: #057FC6;
 }
@@ -7154,6 +7163,9 @@ footer .social-media-twitter {
 }
 .legend-marker-park {
   background-color: #4def3e;
+}
+.legend-marker-park-building {
+  background-color: #997940;
 }
 .legend-marker-library {
   background-color: #057FC6;
@@ -7517,6 +7529,30 @@ footer .social-media-twitter {
   .lot-detail-page .lot-detail-icon {
     margin-left: -25px;
   }
+}
+.lot-detail-page .lot-detail-icon.park {
+  background-image: url("/static/img/lot-detail-icons/park.png");
+}
+.lot-detail-page .lot-detail-icon.park.organizing {
+  background-image: url("/static/img/lot-detail-icons/park-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.park.priority {
+  background-image: url("/static/img/lot-detail-icons/park-priority.png");
+}
+.lot-detail-page .lot-detail-icon.park.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/park-organizing-priority.png");
+}
+.lot-detail-page .lot-detail-icon.park-building {
+  background-image: url("/static/img/lot-detail-icons/park-building.png");
+}
+.lot-detail-page .lot-detail-icon.park-building.organizing {
+  background-image: url("/static/img/lot-detail-icons/park-building-organizing.png");
+}
+.lot-detail-page .lot-detail-icon.park-building.priority {
+  background-image: url("/static/img/lot-detail-icons/park-building-priority.png");
+}
+.lot-detail-page .lot-detail-icon.park-building.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/park-building-organizing-priority.png");
 }
 .lot-detail-page .lot-detail-icon.library {
   background-image: url("/static/img/lot-detail-icons/library.png");
@@ -8223,6 +8259,18 @@ fieldset[disabled] .btn-show-details.active {
 }
 #popup .lot-popup-icon.park.organizing.priority {
   background-image: url("/static/img/lot-detail-icons/park-organizing-priority.png");
+}
+#popup .lot-popup-icon.park-building {
+  background-image: url("/static/img/lot-detail-icons/park-building.png");
+}
+#popup .lot-popup-icon.park-building.organizing {
+  background-image: url("/static/img/lot-detail-icons/park-building-organizing.png");
+}
+#popup .lot-popup-icon.park-building.priority {
+  background-image: url("/static/img/lot-detail-icons/park-building-priority.png");
+}
+#popup .lot-popup-icon.park-building.organizing.priority {
+  background-image: url("/static/img/lot-detail-icons/park-building-organizing-priority.png");
 }
 #popup .lot-popup-icon.library {
   background-image: url("/static/img/lot-detail-icons/library.png");

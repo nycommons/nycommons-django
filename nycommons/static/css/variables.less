@@ -16,6 +16,7 @@
 @lot-access-color: @pink;
 @lot-library-color: #057FC6;
 @lot-park-color: #4def3e;
+@lot-park-building-color: #997940;
 @lot-post-office-color: @purple;
 @lot-public-housing-color: @orange;
 @lot-vacant-lot-color: @green;
@@ -62,10 +63,11 @@
 
 @sidebar-width: 280px;
 
-@layers: park, library, post-office, public-housing, vacant-lot-garden, waterfront;
+@layers: park, park-building, library, post-office, public-housing, vacant-lot-garden, waterfront;
 
 @filters-layers:
     park @lot-park-color,
+    park-building @lot-park-building-color,
     library @lot-library-color,
     post-offices @lot-post-office-color,
     public-housing @lot-public-housing-color,
@@ -74,6 +76,7 @@
 
 @legend-layers:
     park @lot-park-color,
+    park-building @lot-park-building-color,
     library @lot-library-color,
     post_office @lot-post-office-color,
     public_housing @lot-public-housing-color,
