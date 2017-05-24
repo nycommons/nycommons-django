@@ -2413,6 +2413,10 @@ L.LotPolygon.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
+            // Bring park buildings to the front, they're small!
+            if (this.feature.properties.commons_type === 'park building') {
+                this.bringToFront();
+            }
         }
     });
 });
@@ -52968,7 +52972,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports={
+module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

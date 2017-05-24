@@ -31,6 +31,10 @@ L.LotPolygon.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
+            // Bring park buildings to the front, they're small!
+            if (this.feature.properties.commons_type === 'park building') {
+                this.bringToFront();
+            }
         }
     });
 });
