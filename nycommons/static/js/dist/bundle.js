@@ -1938,7 +1938,7 @@ L.LotGeoJson = L.GeoJSON.extend({
             coords = geometry.coordinates,
             layers = [],
             latlng, latlngs, i, len,
-            options = L.extend({}, vectorOptions);
+            options = L.extend({}, vectorOptions, { commons_type: geojson.properties.commons_type });
 
         coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
 
@@ -2312,6 +2312,10 @@ L.LotMultiPolygon.addInitHook(function () {
     this.on({
         'add': function () {
             this.initActionPath();
+            // Bring park buildings to the front, they're small!
+            if (this.options.commons_type === 'park building') {
+                this.bringToFront();
+            }
         }
     });
 });
@@ -2414,7 +2418,7 @@ L.LotPolygon.addInitHook(function () {
         'add': function () {
             this.initActionPath();
             // Bring park buildings to the front, they're small!
-            if (this.feature.properties.commons_type === 'park building') {
+            if (this.options.commons_type === 'park building') {
                 this.bringToFront();
             }
         }
@@ -52972,7 +52976,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

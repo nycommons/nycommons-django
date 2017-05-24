@@ -47,7 +47,7 @@ L.LotGeoJson = L.GeoJSON.extend({
             coords = geometry.coordinates,
             layers = [],
             latlng, latlngs, i, len,
-            options = L.extend({}, vectorOptions);
+            options = L.extend({}, vectorOptions, { commons_type: geojson.properties.commons_type });
 
         coordsToLatLng = coordsToLatLng || L.GeoJSON.coordsToLatLng;
 
