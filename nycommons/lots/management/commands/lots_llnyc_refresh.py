@@ -10,6 +10,9 @@ from lots.models import Lot
 from owners.models import Owner
 
 
+LLNYC_PARKS_BUILDING_OWNER = 'New York City Department of Parks & Recreation - building'
+
+
 class Command(BaseCommand):
     help = 'Refresh data from LLNYC'
 
@@ -134,7 +137,7 @@ class Command(BaseCommand):
             'block': feature['properties']['block'],
             'borough': feature['properties']['borough'],
             'city': feature['properties'].get('city', None),
-            'commons_type': 'vacant lot / garden',
+            'commons_type': self.get_commons_type(feature),
             'known_use': self.get_use(feature),
             'known_use_certainty': feature['properties'].get('known_use_certainty', 0),
             'lot_number': feature['properties']['lot'],
@@ -147,10 +150,19 @@ class Command(BaseCommand):
         }
         return kwargs
 
+    def get_commons_type(self, feature):
+        if feature['properties']['owner_name'] == LLNYC_PARKS_BUILDING_OWNER:
+            return 'park building'
+        return 'vacant lot / garden'
+
     def get_owner(self, feature):
+        # If LLNYC marks it as a Parks building, just use Parks as owner
+        owner_name = feature['properties']['owner_name']
+        if owner_name == LLNYC_PARKS_BUILDING_OWNER:
+            owner_name = 'New York City Department of Parks and Recreation'
         try:
             return Owner.objects.get_or_create(
-                name=feature['properties']['owner_name'],
+                name=owner_name,
                 defaults={
                     'owner_type': feature['properties']['owner_type'],
                 }
