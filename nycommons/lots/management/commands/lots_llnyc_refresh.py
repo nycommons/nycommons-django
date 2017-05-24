@@ -143,7 +143,7 @@ class Command(BaseCommand):
             'lot_number': feature['properties']['lot'],
             'name': feature['properties'].get('name', None),
             'owner': self.get_owner(feature),
-            'postal_code': feature['properties'].get('postal_code', False),
+            'postal_code': feature['properties'].get('postal_code', None),
             'remote': True,
             'remote_site': 'llnyc',
             'remote_pk': feature['properties']['pk'],
