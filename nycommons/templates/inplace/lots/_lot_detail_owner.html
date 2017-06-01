@@ -5,7 +5,7 @@
     <div>
         {% if lot.owner %}
             <section class="lot-detail-details">
-                <h3>{% trans "Official Owner" %}</h2>
+                <h3>{% trans "Official Owner" %}</h3>
                 <div>
                     {{ lot.owner|default:"unknown" }}
 
@@ -44,6 +44,23 @@
                 </div>
 
                 {% render_owner_pathway_summary_list for lot %}
+            </section>
+        {% endif %}
+
+        {% if lot.urban_renewal_records %}
+            <section class="lot-detail-details">
+                <h3>{% trans "Urban Renewal" %}</h3>
+                {% for plan_name in lot.urban_renewal_plan_names %}
+                    <div>
+                        {% if lot.lots.count > 1 %}
+                            A portion of this property
+                        {% else %}
+                            This property
+                        {% endif %}
+                        is part of the urban renewal plan
+                        <a href="http://www.urbanreviewer.org/#plan={{ plan_name|urlencode }}" target="_blank">{{ plan_name }}</a>.
+                    </div>
+                {% endfor %}
             </section>
         {% endif %}
 

@@ -306,6 +306,20 @@ class LotMixin(models.Model):
             return [self,]
     lots = property(_get_lots)
 
+    def _get_urban_renewal_records(self):
+        records = []
+        for l in self.lots:
+            try:
+                records.append(l.parcel.urbanrenewalrecord)
+            except Exception:
+                continue
+        return records
+    urban_renewal_records = property(_get_urban_renewal_records)
+
+    def _get_urban_renewal_plan_names(self):
+        return sorted(list(set([r.plan_name for r in self.urban_renewal_records])))
+    urban_renewal_plan_names = property(_get_urban_renewal_plan_names)
+
     def get_new_lotgroup_kwargs(self):
         kwargs = super(LotMixin, self).get_new_lotgroup_kwargs()
         kwargs.update({
