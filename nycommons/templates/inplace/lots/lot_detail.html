@@ -193,6 +193,10 @@
                         <div class="file" id="file-{{id}}">
                             <div class="user-content-actions">
                                 <a href="#file-{{id}}" class="user-content-actions-permalink"></a>
+                                {{#if admin}}
+                                    <a href="{{edit_url}}" class="user-content-actions-edit">edit</a>
+                                    <a href="{{delete_url}}" class="user-content-actions-delete">delete</a>
+                                {{/if}}
                             </div>
                             <div class="file-meta">
                                 <div class="file-added">
@@ -230,6 +234,10 @@
                         <div class="note" id="note-{{id}}">
                             <div class="user-content-actions">
                                 <a href="#note-{{id}}" class="user-content-actions-permalink"></a>
+                                {{#if admin}}
+                                    <a href="{{edit_url}}" class="user-content-actions-edit">edit</a>
+                                    <a href="{{delete_url}}" class="user-content-actions-delete">delete</a>
+                                {{/if}}
                             </div>
                             <div class="note-meta">
                                 <div class="note-added">
@@ -257,6 +265,10 @@
                         <div class="photo" id="photo-{{id}}">
                             <div class="user-content-actions">
                                 <a href="#photo-{{id}}" class="user-content-actions-permalink"></a>
+                                {{#if admin}}
+                                    <a href="{{edit_url}}" class="user-content-actions-edit">edit</a>
+                                    <a href="{{delete_url}}" class="user-content-actions-delete">delete</a>
+                                {{/if}}
                             </div>
                             <div class="photo-meta">
                                 <div class="photo-added">

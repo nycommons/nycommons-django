@@ -57,6 +57,11 @@ var usercontent = flight.component(function () {
         list.empty();
 
         this.content.forEach(function (item) {
+            // Add admin links to context
+            item.admin = Django.user.is_staff;
+            item.edit_url = Django.url('admin:' + item.type + 's_' + item.type + '_change', item.id);
+            item.delete_url = Django.url('admin:' + item.type + 's_' + item.type + '_delete', item.id);
+
             list.append(this.templates[item.type](item));
         }, this);
     };
