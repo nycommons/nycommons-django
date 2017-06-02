@@ -33,7 +33,7 @@ django-cache-machine==0.9.1
 git+git://github.com/ebrelsford/django-chosen/@28b2358d9
 django-contact-form-gv==0.4.3
 django-easy-select2==1.3.3
-django-extensions==1.6.6
+django-extensions==1.7.9
 django-filter==1.0.2
 git+git://github.com/funkybob/django-flatblocks/@2a3c8e113
 django-honeypot==0.4.0
