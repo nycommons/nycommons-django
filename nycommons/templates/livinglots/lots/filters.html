@@ -20,111 +20,14 @@
             <input type="checkbox" class="filter filter-priority-organizing" id="priority-organizing" />
             <label for="priority-organizing">{% trans "Organizing & Development Pending" %}</label>
         </li>
-        <li class="filters-list-item filter-post-offices-item">
-            <input id="layer-post-offices" type="checkbox" class="filter filter-layer" name="post office" data-type="layer" checked />
-            <label for="layer-post-offices">{% trans "post offices" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
 
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "post office" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="post-office-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="post-office-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-vacant-lot-item">
-            <input id="layer-vacant-lot" type="checkbox" class="filter filter-layer" name="vacant lot / garden" data-type="layer" checked />
-            <label for="layer-vacant-lot">{% trans "vacant lot / garden" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "vacant lot / garden" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="vacant-lot-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="vacant-lot-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-park-item">
-            <input id="layer-park" type="checkbox" class="filter filter-layer" name="park" data-type="layer" checked />
-            <label for="layer-park">{% trans "park" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "park" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="park-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="park-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-park-building-item">
-            <input id="layer-park-building" type="checkbox" class="filter filter-layer" name="park building" data-type="layer" checked />
-            <label for="layer-park-building">{% trans "park building" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "park building" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="park-building-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="park-building-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-library-item">
-            <input id="layer-libraries" type="checkbox" class="filter filter-layer" name="library" data-type="layer" checked />
-            <label for="layer-libraries">{% trans "libraries" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "library" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="library-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="library-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-public-housing-item">
-            <input id="layer-public-housing" type="checkbox" class="filter filter-layer" name="public housing" data-type="layer" checked />
-            <label for="layer-public-housing">{% trans "public housing sites" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "public housing" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="public-housing-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="public-housing-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-        <li class="filters-list-item filter-waterfront-item">
-            <input id="layer-waterfront" type="checkbox" class="filter filter-layer" name="waterfront" data-type="layer" checked />
-            <label for="layer-waterfront">{% trans "waterfront" %}</label>
-            <a href="#" class="filter-layer-collapse"></a>
-
-            <ul class="filter-owners-list">
-                {% get_owners_by_commons_type "waterfront" as owners %}
-                {% for owner in owners %}
-                    <li>
-                        <input type="checkbox" class="filter filter-owner" id="waterfront-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
-                        <label for="waterfront-owner-{{owner.pk }}">{{ owner.name }}</label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="post-offices" label="post office" label_plural="post offices" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="vacant-lot" label="vacant lot / garden" label_plural="vacant lot / garden" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="park" label="park" label_plural="parks" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="park-building" label="park building" label_plural="park buildings" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="library" label="library" label_plural="libraries" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="public-housing" label="public housing" label_plural="public housing sites" %}
+        {% include "livinglots/lots/_commons_type_filters.html" with slug="waterfront" label="waterfront" label_plural="waterfront" %}
     </ul>
 
     <section class="filter-section filter-section-boundaries">

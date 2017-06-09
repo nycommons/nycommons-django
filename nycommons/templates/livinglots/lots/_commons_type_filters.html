@@ -1,0 +1,17 @@
+{% load i18n nycommons_owners_tags %}
+
+<li class="filters-list-item filter-{{slug}}-item">
+    <input id="layer-{{slug}}" type="checkbox" class="filter filter-layer" name="{{label}}" data-type="layer" checked />
+    <label for="layer-{{slug}}">{% trans label_plural %}</label>
+    <a href="#" class="filter-layer-collapse"></a>
+
+    <ul class="filter-owners-list">
+        {% get_owners_by_commons_type label as owners %}
+        {% for owner in owners %}
+            <li>
+                <input type="checkbox" class="filter filter-owner" id="{{slug}}-owner-{{ owner.pk }}" data-type="owner" data-owner-pk="{{ owner.pk }}" checked />
+                <label for="{{slug}}-owner-{{owner.pk }}">{{ owner.name }}</label>
+            </li>
+        {% endfor %}
+    </ul>
+</li>
