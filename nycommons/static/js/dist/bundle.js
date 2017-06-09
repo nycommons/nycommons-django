@@ -531,6 +531,42 @@ var filterCollapseButton = flight.component(function () {
     });
 });
 
+var allOwners = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleClick = function () {
+        this.$node.parents('.filters-list-item')
+            .find('.filter-owner')
+            .prop('checked', true);
+        this.attr.filterList.trigger('filterChanged');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick);
+    });
+});
+
+var noOwners = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleClick = function () {
+        this.$node.parents('.filters-list-item')
+            .find('.filter-owner')
+            .prop('checked', false);
+        this.attr.filterList.trigger('filterChanged');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick);
+    });
+});
+
 var boundaryFilter = flight.component(function () {
     this.attributes({
         filterList: null
@@ -685,6 +721,12 @@ var filters = flight.component(function () {
     };
 
     this.after('initialize', function () {
+        allOwners.attachTo(this.$node.find('.filter-owners-all'), {
+            filterList: this
+        });
+        noOwners.attachTo(this.$node.find('.filter-owners-none'), {
+            filterList: this
+        });
         filter.attachTo(this.$node.find('.filter'), {
             filterList: this
         });
@@ -52981,7 +53023,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",

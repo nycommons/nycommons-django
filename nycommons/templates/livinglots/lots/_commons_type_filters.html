@@ -5,6 +5,12 @@
     <label for="layer-{{slug}}">{% trans label_plural %}</label>
     <a href="#" class="filter-layer-collapse"></a>
 
+    <!-- TODO only show if expanded -->
+    <div class="filter-owners-bulk">
+        <a href="#" class="filter-owners-all">All</a> |
+        <a href="#" class="filter-owners-none">None</a>
+    </div>
+
     <ul class="filter-owners-list">
         {% get_owners_by_commons_type label as owners %}
         {% for owner in owners %}

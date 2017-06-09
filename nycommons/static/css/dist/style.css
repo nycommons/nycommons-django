@@ -6723,6 +6723,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   -o-transform: rotate(0deg);
   transform: rotate(0deg);
 }
+.filter-owners-bulk {
+  float: right;
+}
 .filter-owners-list {
   list-style: none;
   margin: 0;
@@ -6736,6 +6739,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   visibility: visible;
 }
 .filters-list-item.collapse .filter-owners-list {
+  display: none;
+}
+.filters-list-item.collapse .filter-owners-bulk {
   display: none;
 }
 .filter-section-boundaries-item {
