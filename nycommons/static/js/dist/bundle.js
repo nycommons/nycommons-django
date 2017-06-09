@@ -567,6 +567,25 @@ var noOwners = flight.component(function () {
     });
 });
 
+var clearButton = flight.component(function () {
+    this.attributes({
+        filterList: null
+    });
+
+    this.handleClick = function () {
+        var $filtersSection = this.$node.parents('.filters-section');
+        $filtersSection
+            .find('.filter-priority,.filter-organizing,.filter-priority-organizing,.filter-layer')
+            .prop('checked', false);
+        this.attr.filterList.trigger('filterChanged');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.on('click', this.handleClick);
+    });
+});
+
 var boundaryFilter = flight.component(function () {
     this.attributes({
         filterList: null
@@ -734,6 +753,9 @@ var filters = flight.component(function () {
             filterList: this
         });
         priorityFilter.attachTo(this.$node.find('.filter-priority-organizing-list-item :input'), {
+            filterList: this
+        });
+        clearButton.attachTo(this.$node.find('.clear'), {
             filterList: this
         });
         resetButton.attachTo(this.$node.find('.reset'), {
@@ -53023,7 +53045,7 @@ function getMinNorthing(zoneLetter) {
 }
 
 },{}],"/home/eric/Documents/596/nycommons/nycommons/static/node_modules/proj4/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
   "name": "proj4",
   "version": "2.3.3",
   "description": "Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.",
