@@ -349,22 +349,26 @@ class LotsCountViewWithAcres(LotsCountView):
         return context
 
 
-class LotsCSV(BaseLotsCSV):
+class LotExportMixin(object):
+    fields = ('address_line1', 'city', 'state_province', 'postal_code', 'bbl',
+              'latitude', 'longitude', 'known_use', 'owner', 'owner_type',)
 
     def get_sitename(self):
         return 'NYCommons'
 
 
-class LotsKML(BaseLotsKML):
-
-    def get_sitename(self):
-        return 'NYCommons'
+class LotsCSV(LotExportMixin, BaseLotsCSV):
+    pass
 
 
-class LotsGeoJSON(BaseLotsGeoJSON):
+class LotsKML(LotExportMixin, BaseLotsKML):
+    pass
 
-    def get_sitename(self):
-        return 'NYCommons'
+
+class LotsGeoJSON(LotExportMixin, BaseLotsGeoJSON):
+
+    def get_queryset(self):
+        return self.get_lots().qs
 
 
 class SearchView(JSONResponseMixin, View):
