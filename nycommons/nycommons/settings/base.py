@@ -217,6 +217,7 @@ INSTALLED_APPS = (
     'cms',
     'contact',
     'faq',
+    'foil',
     'groundtruth',
     'lots',
     'organize',

@@ -320,6 +320,13 @@ class LotMixin(models.Model):
         return sorted(list(set([r.plan_name for r in self.urban_renewal_records])))
     urban_renewal_plan_names = property(_get_urban_renewal_plan_names)
 
+    def _get_foil_contact(self):
+        try:
+            return self.owner.foilcontact_set.first()
+        except Exception:
+            return None
+    foil_contact = property(_get_foil_contact)
+
     def get_new_lotgroup_kwargs(self):
         kwargs = super(LotMixin, self).get_new_lotgroup_kwargs()
         kwargs.update({
