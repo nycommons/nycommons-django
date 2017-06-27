@@ -64,6 +64,17 @@
             </section>
         {% endif %}
 
+        {% if lot.landmarks %}
+            <section class="lot-detail-details">
+                <h3>{% trans "Landmark" %}</h3>
+                {% for landmark in lot.landmarks %}
+                    <div>
+                        This property is landmarked as part of {{ landmark.name }}. <a href="{{ landmark.report_url }}" target="_blank">View the designation report PDF</a>.
+                    </div>
+                {% endfor %}
+            </section>
+        {% endif %}
+
         {% include "inplace/lots/_lot_detail_part_of_nycommons.html" with lot=lot %}
 
         {% if lot.foil_contact and not lot.bbl_is_fake %}
