@@ -337,7 +337,7 @@ class LotMixin(models.Model):
         lp_numbers = list(set([l.lp_number for l in landmarks]))
 
         # Return one landmark object per lp_number
-        return [l for l in landmarks if l in lp_numbers]
+        return [l for l in landmarks if l.lp_number in lp_numbers]
     landmarks = property(_get_landmarks)
 
     def get_new_lotgroup_kwargs(self):
