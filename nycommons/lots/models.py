@@ -328,19 +328,16 @@ class LotMixin(models.Model):
     foil_contact = property(_get_foil_contact)
 
     def _get_landmarks(self):
-        landmarks = [lot.parcel.landmark_object.first() for lot in self.lots]
-
-        # Remove None values
-        landmarks = filter(None, landmarks)
-
-        # Get unique lp_number values
-        lp_numbers = list(set([landmark.lp_number for landmark in landmarks]))
-
-        # Return one landmark object per lp_number
-        return [
-            filter(lambda l: l.lp_number == lp_number, landmarks)[0]
-            for lp_number in lp_numbers
-        ]
+        landmarks = []
+        for l in self.lots:
+            try:
+                landmark = l.parcel.landmark_object.first()
+                if landmark in landmarks or not landmark:
+                    continue
+                landmarks.append()
+            except Exception:
+                continue
+        return landmarks
     landmarks = property(_get_landmarks)
 
     def get_new_lotgroup_kwargs(self):
