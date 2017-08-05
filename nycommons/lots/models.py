@@ -334,7 +334,7 @@ class LotMixin(models.Model):
                 landmark = l.parcel.landmark_object.first()
                 if landmark in landmarks or not landmark:
                     continue
-                landmarks.append()
+                landmarks.append(landmark)
             except Exception:
                 continue
         return landmarks
