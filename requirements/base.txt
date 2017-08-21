@@ -22,7 +22,7 @@ unicodecsv==0.14.1
 
 
 # Django-specific requirements
-Django==1.11.2
+Django==1.11.4
 FeinCMS==1.13.1
 git+git://github.com/justquick/django-activity-stream/@1cd38f2 
 django-admin-enhancer==1.0.0
