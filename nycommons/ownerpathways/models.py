@@ -7,12 +7,12 @@ from feincms.content.richtext.models import RichTextContent
 from feincms.models import Base
 from feincms.module.mixins import ContentModelMixin
 
-from livinglots_pathways.models import BasePathway, BasePathwayManager
+from livinglots_pathways.models import BasePathway
 
-from pathways.models import PathwayLotMixin
+from pathways.models import PathwayLotMixin, PathwayManager
 
 
-class OwnerPathwayManager(BasePathwayManager):
+class OwnerPathwayManager(PathwayManager):
 
     def get_queryset(self):
         return CachingQuerySet(self.model, self._db)
