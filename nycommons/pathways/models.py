@@ -27,7 +27,6 @@ class PathwayLotMixin(models.Model):
         owner_filters = Q()
         if self.private_owners:
             if self.specific_private_owners.exists():
-                print self.specific_private_owners.all().values_list('pk', flat=True)
                 owner_filters |= Q(
                     owner__owner_type='private',
                     owner__pk__in=self.specific_private_owners.all().values_list('pk',
@@ -37,7 +36,6 @@ class PathwayLotMixin(models.Model):
                 owner_filters |= Q(owner__owner_type='private')
         if self.public_owners:
             if self.specific_public_owners.exists():
-                print self.specific_public_owners.all().values_list('pk', flat=True)
                 owner_filters |= Q(
                     owner__owner_type='public',
                     owner__pk__in=self.specific_public_owners.all().values_list('pk',
