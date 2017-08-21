@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 
-from caching.base import CachingQuerySet, CachingMixin
+from caching.base import CachingMixin
 from feincms.content.application import models as app_models
 from feincms.content.medialibrary.models import MediaFileContent
 from feincms.content.richtext.models import RichTextContent
@@ -12,15 +12,9 @@ from livinglots_pathways.models import BasePathway
 from pathways.models import PathwayLotMixin, PathwayManager
 
 
-class OrganizingPathwayManager(PathwayManager):
-
-    def get_queryset(self):
-        return CachingQuerySet(self.model, self._db)
-
-
 class OrganizingPathway(PathwayLotMixin, CachingMixin, ContentModelMixin,
         BasePathway, Base):
-    objects = OrganizingPathwayManager()
+    objects = PathwayManager()
 
     class Meta:
         verbose_name = _('"How to Organize" pathway')

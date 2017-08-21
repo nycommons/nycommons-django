@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import Q
 
+from caching.base import CachingQuerySet
+
 from livinglots_pathways.models import BasePathwayManager
 
 from lots.models import Lot
@@ -16,6 +18,9 @@ class PathwayManager(BasePathwayManager):
             pathways = pathways.exclude(only_waterfront_lots=True)
 
         return pathways
+
+    def get_queryset(self):
+        return CachingQuerySet(self.model, self._db)
 
 
 class PathwayLotMixin(models.Model):
