@@ -187,6 +187,8 @@ class LotMixin(models.Model):
         help_text=_('If development is pending, let visitors to the site know why.'),
     )
 
+    is_waterfront = models.BooleanField(default=False)
+
     files = GenericRelation('files.File')
     groundtruth_records = GenericRelation('groundtruth.GroundtruthRecord')
     notes = GenericRelation('notes.Note')

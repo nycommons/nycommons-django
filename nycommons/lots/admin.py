@@ -18,6 +18,7 @@ class LotAdmin(BaseLotAdmin):
                 ('added', 'added_reason', 'updated',),
                 'owner',
                 'group',
+                'is_waterfront',
             ),
         }),
         ('Commons', {
