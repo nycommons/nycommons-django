@@ -366,6 +366,8 @@ class LotsCSV(LotExportMixin, BaseLotsCSV):
             return 'development pending'
         if field == 'organizing':
             return 'has organizers'
+        if field == 'development_pending_explanation_plaintext':
+            return 'development pending explanation'
         return super(LotsCSV, self).get_header_name(field)
 
 
