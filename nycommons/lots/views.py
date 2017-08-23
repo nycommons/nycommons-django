@@ -353,7 +353,7 @@ class LotExportMixin(object):
     fields = ('address_line1', 'name', 'city', 'state_province', 'postal_code',
               'bbl', 'latitude', 'longitude', 'commons_type', 'known_use',
               'owner', 'owner_type', 'priority',
-              'development_pending_explanation', 'organizing')
+              'development_pending_explanation_plaintext', 'organizing')
 
     def get_sitename(self):
         return 'NYCommons'

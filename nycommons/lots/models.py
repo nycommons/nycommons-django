@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
+from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 
 from tinymce import models as tinymce_models
@@ -307,6 +308,10 @@ class LotMixin(models.Model):
         except Exception:
             return [self,]
     lots = property(_get_lots)
+
+    def _get_development_pending_explanation_plaintext(self):
+        return strip_tags(self.development_pending_explanation)
+    development_pending_explanation_plaintext = property(_get_development_pending_explanation_plaintext)
 
     def _get_urban_renewal_records(self):
         records = []
