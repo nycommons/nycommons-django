@@ -40,7 +40,13 @@ var details = flight.component(function () {
         });
     };
 
+    this.updatePermalink = function (event) {
+        this.$node.find('.details-permalink').attr('href', window.location.href);
+    };
+
     this.after('initialize', function () {
+        this.on(document, 'filtersChanged', this.updatePermalink);
+        this.on(document, 'mapMoved', this.updatePermalink);
         this.on(document, 'receivedLotCount', this.receivedLotCount);
         this.on(document, 'receivedOwnerCount', this.receivedOwnerCount);
     });
