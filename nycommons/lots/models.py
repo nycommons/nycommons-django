@@ -1,3 +1,4 @@
+import HTMLParser
 from pint import UnitRegistry
 
 from django.conf import settings
@@ -310,7 +311,8 @@ class LotMixin(models.Model):
     lots = property(_get_lots)
 
     def _get_development_pending_explanation_plaintext(self):
-        return strip_tags(self.development_pending_explanation)
+        html_parser = HTMLParser.HTMLParser()
+        return html_parser.unescape(strip_tags(self.development_pending_explanation))
     development_pending_explanation_plaintext = property(_get_development_pending_explanation_plaintext)
 
     def _get_urban_renewal_records(self):
