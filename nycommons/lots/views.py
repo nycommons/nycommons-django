@@ -350,15 +350,23 @@ class LotsCountViewWithAcres(LotsCountView):
 
 
 class LotExportMixin(object):
-    fields = ('address_line1', 'city', 'state_province', 'postal_code', 'bbl',
-              'latitude', 'longitude', 'known_use', 'owner', 'owner_type',)
+    fields = ('address_line1', 'name', 'city', 'state_province', 'postal_code',
+              'bbl', 'latitude', 'longitude', 'commons_type', 'known_use',
+              'owner', 'owner_type', 'priority',
+              'development_pending_explanation', 'organizing')
 
     def get_sitename(self):
         return 'NYCommons'
 
 
 class LotsCSV(LotExportMixin, BaseLotsCSV):
-    pass
+
+    def get_header_name(self, field):
+        if field == 'priority':
+            return 'development pending'
+        if field == 'organizing':
+            return 'has organizers'
+        return super(LotsCSV, self).get_header_name(field)
 
 
 class LotsKML(LotExportMixin, BaseLotsKML):
