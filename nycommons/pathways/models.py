@@ -17,6 +17,10 @@ class PathwayManager(BasePathwayManager):
         if not lot.is_waterfront:
             pathways = pathways.exclude(only_waterfront_lots=True)
 
+        # Landmarked lots
+        if not len(lot.landmarks) > 0:
+            pathways = pathways.exclude(only_landmarked_lots=True)
+
         return pathways
 
     def get_queryset(self):
@@ -25,6 +29,7 @@ class PathwayManager(BasePathwayManager):
 
 class PathwayLotMixin(models.Model):
     only_waterfront_lots = models.BooleanField(default=False)
+    only_landmarked_lots = models.BooleanField(default=False)
 
     def get_lots(self):
         """Get the lots this pathway applies to"""
@@ -51,6 +56,8 @@ class PathwayLotMixin(models.Model):
         filters &= owner_filters
         if self.only_waterfront_lots:
             filters &= Q(is_waterfront=True)
+        if self.only_waterfront_lots:
+            filters &= Q(parcel__landmark_object__isnull=False)
         return Lot.objects.filter(filters)
     lots = property(get_lots)
 
