@@ -4,6 +4,7 @@ from classytags.helpers import AsTag
 
 from django import template
 
+from lots.models import Lot
 from ..models import Owner
 
 
@@ -18,7 +19,10 @@ class GetOwnersByCommonsType(AsTag):
     )
 
     def get_value(self, context, commons_type):
-        return Owner.objects.filter(lot__commons_type=commons_type).distinct()
+        owner_pks = Lot.visible.filter(commons_type=commons_type) \
+            .values_list('owner__pk', flat=True)
+        owner_pks = list(set(owner_pks))
+        return Owner.objects.filter(pk__in=owner_pks).distinct()
 
 
 register.tag(GetOwnersByCommonsType)
