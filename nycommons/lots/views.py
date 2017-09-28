@@ -246,7 +246,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
         'priority': 'development pending',
         'vacant_lot': 'vacant lot / garden',
         'park': 'park',
-        'park_building': 'park building',
+        'park_building': 'underutilized park building',
         'library': 'library',
         'public_housing': 'public housing site',
         'post_office': 'post office',
