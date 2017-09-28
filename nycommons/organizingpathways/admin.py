@@ -21,6 +21,7 @@ class OrganizingPathwayAdmin(BasePathwayAdmin):
                 ('private_owners', 'specific_private_owners'),
                 'only_waterfront_lots',
                 'only_landmarked_lots',
+                'only_urban_renewal_lots',
             ],
         }],
         item_editor.FEINCMS_CONTENT_FIELDSET,
