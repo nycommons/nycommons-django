@@ -6585,6 +6585,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
   display: block;
   font-style: italic;
 }
+.image {
+  max-width: 100%;
+}
 .faq {
   padding-bottom: 20px;
   padding-top: 20px;
