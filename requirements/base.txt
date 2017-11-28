@@ -65,12 +65,12 @@ git+git://github.com/596acres/django-livinglots-forms/@v1.0.2
 git+git://github.com/596acres/django-livinglots-generictags/@v1.0.1
 git+git://github.com/596acres/django-livinglots-genericviews/@v1.5.0
 git+git://github.com/596acres/django-livinglots-groundtruth/@v1.0.1
-git+git://github.com/596acres/django-livinglots-lots/@v2.0.0
+git+git://github.com/596acres/django-livinglots-lots/@v2.0.1
 git+git://github.com/596acres/django-livinglots-mailings/@v1.1.0
 git+git://github.com/596acres/django-livinglots-mailsender/@v1.0.0
 git+git://github.com/596acres/django-livinglots-notify/@v1.0.0
 git+git://github.com/596acres/django-livinglots-organize/@v1.6.0
-git+git://github.com/596acres/django-livinglots-owners/@v2.0.0
+git+git://github.com/596acres/django-livinglots-owners/@v2.0.1
 git+git://github.com/596acres/django-livinglots-pathways/@v0.3.1
 git+git://github.com/596acres/django-livinglots-steward/@v1.0.2
 git+git://github.com/596acres/django-livinglots-usercontent/@v1.1.1
