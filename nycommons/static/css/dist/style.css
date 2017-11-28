@@ -6588,6 +6588,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.active {
 .image {
   max-width: 100%;
 }
+.image img {
+  max-width: 100%;
+}
 .faq {
   padding-bottom: 20px;
   padding-top: 20px;
