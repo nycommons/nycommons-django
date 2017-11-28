@@ -4,10 +4,12 @@ from feincms.admin import item_editor
 
 from livinglots_pathways.admin import BasePathwayAdmin
 
+from pathways.admin import PathwayAdminForm
 from .models import OrganizingPathway
 
 
 class OrganizingPathwayAdmin(BasePathwayAdmin):
+    form = PathwayAdminForm
     fieldsets = [
         [None, {
             'fields': [

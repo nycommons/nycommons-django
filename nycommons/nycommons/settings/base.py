@@ -130,7 +130,8 @@ INSTALLED_APPS = (
     'admin_tools.dashboard',
 
     # Has to come before django.contrib.admin
-    'autocomplete_light',
+    'dal',
+    'dal_select2',
 
     #
     # django contrib

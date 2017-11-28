@@ -1,11 +1,22 @@
 from django.contrib import admin
+from django.forms import ModelForm
 
+from dal import autocomplete
 from livinglots_lots.admin import BaseLotAdmin
 
 from .models import Lot
 
 
+class LotAdminForm(ModelForm):
+    class Meta:
+        fields = '__all__'
+        widgets = {
+            'owner': autocomplete.ModelSelect2(url='owners:owner-autocomplete')
+        }
+
+
 class LotAdmin(BaseLotAdmin):
+    form = LotAdminForm
     list_display = ('address_line1', 'city', 'name', 'commons_type',)
     list_filter = ('commons_type', 'added', 'owner',)
     readonly_fields = ('added', 'group', 'stewards_list', 'updated',)

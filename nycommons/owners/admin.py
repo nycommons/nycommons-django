@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.forms import ModelForm, SelectMultiple
 
-from autocomplete_light.forms import modelform_factory
+from dal import autocomplete
 from easy_select2 import apply_select2
 
 from livinglots_owners.admin import (BaseOwnerAdmin, BaseOwnerContactAdmin,
@@ -10,14 +10,30 @@ from livinglots_owners.admin import (BaseOwnerAdmin, BaseOwnerContactAdmin,
 from .models import Owner, OwnerContact, OwnerGroup
 
 
+class OwnerAdminForm(ModelForm):
+    class Meta:
+        # NB: setting fields = '__all__', less concerned about security since
+        # we are in the admin site
+        fields = '__all__'
+        widgets = {
+            'default_contact': autocomplete.ModelSelect2(url='owners:ownercontact-autocomplete'),
+        }
+
+
 class OwnerAdmin(BaseOwnerAdmin):
-    # NB: setting fields = '__all__', less concerned about security since we 
-    # are in the admin site
-    form = modelform_factory(Owner, fields='__all__')
+    form = OwnerAdminForm
+
+
+class OwnerContactAdminForm(ModelForm):
+    class Meta:
+        fields = '__all__'
+        widgets = {
+            'owner': autocomplete.ModelSelect2(url='owners:owner-autocomplete')
+        }
 
 
 class OwnerContactAdmin(BaseOwnerContactAdmin):
-    pass
+    form = OwnerContactAdminForm
 
 
 class OwnerGroupAdminForm(ModelForm):

@@ -5,11 +5,8 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
-import autocomplete_light
-
 from registration.forms import AuthenticationForm
 
-autocomplete_light.shortcuts.autodiscover()
 admin.autodiscover()
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT,
@@ -28,6 +25,7 @@ urlpatterns += (
     url(r'^lots/(?P<pk>\d+)/organize/',
         include('organize.urls', 'organize')),
     url(r'^lots/', include('lots.urls', 'lots')),
+    url(r'^owners/', include('owners.urls', 'owners')),
 
     # Activity stream
     url('^activity/', include('activities.urls')),
@@ -42,9 +40,6 @@ urlpatterns += (
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin_tools/', include('admin_tools.urls')),
-
-    # Autocomplete
-    url(r'^autocomplete/', include('autocomplete_light.urls')),
 
     # Auth
     url(r'^login/', auth_views.login, {
