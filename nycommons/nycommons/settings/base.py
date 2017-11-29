@@ -208,6 +208,7 @@ INSTALLED_APPS = (
     'nycdata.parcels',
     'nycdata.parks',
     'nycdata.postoffices',
+    'nycdata.shoreline',
     'nycdata.waterfront',
     'nycdata.urbanrenewal',
 

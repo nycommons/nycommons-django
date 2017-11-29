@@ -76,4 +76,4 @@ git+git://github.com/596acres/django-livinglots-steward/@v1.0.2
 git+git://github.com/596acres/django-livinglots-usercontent/@v1.1.1
 
 # NYC
-git+git://github.com/596acres/nycdata/@v1.8.2
+git+git://github.com/596acres/nycdata/@v1.9.0

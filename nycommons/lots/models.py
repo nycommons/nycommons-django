@@ -4,6 +4,7 @@ from pint import UnitRegistry
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.measure import D
 from django.db import models
 from django.db.models import Q
 from django.utils.html import strip_tags
@@ -16,6 +17,7 @@ from livinglots_lots.models import (BaseLot, BaseLotGroup, BaseLotLayer,
                                     BaseLotManager)
 from nycdata.boroughs import find_borough, get_borough_number
 from nycdata.bbls import build_bbl
+from nycdata.shoreline.models import Shoreline
 
 from organize.models import Organizer
 from remote.models import RemoteMixin
@@ -348,6 +350,12 @@ class LotMixin(models.Model):
                 continue
         return landmarks
     landmarks = property(_get_landmarks)
+
+    def check_if_waterfront(self):
+        """Check if lot is within 150ft of the shoreline"""
+        return Shoreline.objects.filter(
+            geom__distance_lte=(self.centroid, D(ft=150))
+        ).exists()
 
     def get_new_lotgroup_kwargs(self):
         kwargs = super(LotMixin, self).get_new_lotgroup_kwargs()
