@@ -27,7 +27,7 @@ class LotAdmin(BaseLotAdmin):
                 ('address_line1', 'address_line2', 'city', 'borough',),
                 ('state_province', 'postal_code',),
                 ('added', 'added_reason', 'updated',),
-                'owner',
+                ('owner', 'owner_opt_in'),
                 'group',
                 'is_waterfront',
             ),
