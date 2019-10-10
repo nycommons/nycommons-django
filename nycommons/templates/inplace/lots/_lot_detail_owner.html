@@ -82,7 +82,7 @@
                 <h3>Request Agency Documents</h3>
                 <div>
                     <p>The agency has to share most documents it has about this property under the New York State Freedom of Information Law (FOIL). Click to send them a request!</p>
-                    <a class="btn btn-small btn-default" href="mailto:{{ lot.foil_contact.officer_email }}?bcc=paula@596acres.org&subject={{ lot | foil_subject | urlencode }}&body={{ lot | foil_body | urlencode }}">
+                    <a class="btn btn-small btn-default" href="mailto:{{ lot.foil_contact.officer_email }}?bcc=equitableneighborhoods@takerootjustice.org&subject={{ lot | foil_subject | urlencode }}&body={{ lot | foil_body | urlencode }}">
                         {% trans "send foil request" %}
                     </a>
                 </div>
