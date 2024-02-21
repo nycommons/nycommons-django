@@ -270,7 +270,7 @@ FACILITATORS = {
     'global': [],
 }
 
-EMAIL_SUBJECT_PREFIX = '[NYCommons] '
+EMAIL_SUBJECT_PREFIX = '[NYCHA Real Talk] '
 
 MAILREADER_REPLY_PREFIX = 'Reply with text above this line to post a public note.'
 MAILREADER_IGNORE_FROM = []
@@ -367,8 +367,8 @@ CONTACT_FORM_REASONS = OrderedDict([
     ('I have a press inquiry.', ['info@example.com',]),
 ])
 
-BLOG_TITLE = 'NYCommons Updates'
-BLOG_DESCRIPTION = 'Updates from the NYCommons project'
+BLOG_TITLE = 'NYCHA Real Talk Updates'
+BLOG_DESCRIPTION = 'Updates from the NYCHA Real Talk project'
 
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.78, -73.92),

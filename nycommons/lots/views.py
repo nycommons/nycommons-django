@@ -356,7 +356,7 @@ class LotExportMixin(object):
               'development_pending_explanation_plaintext', 'organizing')
 
     def get_sitename(self):
-        return 'NYCommons'
+        return 'NYCHA Real Talk'
 
 
 class LotsCSV(LotExportMixin, BaseLotsCSV):
