@@ -10,9 +10,11 @@ def _block_and_lot_number(lot):
     if lot.block and lot.lot_number:
         return 'Block %d Lot %d' % (lot.block, lot.lot_number)
     else:
-        blocks = list(set([l.block for l in lot.lots]))
+        blocks = list(set([l.block for l in lot.lots if l.block]))
         block_strs = []
         for block in sorted(blocks):
+            if not block:
+                continue
             block_lots = [l for l in lot.lots if l.block == block]
             block_strs.append('Block %d %s' % (
                 block,
