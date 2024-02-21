@@ -946,7 +946,7 @@ var header = flight.component(function () {
         if ($target.is('.mainmenu-item-parent')) {
             var $submenu = $target.nextAll('.submenu');
             this.select('headerWrapperSelector').css({
-                'margin-top': $submenu.outerHeight() + 'px'
+                'margin-top': $submenu.outerHeight() + 25 + 'px'
             });
         }
     };
@@ -2762,7 +2762,6 @@ var L = require('leaflet');
 require('../map/lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
-// require('infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 var activities = require('../components/activities');
