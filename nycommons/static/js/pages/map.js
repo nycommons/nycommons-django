@@ -10,7 +10,6 @@ var L = require('leaflet');
 require('../map/lotmap');
 require('bootstrap_button');
 require('bootstrap_tooltip');
-require('jquery-infinite-scroll');
 require('leaflet-loading');
 require('../handlebars.helpers');
 var activities = require('../components/activities');

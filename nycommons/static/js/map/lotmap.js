@@ -113,8 +113,8 @@ L.LotMap = L.Map.extend({
     addBaseLayer: function () {
         var streets;
         if (window.django_debug) {
-            streets = L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+            streets = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png ', {
+                attribution: 'Map data from OpenStreetMap'
             }).addTo(this);
         }
         else {
