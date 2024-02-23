@@ -87,15 +87,13 @@
 
                 {% render_organizer_list for lot public=True %}
 
-                {% if perms.organizers.add_organizer %}
-                    <a class="btn btn-small btn-default" href="{% url "organize:add_organizer" pk=lot.pk %}">
-                        {% trans "add an organizer" %}
+                <a class="btn btn-small btn-default" href="{% url "organize:add_organizer" pk=lot.pk %}">
+                    {% trans "add an organizer" %}
+                </a>
+                {% if "lots.change_lot" in perms %}
+                    <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
+                        {% trans "View all in admin" %}
                     </a>
-                    {% if "lots.change_lot" in perms %}
-                        <a class="btn btn-small btn-warning" href="{% url "admin:organize_organizer_changelist" %}?object_id={{ lot.pk }}">
-                            {% trans "View all in admin" %}
-                        </a>
-                    {% endif %}
                 {% endif %}
             </div>
         
