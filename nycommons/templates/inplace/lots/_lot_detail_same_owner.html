@@ -1,22 +1,8 @@
 {% load i18n %}
 
-<section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}">
-    <h3 class="collapsed">
-        {% trans "Properties with the Same Official Owner"%}
-    </h3>
-    <div class="lot-detail-same-owner-content"></div>
-</section>
-
-<section class="lot-detail-same-owner collapsible" data-lot="{{ lot.pk }}" data-priority="true">
-    <h3 class="collapsed">
-        {% trans "Properties with the Same Official Owner Where Development is Pending"%}
-    </h3>
-    <div class="lot-detail-same-owner-content"></div>
-</section>
-
 <section class="lot-detail-same-owner collapsible collapsed" data-lot="{{ lot.pk }}" data-organizing="true">
     <h3 class="collapsed">
-        {% trans "Properties with the Same Official Owner Where Others Are Organizing"%}
+        {% trans "NYCHA Properties Where Others Are Organizing"%}
     </h2>
     <div class="lot-detail-same-owner-content"></div>
 </section>
