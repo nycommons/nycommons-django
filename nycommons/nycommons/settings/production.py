@@ -112,21 +112,3 @@ SESSION_COOKIE_SECURE = True
 MAP_SCREENSHOT_URL = "https://nycommons.org/screenshot/"
 LOT_TILES_URL = "https://tiles.nycommons.org/lots/{z}/{x}/{y}.json"
 PARCELS_URL = "https://tiles.nycommons.org/parcels/{z}/{x}/{y}.json"
-
-
-#
-# Remote lots
-#
-REMOTE_LOTS = {
-    'llnyc': {
-        'api_files_url': 'http://livinglotsnyc.org/content/files/export/json/',
-        'api_lots_url': 'http://livinglotsnyc.org/lot/geojson/visible/',
-        'api_notes_url': 'http://livinglotsnyc.org/content/notes/export/json/',
-        'api_photos_url': 'http://livinglotsnyc.org/content/photos/export/json/',
-        'api_organizers_url': 'http://livinglotsnyc.org/organize/export/json/',
-        'api_key': get_env_variable('LLNYC_API_KEY'),
-        'lot_content_url_pattern': 'https://livinglotsnyc.org/lot/%d/content/json/',
-        'lot_permalink_url_pattern': 'http://livinglotsnyc.org/lot/%d/',
-        'organizer_permalink_url_pattern': 'http://livinglotsnyc.org/lot/%d/grow-community/organize/%s/edit/',
-    },
-}
