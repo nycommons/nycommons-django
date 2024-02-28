@@ -424,7 +424,63 @@ class VisibleLotManager(LotManager):
         return self.get_visible()
 
 
-class Lot(RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
+class NychaLotMixin(models.Model):
+    # Filters
+    radpact_converted = models.BooleanField(
+        default=False,
+        verbose_name='RAD/PACT - Converted to Section 8 Under Private Management'
+    )
+    radpact_planned = models.BooleanField(
+        default=False,
+        verbose_name='Planned RAD/PACT - Section 8 Conversion Under Private Management'
+    )
+    preservation_trust_voting_planned = models.BooleanField(
+        default=False,
+        verbose_name='Voting Planned for Preservation Trust Section 8 Conversion'
+    )
+    preservation_trust_complete = models.BooleanField(
+        default=False,
+        verbose_name='Preservation Trust Conversion Complete'
+    )
+    private_infill_planned = models.BooleanField(
+        default=False,
+        verbose_name='Private Infill Planned'
+    )
+    section_8_pre_2014 = models.BooleanField(
+        default=False,
+        verbose_name='Conversions to Section 8 Completed Prior to 2014'
+    )
+    demolition_proposed = models.BooleanField(
+        default=False,
+    )
+    demolition_completed = models.BooleanField(
+        default=False,
+    )
+    nycha_modernization_planned = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA-managed Modernization Planned'
+    )
+    nycha_modernization_complete = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA Completed Modernization'
+    )
+    new_public_housing_built = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Built'
+    )
+    new_public_housing_planned = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Planned'
+    )
+
+    # TODO add development details
+    # TODO add rad/pact
+
+    class Meta:
+        abstract = True
+
+
+class Lot(NychaLotMixin, RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
     objects = LotManager()
     visible = VisibleLotManager()
 

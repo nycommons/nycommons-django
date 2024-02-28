@@ -32,6 +32,33 @@ class LotAdmin(BaseLotAdmin):
                 'is_waterfront',
             ),
         }),
+        ('NYCHA filters', {
+            'fields': (
+                ('radpact_converted', 'radpact_planned',),
+                (
+                    'preservation_trust_voting_planned',
+                    'preservation_trust_complete',
+                ),
+                (
+                    'private_infill_planned',
+                ),
+                (
+                    'section_8_pre_2014',
+                ),
+                (
+                    'demolition_proposed',
+                    'demolition_completed',
+                ),
+                (
+                    'nycha_modernization_planned',
+                    'nycha_modernization_complete',
+                ),
+                (
+                    'new_public_housing_built',
+                    'new_public_housing_planned',
+                ),
+            ),
+        }),
         ('Commons', {
             'fields': (
                 'commons_type',
