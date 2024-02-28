@@ -59,6 +59,45 @@ class LotAdmin(BaseLotAdmin):
                 ),
             ),
         }),
+        ('NYCHA Development Details', {
+            'fields': (
+                ('current_units', 'total_units', 'rental_rooms'),
+                (
+                    'population_section_8',
+                    'population_public_housing',
+                    'population_total',
+                ),
+                (
+                    'families_fixed_income',
+                    'families_fixed_income_percent',
+                ),
+                (
+                    'buildings_residential',
+                    'buildings_nonresidential',
+                ),
+                (
+                    'buildings_stories',
+                    'total_area',
+                    'building_land_coverage',
+                ),
+                (
+                    'cost_total',
+                    'cost_per_room',
+                    'rent_avg',
+                ),
+                ('senior_development', 'electricity_residents'),
+                'private_management'
+            ),
+        }),
+        ('RAD/PACT', {
+            'fields': (
+                'radpact_status',
+                'radpact_conversion_date',
+                ('radpact_developers', 'radpact_general_contractor',),
+                ('radpact_property_manager', 'radpact_social_service_provider',),
+
+            )
+        }),
         ('Commons', {
             'fields': (
                 'commons_type',

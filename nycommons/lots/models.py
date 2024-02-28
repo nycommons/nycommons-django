@@ -473,8 +473,143 @@ class NychaLotMixin(models.Model):
         verbose_name='New Public Housing Planned'
     )
 
-    # TODO add development details
-    # TODO add rad/pact
+    # Development details
+    current_units = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of current units'
+    )
+    total_units = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of total units'
+    )
+    rental_rooms = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of rental rooms'
+    )
+    population_section_8 = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Section 8)'
+    )
+    population_public_housing = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Public Housing)'
+    )
+    population_total = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Total)'
+    )
+    families_fixed_income = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Families On Fixed Income'
+    )
+    families_fixed_income_percent = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='% of Families On Fixed Income'
+    )
+    buildings_residential = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Residential Buildings'
+    )
+    buildings_nonresidential = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Non-Residential Buildings'
+    )
+    buildings_stories = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Stories'
+    )
+    total_area = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Total Area - Sq. Ft.'
+    )
+    building_land_coverage = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Bldg/Land Coverage - % Density (Population/Acre)'
+    )
+    cost_total = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Development Cost'
+    )
+    cost_per_room = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Cost Per Rental Room (As Built)'
+    )
+    rent_avg = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Avg. Monthly Gross Rent'
+    )
+    senior_development = models.BooleanField(
+        default=False,
+        verbose_name='Senior Development'
+    )
+    electricity_residents = models.BooleanField(
+        default=False,
+        verbose_name='Electricity Paid By Residents'
+    )
+    private_management = models.CharField(
+        blank=True,
+        max_length=200,
+        null=True
+    )
+
+    # rad/pact
+    RADPACT_STATUS_CHOICES = (
+        ('Construction Complete', 'Construction Complete'),
+        ('Under Construction', 'Under Construction'),
+        ('Planning & Engagement', 'Planning & Engagement'),
+    )
+    radpact_status = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        choices=RADPACT_STATUS_CHOICES,
+        verbose_name='RAD/PACT Status',
+    )
+    radpact_conversion_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='RAD/PACT Conversion Date / Anticipated Conversion Date',
+    )
+    radpact_developers = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Developers',
+    )
+    radpact_general_contractor = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT General Contractor',
+    )
+    radpact_property_manager = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Property Manager',
+    )
+    radpact_social_service_provider = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Social Service Provider',
+    )
 
     class Meta:
         abstract = True
