@@ -424,7 +424,203 @@ class VisibleLotManager(LotManager):
         return self.get_visible()
 
 
-class Lot(RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
+class NychaLotMixin(models.Model):
+    # Filters
+    radpact_converted = models.BooleanField(
+        default=False,
+        verbose_name='RAD/PACT - Converted to Section 8 Under Private Management'
+    )
+    radpact_planned = models.BooleanField(
+        default=False,
+        verbose_name='Planned RAD/PACT - Section 8 Conversion Under Private Management'
+    )
+    preservation_trust_voting_planned = models.BooleanField(
+        default=False,
+        verbose_name='Voting Planned for Preservation Trust Section 8 Conversion'
+    )
+    preservation_trust_complete = models.BooleanField(
+        default=False,
+        verbose_name='Preservation Trust Conversion Complete'
+    )
+    private_infill_planned = models.BooleanField(
+        default=False,
+        verbose_name='Private Infill Planned'
+    )
+    section_8_pre_2014 = models.BooleanField(
+        default=False,
+        verbose_name='Conversions to Section 8 Completed Prior to 2014'
+    )
+    demolition_proposed = models.BooleanField(
+        default=False,
+    )
+    demolition_completed = models.BooleanField(
+        default=False,
+    )
+    nycha_modernization_planned = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA-managed Modernization Planned'
+    )
+    nycha_modernization_complete = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA Completed Modernization'
+    )
+    new_public_housing_built = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Built Since 1998'
+    )
+    new_public_housing_planned = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Planned Since 1998'
+    )
+
+    # Development details
+    current_units = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of current units'
+    )
+    total_units = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of total units'
+    )
+    rental_rooms = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Number of rental rooms'
+    )
+    population_section_8 = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Section 8)'
+    )
+    population_public_housing = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Public Housing)'
+    )
+    population_total = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Population (Total)'
+    )
+    families_fixed_income = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Families On Fixed Income'
+    )
+    families_fixed_income_percent = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='% of Families On Fixed Income'
+    )
+    buildings_residential = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Residential Buildings'
+    )
+    buildings_nonresidential = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='# of Non-Residential Buildings'
+    )
+    buildings_stories = models.CharField(
+        blank=True,
+        null=True,
+        max_length=25,
+        verbose_name='# of Stories'
+    )
+    total_area = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Total Area - Sq. Ft.'
+    )
+    building_land_coverage = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Bldg/Land Coverage - % Density (Population/Acre)'
+    )
+    cost_total = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Development Cost'
+    )
+    cost_per_room = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Cost Per Rental Room (As Built)'
+    )
+    rent_avg = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Avg. Monthly Gross Rent'
+    )
+    senior_development = models.BooleanField(
+        default=False,
+        verbose_name='Senior Development'
+    )
+    electricity_residents = models.BooleanField(
+        default=False,
+        verbose_name='Electricity Paid By Residents'
+    )
+    private_management = models.CharField(
+        blank=True,
+        max_length=200,
+        null=True
+    )
+
+    # rad/pact
+    RADPACT_STATUS_CHOICES = (
+        ('Construction Complete', 'Construction Complete'),
+        ('Under Construction', 'Under Construction'),
+        ('Planning & Engagement', 'Planning & Engagement'),
+        (
+            'Developments Under Consideration by HUD for Future Section 8 Conversions',
+            'Developments Under Consideration by HUD for Future Section 8 Conversions',
+        ),
+    )
+    radpact_status = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        choices=RADPACT_STATUS_CHOICES,
+        verbose_name='RAD/PACT Status',
+    )
+    radpact_conversion_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='RAD/PACT Conversion Date / Anticipated Conversion Date',
+    )
+    radpact_developers = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Developers',
+    )
+    radpact_general_contractor = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT General Contractor',
+    )
+    radpact_property_manager = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Property Manager',
+    )
+    radpact_social_service_provider = models.CharField(
+        blank=True,
+        null=True,
+        max_length=200,
+        verbose_name='RAD/PACT Social Service Provider',
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Lot(NychaLotMixin, RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
     objects = LotManager()
     visible = VisibleLotManager()
 

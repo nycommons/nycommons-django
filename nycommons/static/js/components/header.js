@@ -11,7 +11,7 @@ var header = flight.component(function () {
         if ($target.is('.mainmenu-item-parent')) {
             var $submenu = $target.nextAll('.submenu');
             this.select('headerWrapperSelector').css({
-                'margin-top': $submenu.outerHeight() + 'px'
+                'margin-top': $submenu.outerHeight() + 25 + 'px'
             });
         }
     };

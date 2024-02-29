@@ -1,7 +1,5 @@
 from django.contrib import messages
 
-from braces.views import LoginRequiredMixin, PermissionRequiredMixin
-
 from livinglots import get_organizer_model
 from livinglots_organize.models import OrganizerType
 from livinglots_organize.views import AddParticipantView
@@ -9,13 +7,10 @@ from lots.models import Lot
 from .forms import OrganizerForm, SubscribeForm
 
 
-class AddOrganizerView(LoginRequiredMixin, PermissionRequiredMixin,
-        AddParticipantView):
+class AddOrganizerView(AddParticipantView):
     content_type_model = Lot
     form_class = OrganizerForm
-    login_url = '/admin/login/'
     model=get_organizer_model()
-    permission_required = 'organize.add_organizer'
 
 
 class SubscribeView(AddParticipantView):
