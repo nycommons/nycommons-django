@@ -466,11 +466,11 @@ class NychaLotMixin(models.Model):
     )
     new_public_housing_built = models.BooleanField(
         default=False,
-        verbose_name='New Public Housing Built'
+        verbose_name='New Public Housing Built Since 1998'
     )
     new_public_housing_planned = models.BooleanField(
         default=False,
-        verbose_name='New Public Housing Planned'
+        verbose_name='New Public Housing Planned Since 1998'
     )
 
     # Development details
@@ -524,9 +524,10 @@ class NychaLotMixin(models.Model):
         null=True,
         verbose_name='# of Non-Residential Buildings'
     )
-    buildings_stories = models.PositiveIntegerField(
+    buildings_stories = models.CharField(
         blank=True,
         null=True,
+        max_length=25,
         verbose_name='# of Stories'
     )
     total_area = models.FloatField(
@@ -573,6 +574,10 @@ class NychaLotMixin(models.Model):
         ('Construction Complete', 'Construction Complete'),
         ('Under Construction', 'Under Construction'),
         ('Planning & Engagement', 'Planning & Engagement'),
+        (
+            'Developments Under Consideration by HUD for Future Section 8 Conversions',
+            'Developments Under Consideration by HUD for Future Section 8 Conversions',
+        ),
     )
     radpact_status = models.CharField(
         blank=True,
