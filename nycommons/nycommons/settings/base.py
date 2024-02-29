@@ -5,7 +5,7 @@ from os.path import abspath, dirname
 from django.core.exceptions import ImproperlyConfigured
 
 
-ENV_VARIABLE_PREFIX = 'NYCOMMONS'
+ENV_VARIABLE_PREFIX = 'NYCHAREALTALK'
 
 def get_env_variable(var_name):
     """Get the environment variable or return exception"""
