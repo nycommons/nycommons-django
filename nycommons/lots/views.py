@@ -244,13 +244,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
         'organizing_priority': 'organizing & development pending',
         'community_project': 'community project',
         'priority': 'development pending',
-        'vacant_lot': 'vacant lot / garden',
-        'park': 'park',
-        'park_building': 'underutilized park building',
-        'library': 'library',
         'public_housing': 'public housing site',
-        'post_office': 'post office',
-        'waterfront': 'waterfront',
     }
 
     def count_organizers(self, lots_qs):
@@ -291,12 +285,7 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
             ('organizing_priority', lots.filter(organizing=True, priority=True)),
             ('community_project', lots.filter(steward_projects__isnull=False)),
             ('priority', lots.filter(priority=True)),
-            ('vacant_lot', lots.filter(commons_type='vacant lot / garden')),
-            ('park', lots.filter(commons_type='park')),
-            ('park_building', lots.filter(commons_type='park building')),
-            ('library', lots.filter(commons_type='library')),
             ('public_housing', lots.filter(commons_type='public housing')),
-            ('post_office', lots.filter(commons_type='post office')),
             ('waterfront', lots.filter(commons_type='waterfront')),
         ])
 
