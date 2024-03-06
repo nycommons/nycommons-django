@@ -452,9 +452,11 @@ class NychaLotMixin(models.Model):
     )
     demolition_proposed = models.BooleanField(
         default=False,
+        verbose_name='Demolition Proposed',
     )
     demolition_completed = models.BooleanField(
         default=False,
+        verbose_name='Demolition Completed',
     )
     nycha_modernization_planned = models.BooleanField(
         default=False,
