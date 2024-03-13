@@ -540,7 +540,12 @@ class NychaLotMixin(models.Model):
     building_land_coverage = models.FloatField(
         blank=True,
         null=True,
-        verbose_name='Bldg/Land Coverage - % Density (Population/Acre)'
+        verbose_name='Bldg/Land Coverage %'
+    )
+    density = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='Density (Population/Acre)'
     )
     cost_total = models.FloatField(
         blank=True,
@@ -557,8 +562,16 @@ class NychaLotMixin(models.Model):
         null=True,
         verbose_name='Avg. Monthly Gross Rent'
     )
-    senior_development = models.BooleanField(
-        default=False,
+
+    SENIOR_DEVELOPMENT_CHOICES = (
+        ('PARTIALLY', 'partially'),
+        ('EXCLUSIVELY', 'exclusively'),
+    )
+    senior_development = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        choices=SENIOR_DEVELOPMENT_CHOICES,
         verbose_name='Senior Development'
     )
     electricity_residents = models.BooleanField(

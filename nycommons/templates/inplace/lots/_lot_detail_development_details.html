@@ -1,0 +1,174 @@
+{% load humanize i18n %}
+
+<section class="collapsible">
+    <!-- <h2 class="collapsed">{% trans "Development Details" %}</h2> -->
+    <h2>{% trans "Development Details" %}</h2>
+
+    <!-- <div style="display: none;"> -->
+    <div>
+        <section class="development-details">
+            <ol>
+                <li>
+                    <span class="label">
+                        {% trans "# of Current Units" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.current_units|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Number of Units" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.total_units|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Number of Rental Rooms" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.rental_rooms|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Population - Section 8 Transition" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_section_8|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Population - Public Housing" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_public_housing|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Population" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_total|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Families On Fixed Income" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.families_fixed_income|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "% of Families on Fixed Income" %}
+                    </span>
+                    <span class="value">
+                        {% widthratio lot.families_fixed_income_percent 1 100 %}%
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Residential Buildings" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_residential|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Non-Residential Buildings" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_nonresidential|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Stories" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_stories|default_if_none:'' }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Area (Sq Ft)" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.total_area|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Bldg/Land Coverage" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.building_land_coverage|default_if_none:0 }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Density (Population/Acre)" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.density|default_if_none:0 }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Development Cost" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.cost_total|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Cost Per Rental Room (As Built)" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.cost_per_room|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Avg. Monthly Gross Rent" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.rent_avg|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Senior Development" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.senior_development }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Electricity Paid By Residents" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.electricity_residents|yesno }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Private Managment" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.private_management|default_if_none:'' }}
+                    </span>
+                </li>
+            </ol>
+        </section>
+    </div>
+</section>

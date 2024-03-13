@@ -7752,6 +7752,19 @@ footer .social-media-twitter {
   left: -50px;
   width: 60px;
 }
+.lot-detail-page .development-details ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.lot-detail-page .development-details li {
+  display: grid;
+  grid-template-columns: 180px 100px;
+}
+.lot-detail-page .development-details .value {
+  font-weight: bold;
+  text-align: right;
+}
 .nearby-lots-list {
   list-style: none;
   padding-left: 0;
