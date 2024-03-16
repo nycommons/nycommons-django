@@ -828,7 +828,7 @@ module.exports = {
             return false;
         }
 
-        if (filters.development.length && !filters.development.some(d => lot.feature.properties[d])) {
+        if (filters.development.length && !filters.development.some(function (d) { return lot.feature.properties[d]; })) {
             return false;
         }
 
