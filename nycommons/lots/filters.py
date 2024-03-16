@@ -79,6 +79,33 @@ class OwnerFilter(django_filters.Filter):
         return qs.filter(owner_query | other_owners_query)
 
 
+class NychaDevelopmentFilter(django_filters.Filter):
+
+    def __init__(self, **kwargs):
+        super(NychaDevelopmentFilter, self).__init__(**kwargs)
+
+    def filter(self, qs, value):
+        if not value:
+            return qs
+
+        values = json.loads(value)
+        query = None
+
+        def add(query, f):
+            if not query:
+                return Q(**{ f: True })
+            else:
+                return query | Q(**{ f: True })
+
+        for f in values:
+            query = add(query, f)
+
+        if not query:
+            return qs
+
+        return qs.filter(query)
+
+
 class OwnersFilter(django_filters.Filter):
 
     def filter(self, qs, value):
@@ -140,6 +167,7 @@ class LotFilter(django_filters.FilterSet):
     priority_organizing = PriorityOrganizingFilter()
     projects = ProjectFilter()
     public_owners = OwnerFilter(owner_type='public')
+    development = NychaDevelopmentFilter()
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -156,6 +184,7 @@ class LotFilter(django_filters.FilterSet):
             'bbox',
             'boundary',
             'commons_type',
+            'development',
             'known_use',
             'lot_center',
             'organizing',

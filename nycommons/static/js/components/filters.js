@@ -342,6 +342,11 @@ var filters = flight.component(function () {
             };
         }
 
+        var $developmentFilters = this.$node.find('.filter[data-type=development]:checked');
+        filters.development = $developmentFilters.map(function () {
+            return $(this).attr('id');
+        }).get();
+
         return filters;
     };
 
@@ -427,6 +432,10 @@ module.exports = {
             return false;
         }
 
+        if (filters.development.length && !filters.development.some(d => lot.feature.properties[d])) {
+            return false;
+        }
+
         /*
          * Boundaries
          */
@@ -473,6 +482,11 @@ module.exports = {
         $('.filter-priority-organizing-list-item .filter:checked').each(function () {
             filters[$(this).attr('id')] = true;
         });
+
+        var $developmentFilters = $('.filter[data-type=development]:checked');
+        filters.development = JSON.stringify($developmentFilters.map(function () {
+            return $(this).attr('id');
+        }).get(), 0, null);
 
         var params = toParams(filters);
 
