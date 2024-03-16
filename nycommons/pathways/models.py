@@ -25,6 +25,8 @@ class PathwayManager(BasePathwayManager):
         if not len(lot.urban_renewal_records) > 0:
             pathways = pathways.exclude(only_urban_renewal_lots=True)
 
+        # TODO NYCHA
+
         return pathways
 
     def get_queryset(self):
@@ -35,6 +37,56 @@ class PathwayLotMixin(models.Model):
     only_waterfront_lots = models.BooleanField(default=False)
     only_landmarked_lots = models.BooleanField(default=False)
     only_urban_renewal_lots = models.BooleanField(default=False)
+
+    # nycha filters
+    radpact_converted = models.BooleanField(
+        default=False,
+        verbose_name='RAD/PACT - Converted to Section 8 Under Private Management'
+    )
+    radpact_planned = models.BooleanField(
+        default=False,
+        verbose_name='Planned RAD/PACT - Section 8 Conversion Under Private Management'
+    )
+    preservation_trust_voting_planned = models.BooleanField(
+        default=False,
+        verbose_name='Voting Planned for Preservation Trust Section 8 Conversion'
+    )
+    preservation_trust_complete = models.BooleanField(
+        default=False,
+        verbose_name='Preservation Trust Conversion Complete'
+    )
+    private_infill_planned = models.BooleanField(
+        default=False,
+        verbose_name='Private Infill Planned'
+    )
+    section_8_pre_2014 = models.BooleanField(
+        default=False,
+        verbose_name='Conversions to Section 8 Completed Prior to 2014'
+    )
+    demolition_proposed = models.BooleanField(
+        default=False,
+        verbose_name='Demolition Proposed',
+    )
+    demolition_completed = models.BooleanField(
+        default=False,
+        verbose_name='Demolition Completed',
+    )
+    nycha_modernization_planned = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA-managed Modernization Planned'
+    )
+    nycha_modernization_complete = models.BooleanField(
+        default=False,
+        verbose_name='NYCHA Completed Modernization'
+    )
+    new_public_housing_built = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Built Since 1998'
+    )
+    new_public_housing_planned = models.BooleanField(
+        default=False,
+        verbose_name='New Public Housing Planned Since 1998'
+    )
 
     def get_lots(self):
         """Get the lots this pathway applies to"""
@@ -65,6 +117,8 @@ class PathwayLotMixin(models.Model):
             filters &= Q(parcel__landmark_object__isnull=False)
         if self.only_urban_renewal_lots:
             filters &= Q(parcel__urbanrenewalrecord__isnull=False)
+
+        # TODO add nycha filters
         return Lot.objects.filter(filters)
     lots = property(get_lots)
 
