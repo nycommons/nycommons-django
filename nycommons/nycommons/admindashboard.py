@@ -48,6 +48,7 @@ class LivingLotsDashboard(Dashboard):
                 'ownerpathways.*',
                 'owners.*',
                 'reviewpathways.*',
+                'senators.*',
                 'taggit.*',
             ),
         ))
@@ -87,6 +88,7 @@ class LivingLotsDashboard(Dashboard):
                 'nycdata.citycouncildistricts.*',
                 'nycdata.communitydistricts.*',
                 'congressionaldistricts.*',
+                'senators.*',
             ),
         ))
 

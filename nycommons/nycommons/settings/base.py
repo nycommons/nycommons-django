@@ -230,6 +230,7 @@ INSTALLED_APPS = (
     'ownerpathways',
     'owners',
     'reviewpathways',
+    'senators',
     'steward',
     'usercontent',
 )
