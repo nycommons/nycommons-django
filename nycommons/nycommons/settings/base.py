@@ -219,6 +219,7 @@ INSTALLED_APPS = (
     'activities',
     'blog',
     'cms',
+    'congressionaldistricts',
     'contact',
     'faq',
     'foil',

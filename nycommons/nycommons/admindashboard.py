@@ -27,6 +27,7 @@ class LivingLotsDashboard(Dashboard):
                 'actstream.*',
                 'articles.*',
                 'blog.*',
+                'congressionaldistricts.*',
                 'django.contrib.*',
                 'elephantblog.*',
                 'faq.*',
@@ -85,6 +86,7 @@ class LivingLotsDashboard(Dashboard):
             models=(
                 'nycdata.citycouncildistricts.*',
                 'nycdata.communitydistricts.*',
+                'congressionaldistricts.*',
             ),
         ))
 
