@@ -2198,18 +2198,22 @@ L.LotMap = L.Map.extend({
     },
 
     addBaseLayer: function () {
-        var streets;
+        var styleId = 'slilly/clu4fxjsk03aw01qefxul522h';
+        var apiKey;
+
         if (window.django_debug) {
-            streets = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png ', {
-                attribution: 'Map data from OpenStreetMap'
-            }).addTo(this);
+            apiKey = 'pk.eyJ1Ijoic2xpbGx5IiwiYSI6ImNsdTRmc2pwajBhc2sycW5vend0dzhneHMifQ.vYU669pPDggy7uSgejyrdA';
         }
         else {
-            streets = L.tileLayer('https://api.mapbox.com/styles/v1/newyorkcommons/cirxogajr0023g6m8iewwksfh/tiles/256/{z}/{x}/{y}{retina}?access_token=pk.eyJ1IjoibmV3eW9ya2NvbW1vbnMiLCJhIjoiY2lxMmhwaHRoMDE1dGZxbm9lMGtubTl3aiJ9.09q5uEc5P8yQtPxr5DZd3Q', {
-                attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                retina: L.Browser.retina ? '@2x' : ''
-            }).addTo(this);
+            apiKey = 'pk.eyJ1Ijoic2xpbGx5IiwiYSI6ImNsdTRmdTVkYTA2d3UyanFyemszbTdrcGkifQ.ogjOpy4yxsr-BFdR0uLyMw';
         }
+
+        var styleUrl = 'https://api.mapbox.com/styles/v1/' + styleId + '/tiles/256/{z}/{x}/{y}{retina}?access_token=' + apiKey;
+
+        var streets = L.tileLayer(styleUrl, {
+            attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            retina: L.Browser.retina ? '@2x' : ''
+        }).addTo(this);
         var bing = new L.BingLayer('Ajio1n0EgmAAvT3zLndCpHrYR_LHJDgfDU6B0tV_1RClr7OFLzy4RnkLXlSdkJ_x');
 
         L.control.layers({
