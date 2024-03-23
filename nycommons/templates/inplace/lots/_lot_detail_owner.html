@@ -74,19 +74,5 @@
                 {% endfor %}
             </section>
         {% endif %}
-
-        {% include "inplace/lots/_lot_detail_part_of_nycommons.html" with lot=lot %}
-
-        {% if lot.foil_contact and not lot.bbl_is_fake %}
-            <section>
-                <h3>Request Agency Documents</h3>
-                <div>
-                    <p>The agency has to share most documents it has about this property under the New York State Freedom of Information Law (FOIL). Click to send them a request!</p>
-                    <a class="btn btn-small btn-default" href="mailto:{{ lot.foil_contact.officer_email }}?bcc=equitableneighborhoods@takerootjustice.org&subject={{ lot | foil_subject | urlencode }}&body={{ lot | foil_body | urlencode }}">
-                        {% trans "send foil request" %}
-                    </a>
-                </div>
-            </section>
-        {% endif %}
     </div>
 </section>
