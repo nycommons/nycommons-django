@@ -22,7 +22,9 @@
             <label for="priority-organizing">{% trans "Organizing & Development Pending" %}</label>
         </li>
 
-        {% include "livinglots/lots/_commons_type_filters.html" with slug="public-housing" label="public housing" label_plural="public housing sites" %}
+        <div style="display: none;">
+            {% include "livinglots/lots/_commons_type_filters.html" with slug="public-housing" label="public housing" label_plural="public housing sites" %}
+        </div>
     </ul>
 
     <section class="filter-section filter-section-boundaries">

@@ -185,7 +185,7 @@ var clearButton = flight.component(function () {
     this.handleClick = function () {
         var $filtersSection = this.$node.parents('.filters-section');
         $filtersSection
-            .find('.filter-priority,.filter-organizing,.filter-priority-organizing,.filter-layer')
+            .find('.filter-priority,.filter-organizing,.filter-priority-organizing')
             .prop('checked', false);
         this.attr.filterList.trigger('filterChanged');
         return false;

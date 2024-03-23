@@ -286,7 +286,6 @@ class LotsOwnershipOverview(FilteredLotsMixin, JSONResponseView):
             ('community_project', lots.filter(steward_projects__isnull=False)),
             ('priority', lots.filter(priority=True)),
             ('public_housing', lots.filter(commons_type='public housing')),
-            ('waterfront', lots.filter(commons_type='waterfront')),
         ])
 
     def get_layer_counts(self, layers):
