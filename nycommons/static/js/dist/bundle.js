@@ -2702,14 +2702,24 @@ function initTwitterLink($link) {
 
 $(document).ready(function () {
     if ($('.lot-detail-page').length > 0) {
-        var map = L.map('lot-detail-map', {
+        var options = {
+            attributionControl: false,
             doubleClickZoom: false,
             dragging: false,
             scrollWheelZoom: false,
-            touchZoom: false
-        });
+            touchZoom: false,
+            zoom: $('#lot-detail-map').data('lZoom'),
+            center: $('#lot-detail-map').data('lCenter'),
+            bbox: $('#lot-detail-map').data('lBbox'),
+            zoomControl: $('#lot-detail-map').data('lZoomControl'),
+            lotsTilesUrl: $('#lot-detail-map').data('lLotsTilesUrl'),
+            lotPk: $('#lot-detail-map').data('lLotPk')
+        };
+
+        var map = L.map('lot-detail-map', options);
 
         var bbox = map.options.bbox;
+
         if (bbox) {
             map.fitBounds([
                 [bbox[1], bbox[0]],
