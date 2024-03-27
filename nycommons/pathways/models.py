@@ -1,11 +1,29 @@
 from django.db import models
 from django.db.models import Q
+from django.forms.models import model_to_dict
 
 from caching.base import CachingQuerySet
 
 from livinglots_pathways.models import BasePathwayManager
 
 from lots.models import Lot
+
+
+nycha_filter_fields = [
+    'radpact_converted',
+    'radpact_planned',
+    'preservation_trust_voting_planned',
+    'preservation_trust_complete',
+    'private_infill_planned',
+    'private_infill_completed',
+    'section_8_pre_2014',
+    'demolition_proposed',
+    'demolition_completed',
+    'nycha_modernization_planned',
+    'nycha_modernization_complete',
+    'new_public_housing_built',
+    'new_public_housing_planned',
+]
 
 
 class PathwayManager(BasePathwayManager):
@@ -25,7 +43,35 @@ class PathwayManager(BasePathwayManager):
         if not len(lot.urban_renewal_records) > 0:
             pathways = pathways.exclude(only_urban_renewal_lots=True)
 
-        # TODO NYCHA
+        # NYCHA development fields - if any of these is true for a pathway,
+        # at least one has to be present on the lot
+        def add_or(query, f):
+            part = Q(**{ f: True })
+            if not query:
+                return part
+            else:
+                return query | part
+
+        def add_and(query, f):
+            part = Q(**{ f: False })
+            if not query:
+                return part
+            else:
+                return query & part
+
+        nycha_no_filters = None
+        nycha_matches = None
+
+        lot_dict = model_to_dict(lot)
+        for f in nycha_filter_fields:
+            nycha_no_filters = add_and(nycha_no_filters, f)
+            if lot_dict[f]:
+                nycha_matches = add_or(nycha_matches, f)
+
+        if nycha_matches:
+            pathways = pathways.filter(nycha_no_filters | nycha_matches)
+        else:
+            pathways = pathways.filter(nycha_no_filters)
 
         return pathways
 
@@ -122,7 +168,24 @@ class PathwayLotMixin(models.Model):
         if self.only_urban_renewal_lots:
             filters &= Q(parcel__urbanrenewalrecord__isnull=False)
 
-        # TODO add nycha filters
+        # NYCHA filters: if any are True, require one to be true on lot
+        def add_or(query, f):
+            part = Q(**{ f: True })
+            if not query:
+                return part
+            else:
+                return query | part
+
+        nycha_matches = None
+
+        pathway_dict = model_to_dict(self)
+        for f in nycha_filter_fields:
+            if pathway_dict[f]:
+                nycha_matches = add_or(nycha_matches, f)
+
+        if nycha_matches:
+            filters &= nycha_matches
+
         return Lot.objects.filter(filters)
     lots = property(get_lots)
 
