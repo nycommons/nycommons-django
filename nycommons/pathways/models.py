@@ -59,6 +59,10 @@ class PathwayLotMixin(models.Model):
         default=False,
         verbose_name='Private Infill Planned'
     )
+    private_infill_completed = models.BooleanField(
+        default=False,
+        verbose_name='Private Infill Completed'
+    )
     section_8_pre_2014 = models.BooleanField(
         default=False,
         verbose_name='Conversions to Section 8 Completed Prior to 2014'

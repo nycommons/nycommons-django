@@ -41,6 +41,7 @@ class LotAdmin(BaseLotAdmin):
                 ),
                 (
                     'private_infill_planned',
+                    'private_infill_completed',
                 ),
                 (
                     'section_8_pre_2014',
