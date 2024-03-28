@@ -6959,6 +6959,48 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.focus {
 .filters-section .filter-waterfront-item input[type=checkbox] + label:before {
   border-color: #E669EE;
 }
+.filters-section .filter-demolition-item input[type=checkbox]:checked + label:before {
+  background: #000000;
+}
+.filters-section .filter-demolition-item input[type=checkbox] + label:before {
+  border-color: #000000;
+}
+.filters-section .filter-radpact-item input[type=checkbox]:checked + label:before {
+  background: #057FC6;
+}
+.filters-section .filter-radpact-item input[type=checkbox] + label:before {
+  border-color: #057FC6;
+}
+.filters-section .filter-preservation-trust-item input[type=checkbox]:checked + label:before {
+  background: #662D91;
+}
+.filters-section .filter-preservation-trust-item input[type=checkbox] + label:before {
+  border-color: #662D91;
+}
+.filters-section .filter-infill-item input[type=checkbox]:checked + label:before {
+  background: #00C3FF;
+}
+.filters-section .filter-infill-item input[type=checkbox] + label:before {
+  border-color: #00C3FF;
+}
+.filters-section .filter-section-8-item input[type=checkbox]:checked + label:before {
+  background: #F66557;
+}
+.filters-section .filter-section-8-item input[type=checkbox] + label:before {
+  border-color: #F66557;
+}
+.filters-section .filter-new-housing-item input[type=checkbox]:checked + label:before {
+  background: #4DEF3E;
+}
+.filters-section .filter-new-housing-item input[type=checkbox] + label:before {
+  border-color: #4DEF3E;
+}
+.filters-section .filter-modernization-item input[type=checkbox]:checked + label:before {
+  background: #E669EE;
+}
+.filters-section .filter-modernization-item input[type=checkbox] + label:before {
+  border-color: #E669EE;
+}
 footer {
   background: #F6F6F6;
   color: #9B9B9B;
