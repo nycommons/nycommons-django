@@ -115,7 +115,7 @@
         {% include "_messages.html" %}
 
         <h1>
-            <span class="lot-detail-icon{% if lot.priority %} priority {% endif %}{% if lot.organizing %} organizing {% endif %} {{ lot.commons_type|slugify }}"></span>
+            <span class="lot-detail-icon{% if lot.priority %} priority {% endif %}{% if lot.organizing %} organizing {% endif %} {{ lot.nycha_filter_layer }}"></span>
             {{ lot.display_name|default:"unknown" }}
         </h1>
 

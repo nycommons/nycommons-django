@@ -46,16 +46,22 @@
     }
 
     .lot-popup-icon {
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
+        border: 1px solid transparent;
+        border-radius: 50%;
         display: inline-block;
         height: 10px;
         width: 10px;
 
-        .for-each(@layer in @layers) {
-            &.@{layer} {
-                .make-lot-icon(@layer);
+        &.priority {
+            border: 1px solid @lot-priority-color;
+        }
+
+        .for-each(@pair in @filters-layers) {
+            @key: at(@pair, 1);
+            @color: at(@pair, 2);
+
+            &.@{key} {
+                background-color: @color;
             }
         }
     }

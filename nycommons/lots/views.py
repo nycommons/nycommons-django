@@ -128,6 +128,7 @@ class LotDetailViewJSON(JSONResponseMixin, BaseLotDetailView):
             'organizing': lot.organizing,
             'name': lot.display_name,
             'number_of_lots': lot.number_of_lots,
+            'nycha_filter_layer': lot.nycha_filter_layer,
             'part_of_group': lot.group is not None,
             'priority': lot.priority,
             'url': lot.get_absolute_url(),

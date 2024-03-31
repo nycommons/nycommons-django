@@ -635,6 +635,27 @@ class NychaLotMixin(models.Model):
         verbose_name='RAD/PACT Social Service Provider',
     )
 
+    def _nycha_filter_layer(self):
+        """
+        Defined in this order to match map styles
+        """
+        if self.demolition_proposed or self.demolition_completed:
+            return 'demolition'
+        if self.radpact_converted or self.radpact_planned:
+            return 'radpact'
+        if self.preservation_trust_voting_planned or self.preservation_trust_complete:
+            return 'preservation-trust'
+        if self.private_infill_planned or self.private_infill_completed:
+            return 'infill'
+        if self.section_8_pre_2014:
+            return 'section-8'
+        if self.new_public_housing_built or self.new_public_housing_planned:
+            return 'new-housing'
+        if self.nycha_modernization_planned or self.nycha_modernization_complete:
+            return 'modernization'
+        return 'public-housing'
+    nycha_filter_layer = property(_nycha_filter_layer)
+
     class Meta:
         abstract = True
 
