@@ -147,7 +147,7 @@
                         {% trans "Senior Development" %}
                     </span>
                     <span class="value">
-                        {{ lot.senior_development|default_if_none:"no" }}
+                        {{ lot.senior_development|default:"no" }}
                     </span>
                 </li>
                 <li>
@@ -159,6 +159,54 @@
                     </span>
                 </li>
                 {% if lot.radpact_planned or lot.radpact_converted %}
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Status" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_status|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Conversion Date" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_conversion_date|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Developers" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_developers|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT General Contractor" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_general_contractor|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Property Manager" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_property_manager|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Social Service Provider" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_social_service_provider|default:'Unknown' }}
+                        </span>
+                    </li>
                     <li>
                         <span class="label">
                             {% trans "Private Managment" %}

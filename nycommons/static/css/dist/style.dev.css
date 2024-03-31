@@ -7801,7 +7801,7 @@ footer .social-media-twitter {
 }
 .lot-detail-page .development-details li {
   display: grid;
-  grid-template-columns: 180px 100px;
+  grid-template-columns: 200px 300px;
 }
 .lot-detail-page .development-details .value {
   font-weight: bold;
