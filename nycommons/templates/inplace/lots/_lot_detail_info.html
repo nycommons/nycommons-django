@@ -45,6 +45,12 @@
             {{ lot.borough }}{% if lot.postal_code %}, {{ lot.postal_code }}{% endif %}
         </div>
 
+        {% if lot.priority %}
+        <div style="margin-top: 0.75rem;">
+            <strong>Development Pending</strong>
+        </div>
+        {% endif %}
+
         {% if lot.bbl and not lot.bbl_is_fake %}
             <div>
                 {{ lot.borough }}, block {{ lot.block }}, lot {{ lot.lot_number }}
