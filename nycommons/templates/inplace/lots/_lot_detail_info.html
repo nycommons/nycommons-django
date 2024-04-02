@@ -61,7 +61,13 @@
 
         {% if lot.priority %}
         <div style="margin-top: 0.75rem;">
-            <strong>Development Pending</strong>
+            <strong>Public Housing Restructuring</strong>
+
+            <ul>
+                {% for f in lot.nycha_filters %}
+                <li>{{ f }}</li>
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
 

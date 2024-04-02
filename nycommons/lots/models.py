@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.measure import D
 from django.db import models
 from django.db.models import Q
+from django.forms.models import model_to_dict
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 
@@ -452,7 +453,7 @@ class NychaLotMixin(models.Model):
     )
     section_8_pre_2014 = models.BooleanField(
         default=False,
-        verbose_name='Conversions to Section 8 Completed Prior to 2014'
+        verbose_name='Section 8 Completed Prior to 2014'
     )
     demolition_proposed = models.BooleanField(
         default=False,
@@ -655,6 +656,35 @@ class NychaLotMixin(models.Model):
             return 'modernization'
         return 'public-housing'
     nycha_filter_layer = property(_nycha_filter_layer)
+
+    def _nycha_filters(self):
+        filters = []
+
+        filter_fields = [
+            'demolition_proposed',
+            'demolition_completed',
+            'radpact_converted',
+            'radpact_planned',
+            'preservation_trust_voting_planned',
+            'preservation_trust_complete',
+            'private_infill_planned',
+            'private_infill_completed',
+            'section_8_pre_2014',
+            'new_public_housing_built',
+            'new_public_housing_planned',
+            'nycha_modernization_planned',
+            'nycha_modernization_complete',
+        ]
+
+        d = model_to_dict(self)
+        fields = self._meta.fields
+
+        for f in filter_fields:
+            if d[f]:
+                filters.append(filter(lambda x: x.name == f,
+                    fields)[0].verbose_name)
+        return filters
+    nycha_filters = property(_nycha_filters)
 
     class Meta:
         abstract = True
