@@ -127,7 +127,9 @@
 
         {% include "inplace/lots/_lot_detail_development_pending.html" with lot=lot %}
 
-        {% include "inplace/lots/_lot_detail_development_details.html" with lot=lot %}
+        {% if lot.commons_type == "public housing" %}
+            {% include "inplace/lots/_lot_detail_development_details.html" with lot=lot %}
+        {% endif %}
 
         {% include "inplace/lots/_lot_detail_owner.html" with lot=lot %}
 
