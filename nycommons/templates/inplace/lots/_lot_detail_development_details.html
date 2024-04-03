@@ -207,14 +207,6 @@
                             {{ lot.radpact_social_service_provider|default:'Unknown' }}
                         </span>
                     </li>
-                    <li>
-                        <span class="label">
-                            {% trans "Private Managment" %}
-                        </span>
-                        <span class="value">
-                            {{ lot.private_management|default_if_none:'No private manager selected yet.' }}
-                        </span>
-                    </li>
                 {% endif %}
             </ol>
         </section>

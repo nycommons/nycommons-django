@@ -87,7 +87,6 @@ class LotAdmin(BaseLotAdmin):
                     'rent_avg',
                 ),
                 ('senior_development', 'electricity_residents'),
-                'private_management'
             ),
         }),
         ('RAD/PACT', {

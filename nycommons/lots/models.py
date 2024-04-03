@@ -583,11 +583,6 @@ class NychaLotMixin(models.Model):
         default=False,
         verbose_name='Electricity Paid By Residents'
     )
-    private_management = models.CharField(
-        blank=True,
-        max_length=200,
-        null=True
-    )
 
     # rad/pact
     RADPACT_STATUS_CHOICES = (
