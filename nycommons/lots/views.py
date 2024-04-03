@@ -339,10 +339,10 @@ class LotsCountViewWithAcres(LotsCountView):
 
 
 class LotExportMixin(object):
-    fields = ('address_line1', 'name', 'city', 'state_province', 'postal_code',
-              'bbl', 'latitude', 'longitude', 'commons_type', 'known_use',
-              'owner', 'owner_type', 'priority',
-              'development_pending_explanation_plaintext', 'organizing')
+    fields = ('name', 'city', 'postal_code', 'council_district', 'bbl',
+              'latitude', 'longitude', 'priority',
+              'development_pending_explanation_plaintext', 'nycha_filters',
+              'organizing', 'url')
 
     def get_sitename(self):
         return 'NYCHA Real Talk'
@@ -351,6 +351,10 @@ class LotExportMixin(object):
 class LotsCSV(LotExportMixin, BaseLotsCSV):
 
     def get_header_name(self, field):
+        if field == 'city':
+            return 'borough'
+        if field == 'nycha_filters':
+            return 'development pending type'
         if field == 'priority':
             return 'development pending'
         if field == 'organizing':

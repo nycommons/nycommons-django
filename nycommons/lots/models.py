@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.measure import D
+from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Q
 from django.forms.models import model_to_dict
@@ -13,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from tinymce import models as tinymce_models
 
+from inplace.boundaries.models import Boundary
 from livinglots import get_owner_model, get_stewardproject_model
 from livinglots_lots.models import (BaseLot, BaseLotGroup, BaseLotLayer,
                                     BaseLotManager)
@@ -699,10 +701,26 @@ class Lot(NychaLotMixin, RemoteLotMixin, LotMixin, LotGroupLotMixin, BaseLot):
             else:
                 return ('lots:lot_detail', (), { 'pk': self.pk, })
 
+    def _url(self):
+        return 'https://' + Site.objects.get_current().domain + self.get_absolute_url()
+    url = property(_url)
+
     def _is_visible(self):
         # Use visible manager to avoid inconsistencies in how we define visible
         return Lot.visible.filter(pk=self.pk).exists()
     is_visible = property(_is_visible)
+
+    def _council_district(self):
+        boundaries = Boundary.objects.filter(
+            geometry__contains=self.centroid,
+            layer__name='city council districts',
+        )
+
+        try:
+            return boundaries[0].label
+        except IndexError:
+            return None
+    council_district = property(_council_district)
 
     class Meta:
         ordering = ['name',]
