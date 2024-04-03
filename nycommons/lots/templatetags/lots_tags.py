@@ -13,7 +13,7 @@ register = template.Library()
 PLUTO_URL = 'http://www.nyc.gov/html/dcp/html/bytes/applbyte.shtml#pluto'
 
 
-class GetOasisUrl(AsTag):
+class GetZolaUrl(AsTag):
     options = Options(
         'for',
         Argument('lot', resolve=True, required=True),
@@ -22,16 +22,9 @@ class GetOasisUrl(AsTag):
     )
 
     def get_value(self, context, lot):
-        base = 'http://oasisnyc.net/map.aspx?etabs=1&zoomto='
+        base = 'https://zola.planning.nyc.gov/l/lot/'
         if lot.bbl and not lot.bbl_is_fake:
-            return '%slot:%s' % (base, lot.bbl)
-        try:
-            return '%sgarden:%s' % (
-                base,
-                lot.steward_projects.all()[0].external_id,
-            )
-        except Exception:
-            pass
+            return '%s/%s/%s/%s' % (base, lot.bbl[0], lot.block, lot.lot_number)
         return None
 
 
@@ -63,5 +56,5 @@ class GetOwnerMapUrl(AsTag):
         return '/#%s' % urlencode(params)
 
 
-register.tag(GetOasisUrl)
+register.tag(GetZolaUrl)
 register.tag(GetOwnerMapUrl)

@@ -12,10 +12,10 @@
                     <li>
                         <div>
                             {{ child.display_name }}{% if child.address_line1 %} ({{ child.address_line1 }}){% endif %}.
-                            {% get_oasis_url for child as oasis_url %}
-                            {% if oasis_url %}
+                            {% get_zola_url for child as zola_url %}
+                            {% if zola_url %}
                                 {% trans "More details at" %}
-                                <a href="{{ oasis_url }}" target="_blank">OASIS</a>.
+                                <a href="{{ zola_url }}" target="_blank">ZOLA</a>.
                             {% endif %}
                             {% if "lots.change_lot" in perms %}
                                 <a class="btn btn-xs btn-warning" href="{% url "admin:lots_lot_change" child.pk %}">
@@ -51,11 +51,11 @@
             </div>
         {% endif %}
 
-        {% get_oasis_url for lot as oasis_url %}
-        {% if oasis_url %}
+        {% get_zola_url for lot as zola_url %}
+        {% if zola_url %}
             <div>
                 {% trans "More information about this property at" %}
-                <a href="{{ oasis_url }}" target="_blank">OASIS</a>
+                <a href="{{ zola_url }}" target="_blank">ZOLA</a>
             </div>
         {% endif %}
 

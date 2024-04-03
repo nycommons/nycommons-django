@@ -1,6 +1,5 @@
 var flight = require('flightjs');
 var geocode = require('../lib/geocode').geocode;
-var oasis = require('../lib/oasis');
 
 var searchButton = flight.component(function () {
     this.click = function (event) {
@@ -142,10 +141,7 @@ var searchBar = flight.component(function () {
     };
 
     this.searchResultFound = function (event, data) {
-        var oasisUrl = oasis.vacantLotsUrl(data.latitude, data.longitude);
-        this.attr.map.addUserLayer([data.latitude, data.longitude], {
-            popupContent: '<p>This is the point we found when we searched.</p><p>Not seeing what you expected? Check <a href="' + oasisUrl + '" target="_blank">OASIS in this area</a>. Learn more about using OASIS in our <a href="/faq/#why-isnt-vacant-lot-near-me-map" target="_blank">FAQs</a>.</p>'
-        });
+        this.attr.map.addUserLayer([data.latitude, data.longitude]);
     };
 
     this.after('initialize', function () {
