@@ -141,6 +141,21 @@ var filterCollapseButton = flight.component(function () {
     });
 });
 
+var developmentPendingToggle = flight.component(function () {
+    this.onClick = function (e) {
+        this.$node.toggleClass('toggle-collapse');
+        this.$developmentFilters.toggleClass('collapse');
+        return false;
+    };
+
+    this.after('initialize', function () {
+        this.$developmentFilters = this.$node.parents('.filters-list')
+            .find('.development-filters-list');
+        console.log(this.$developmentFilters);
+        this.on('click', this.onClick.bind(this));
+    });
+});
+
 var allOwners = flight.component(function () {
     this.attributes({
         filterList: null
@@ -377,6 +392,7 @@ var filters = flight.component(function () {
             filterList: this
         });
         filterCollapseButton.attachTo(this.$node.find('.filter-layer-collapse'));
+        developmentPendingToggle.attachTo(this.$node.find('.development-pending-toggle'));
 
         // Set off filterChanged with current state of filters
         this.handleFilterChanged();
