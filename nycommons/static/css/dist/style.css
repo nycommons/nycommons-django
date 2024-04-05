@@ -6518,6 +6518,9 @@ fieldset[disabled] .usercontent-list-admin-actions .btn.focus {
   display: inline;
   font-weight: normal;
 }
+.development-filters-list {
+  margin-left: 2rem;
+}
 .filter-layer-collapse {
   background-image: url("/static/img/collapse-arrow.png");
   background-repeat: no-repeat;

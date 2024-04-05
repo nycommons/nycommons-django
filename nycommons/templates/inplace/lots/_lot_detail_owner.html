@@ -1,4 +1,4 @@
-{% load foil_tags i18n ownerpathways_tags %}
+{% load foil_tags i18n %}
 
 <section class="collapsible">
     <h2>{% trans "Who decides what happens to this property?" %}</h2>
@@ -42,8 +42,6 @@
                         {% endif %}
                     {% endwith %}
                 </div>
-
-                {% render_owner_pathway_summary_list for lot %}
             </section>
         {% endif %}
 
