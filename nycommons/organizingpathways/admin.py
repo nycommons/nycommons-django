@@ -29,6 +29,7 @@ class OrganizingPathwayAdmin(BasePathwayAdmin):
                 'preservation_trust_voting_planned',
                 'preservation_trust_complete',
                 'private_infill_planned',
+                'private_infill_completed',
                 'section_8_pre_2014',
                 'demolition_proposed',
                 'demolition_completed',
