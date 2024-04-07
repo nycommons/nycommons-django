@@ -151,7 +151,6 @@ var developmentPendingToggle = flight.component(function () {
     this.after('initialize', function () {
         this.$developmentFilters = this.$node.parents('.filters-list')
             .find('.development-filters-list');
-        console.log(this.$developmentFilters);
         this.on('click', this.onClick.bind(this));
     });
 });
