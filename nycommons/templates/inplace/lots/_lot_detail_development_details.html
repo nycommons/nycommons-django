@@ -4,14 +4,19 @@
     <h2 class="collapsed">{{ lot.name|default:"Property" }} {% trans "Details" %}</h2>
 
     <div style="display: none;">
-        {% if lot.landmarks %}
+        {% if lot.landmarks or lot.shpo_landmark_eligible or lot.shpo_landmark_listed %}
             <section class="lot-detail-details lot-detail-landmarks">
                 <h3>{% trans "Landmark" %}</h3>
-                {% for landmark in lot.landmarks %}
-                    <div>
-                        This property has been designated a New York City Landmark. <a href="{{ landmark.report_url }}" target="_blank">View the designation report PDF</a>. Read more about the Landmarks Preservation Commission and the power of the Landmark designation <a href="/resources/how-organize/protect-designated-landmark/">here</a>.
-                    </div>
-                {% endfor %}
+                {% if lot.landmarks %}
+                    {% for landmark in lot.landmarks %}
+                        <div>
+                            This property has been designated a New York City Landmark. <a href="{{ landmark.report_url }}" target="_blank">View the designation report PDF</a>. Read more about the Landmarks Preservation Commission and the power of the Landmark designation <a href="/resources/how-organize/protect-designated-landmark/">here</a>.
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if lot.shpo_landmark_eligible or lot.shpo_landmark_listed %}
+                    <div>This property is either listed or eligible for listing in the National Register of Historic Places. See <a href="https://www.nyc.gov/site/nycha/about/historic-preservation-requirements.page" target="_blank">here</a> for more details.</div>
+                {% endif %}
             </section>
         {% endif %}
 

@@ -633,6 +633,15 @@ class NychaLotMixin(models.Model):
         verbose_name='RAD/PACT Social Service Provider',
     )
 
+    shpo_landmark_eligible = models.BooleanField(
+        default=False,
+        verbose_name='SHPO Landmark Eligible',
+    )
+    shpo_landmark_listed = models.BooleanField(
+        default=False,
+        verbose_name='SHPO Landmark Listed',
+    )
+
     def _nycha_filter_layer(self):
         """
         Defined in this order to match map styles

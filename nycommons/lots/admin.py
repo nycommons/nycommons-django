@@ -105,6 +105,10 @@ class LotAdmin(BaseLotAdmin):
                 'development_pending_explanation',
             ),
         }),
+        ('Landmarks', {
+            'classes': ('collapse',),
+            'fields': ('shpo_landmark_eligible', 'shpo_landmark_listed',),
+        }),
         ('Known use', {
             'classes': ('collapse',),
             'fields': ('known_use', 'known_use_certainty', 'known_use_locked',),
