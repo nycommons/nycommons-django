@@ -30,7 +30,7 @@ def _block_and_lot_number(lot):
 def foil_body(lot):
     return """Dear FOIL Officer,
 
-Please treat this request for all documents in your Agency's possession related to %s %s as a request under the New York State Freedom of Information Law.
+Please treat this request for all documents in your Agency's possession related to %s as a request under the New York State Freedom of Information Law.
 
 Please send electronic copies of all documents to this email address.
 
@@ -39,7 +39,7 @@ I look forward to hearing from you within five days as required by law.
 Best,
 
 ADD YOUR NAME HERE. YOU CAN ALSO ADD MORE DETAILS ABOUT THE DOCUMENTS YOU ARE LOOKING FOR TO THE LETTER ABOVE. REMEMBER TO DELETE THIS LINE BEFORE YOU SEND!""" % (
-        lot.borough, _block_and_lot_number(lot)
+        lot.name or lot.bbl
     )
 
 
