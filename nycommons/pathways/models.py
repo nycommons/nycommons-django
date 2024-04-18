@@ -30,6 +30,7 @@ class PathwayManager(BasePathwayManager):
 
     def get_for_lot(self, lot):
         pathways = super(PathwayManager, self).get_for_lot(lot)
+        pathways = pathways.exclude(is_active=False)
 
         # Waterfront lots
         if not lot.is_waterfront:
