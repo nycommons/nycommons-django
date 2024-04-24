@@ -37,7 +37,8 @@ class PathwayManager(BasePathwayManager):
             pathways = pathways.exclude(only_waterfront_lots=True)
 
         # Landmarked lots
-        if not len(lot.landmarks) > 0:
+        if not (len(lot.landmarks) > 0 or lot.shpo_landmark_listed or
+                lot.shpo_landmark_eligible):
             pathways = pathways.exclude(only_landmarked_lots=True)
 
         # Urban renewal lots
@@ -165,7 +166,11 @@ class PathwayLotMixin(models.Model):
         if self.only_waterfront_lots:
             filters &= Q(is_waterfront=True)
         if self.only_landmarked_lots:
-            filters &= Q(parcel__landmark_object__isnull=False)
+            filters &= Q(
+                Q(parcel__landmark_object__isnull=False) |
+                Q(shpo_landmark_listed=True) |
+                Q(shpo_landmark_eligible=True)
+            )
         if self.only_urban_renewal_lots:
             filters &= Q(parcel__urbanrenewalrecord__isnull=False)
 
