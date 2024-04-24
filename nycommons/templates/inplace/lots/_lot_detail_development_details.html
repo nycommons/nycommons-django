@@ -15,7 +15,7 @@
                     {% endfor %}
                 {% endif %}
                 {% if lot.shpo_landmark_eligible or lot.shpo_landmark_listed %}
-                    <div>This property is either listed or eligible for listing in the National Register of Historic Places. See <a href="https://www.nyc.gov/site/nycha/about/historic-preservation-requirements.page" target="_blank">here</a> for more details.</div>
+                <div>This property is {% if lot.shpo_landmark_listed %} listed {% endif %} {% if lot.shpo_landmark_eligible %} eligible {% endif %} for listing in the National Register of Historic Places. See <a href="https://www.nyc.gov/site/nycha/about/historic-preservation-requirements.page" target="_blank">here</a> for more details.</div>
                 {% endif %}
             </section>
         {% endif %}
