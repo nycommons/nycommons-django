@@ -113,6 +113,9 @@ class Command(BaseCommand):
             )
         except Lot.DoesNotExist:
             return None
+        except Lot.MultipleObjectsReturned:
+            self.stdout.write('Multiple lots returned for %s' % row['DEVELOPMENT'])
+            return None
 
     def print_report(self):
         self.stdout.write('\nDone!')
