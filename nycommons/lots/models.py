@@ -599,7 +599,7 @@ class NychaLotMixin(models.Model):
     radpact_status = models.CharField(
         blank=True,
         null=True,
-        max_length=50,
+        max_length=150,
         choices=RADPACT_STATUS_CHOICES,
         verbose_name='RAD/PACT Status',
     )
