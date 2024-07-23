@@ -128,7 +128,16 @@
         {% include "inplace/lots/_lot_detail_development_pending.html" with lot=lot %}
 
         {% if lot.commons_type == "public housing" %}
-            {% include "inplace/lots/_lot_detail_development_details.html" with lot=lot %}
+            {% if lot.current_units is not None %}
+                {% include "inplace/lots/_lot_detail_development_details.html" with lot=lot %}
+            {% endif %}
+            {% if lot.number_of_lots > 1 %}
+                {% for l in lot.lots %}
+                    {% if l.current_units is not None %}
+                        {% include "inplace/lots/_lot_detail_development_details.html" with lot=l %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         {% endif %}
 
         {% include "inplace/lots/_lot_detail_owner.html" with lot=lot %}
