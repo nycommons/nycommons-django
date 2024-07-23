@@ -8327,6 +8327,9 @@ fieldset[disabled] .btn-show-details.focus {
   .lot-detail-page .header-print {
     width: 100%;
   }
+  .lot-detail-page .header-print img {
+    max-width: 250px;
+  }
   .lot-detail-page .header-home-link {
     position: inherit;
   }
