@@ -6935,7 +6935,6 @@ footer .social-media-twitter {
   }
   #page-header .header-bar {
     height: 15px;
-    margin-top: 61px;
   }
   #page-header .header-bar-left {
     width: 10%;
@@ -6953,13 +6952,8 @@ footer .social-media-twitter {
     z-index: 9999;
   }
   .header-home-link {
-    position: fixed;
-    width: 110px;
-    z-index: 10001;
-  }
-  .header-bar {
-    position: fixed;
-    z-index: 10000;
+    margin-top: 35px;
+    width: 150px;
   }
 }
 .legend-marker-icon {
@@ -7819,7 +7813,7 @@ fieldset[disabled] .btn-show-details.focus {
 }
 @media (max-width: 767px) {
   .navbar {
-    background-color: white;
+    background-color: transparent;
     border: 0;
     margin-bottom: 0;
     position: fixed;
@@ -8257,6 +8251,12 @@ fieldset[disabled] .btn-show-details.focus {
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  .hidden-print {
+    display: none;
+  }
+  .header-print img {
+    max-width: 250px;
   }
   body {
     height: 90%;

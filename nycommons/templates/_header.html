@@ -1,6 +1,6 @@
 {% load feincms_tags feincms_page_tags i18n static %}
 
-<header id="page-header">
+<header id="page-header" class="hidden-print">
     <nav class="navbar navbar-default hidden-print" role="navigation">
 
         <div class="navbar-header">
@@ -17,7 +17,7 @@
         <a href="#" class="map-header-btn map-header-locate-btn"></a>
         <a href="#" class="map-header-btn map-header-search-btn"></a>
 
-        <div class="collapse navbar-collapse navbar-main-collapse">
+        <div class="collapse navbar-collapse navbar-main-collapse hidden-print">
             <ul class="nav navbar-nav">
                 {% feincms_nav feincms_page level=2 depth=1 as mainmenu %}
                 {% for page in mainmenu %}
@@ -26,7 +26,7 @@
                         {% if submenu %}
                             {# Don't link to top-level items with subpages #}
                             <a class="mainmenu-item-parent">{{ page.title }}</a>
-                            <ul class="submenu">
+                            <ul class="submenu hidden-print">
                                 {% for submenupage in submenu %}
                                     <li>
                                         <a href="{{ submenupage.get_absolute_url }}">{{ submenupage.title }}</a>
@@ -68,7 +68,7 @@
     </div>
 </header>
 
-<div class="visible-print header-print">
+<div class="visible-print header-wrapper header-print">
     <div class="header-home-link">
         <a href="/">
             <img src="{% static "img/logo.png" %}" />
@@ -76,9 +76,5 @@
         </a>
     </div>
 
-    <div class="header-bar">
-        <div class="header-bar-left"></div>
-        <div class="header-bar-right"></div>
-        <div style="clear: both;"></div>
-    </div>
+    <div class="header-bar"></div>
 </div>

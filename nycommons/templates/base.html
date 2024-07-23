@@ -43,7 +43,7 @@
                                 {% if submenu %}
                                     {# Don't link to top-level items with subpages #}
                                     <a class="mainmenu-item-parent">{{ page.title }}</a>
-                                    <ul class="submenu">
+                                    <ul class="submenu hidden-print">
                                         {% for submenupage in submenu %}
                                             <li>
                                                 <a href="{{ submenupage.get_absolute_url }}">{{ submenupage.title }}</a>
