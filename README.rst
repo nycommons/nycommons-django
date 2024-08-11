@@ -1,5 +1,9 @@
-NYCommons
+nycharealtalk
 =========
+
+This is the code behind nycharealtalk.org. It is built upon the structure
+originally created for nycommons.org, so there are still many references to
+nycommons.
 
 NYCommons.org helps New Yorkers impact decisions about public land and buildings in their neighborhoods. It is a collaboration between Common Cause/NY, the Community Development Project at the Urban Justice Center, and 596 Acres, Inc.
 
