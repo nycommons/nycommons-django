@@ -1,0 +1,27 @@
+FROM python:2.7-slim
+
+# python:2.7-slim is Debian Buster (EOL June 2024); repos moved to archive
+RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/10archive \
+    && printf 'deb http://archive.debian.org/debian buster main\ndeb http://archive.debian.org/debian-security buster/updates main\n' \
+       > /etc/apt/sources.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    g++ \
+    gcc \
+    gettext-base \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir tilestache==1.50.1 psycopg2==2.7.1 shapely
+
+WORKDIR /tilestache
+
+COPY tilestache/tilestache.cfg.template .
+COPY docker-entrypoint-tilestache.sh .
+RUN chmod +x docker-entrypoint-tilestache.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["./docker-entrypoint-tilestache.sh"]

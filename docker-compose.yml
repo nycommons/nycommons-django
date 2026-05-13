@@ -1,0 +1,66 @@
+# First-time setup after `docker compose up -d db`:
+#   docker compose run --rm web python manage.py migrate
+#   docker compose exec db psql -U nycommons nycommons -f /docker-entrypoint-initdb.d/create-views.sql
+# Then start everything: docker compose up
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${NYCHAREALTALK_DB_NAME:-nycommons}
+      POSTGRES_USER: ${NYCHAREALTALK_DB_USER:-nycommons}
+      POSTGRES_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycommons}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/create-views.sql:/docker-entrypoint-initdb.d/create-views.sql
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NYCHAREALTALK_DB_USER:-nycommons}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  memcached:
+    image: memcached:alpine
+    ports:
+      - "11211:11211"
+
+  tilestache:
+    build:
+      context: .
+      dockerfile: Dockerfile.tilestache
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${NYCHAREALTALK_DB_NAME:-nycommons}
+      DB_USER: ${NYCHAREALTALK_DB_USER:-nycommons}
+      DB_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycommons}
+      MEMCACHED_HOST: memcached
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    working_dir: /app/nycommons
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Override DB_HOST from .env so the container uses the Docker network
+      NYCHAREALTALK_DB_HOST: db
+      NYCHAREALTALK_DB_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: nycommons.settings.local
+
+volumes:
+  postgres_data:

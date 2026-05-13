@@ -16,12 +16,14 @@ class AddOrganizerView(AddParticipantView):
 class SubscribeView(AddParticipantView):
     content_type_model = Lot
     form_class = SubscribeForm
-    initial = {
-        'post_publicly': False,
-        'type': OrganizerType.objects.get(name='individual'),
-    }
     model = get_organizer_model()
     template_name = 'livinglots/organize/subscribe.html'
+
+    def get_initial(self):
+        return {
+            'post_publicly': False,
+            'type': OrganizerType.objects.get(name='individual'),
+        }
 
     def get_success_url(self):
         messages.success(self.request, "Success! You're now subscribed to this lot and will receive updates about it.")

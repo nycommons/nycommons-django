@@ -1,0 +1,10 @@
+.git
+.env
+*.pyc
+*.pyo
+__pycache__
+nycommons/media/
+nycommons/collected_static/
+logs/
+nycommons/static/node_modules/
+tilestache/tilestache.cfg
