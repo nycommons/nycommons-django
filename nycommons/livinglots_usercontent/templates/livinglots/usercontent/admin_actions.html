@@ -1,0 +1,13 @@
+{% load i18n %}
+
+{% if app_name in perms %}
+    <div class="usercontent-list-admin-actions admin-only">
+        {% if change_perm in perms %}
+            <a class="btn" href="{% url change_url_name obj.pk %}">{% trans "Edit" %}</a>
+        {% endif %}
+
+        {% if delete_perm in perms %}
+            <a class="btn" href="{% url delete_url_name obj.pk %}">{% trans "Delete" %}</a>
+        {% endif %}
+    </div>
+{% endif %}

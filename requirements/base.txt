@@ -58,24 +58,5 @@ feincms-cleanse==8
 feincms-elephantblog==1.1.0
 feincms-pagepermissions==0.3.1
 django-widget-tweaks==1.3
-
-
-# Living Lots
-git+https://github.com/596acres/django-livinglots/@v0.3.1
-git+https://github.com/596acres/django-livinglots-activities/@v0.3.1
-git+https://github.com/596acres/django-livinglots-forms/@v1.0.2
-git+https://github.com/596acres/django-livinglots-generictags/@v1.0.1
-git+https://github.com/596acres/django-livinglots-genericviews/@v1.5.0
-git+https://github.com/596acres/django-livinglots-groundtruth/@v1.0.1
-git+https://github.com/596acres/django-livinglots-lots/@v2.0.1
-git+https://github.com/596acres/django-livinglots-mailings/@v1.1.0
-git+https://github.com/596acres/django-livinglots-mailsender/@v1.0.0
-git+https://github.com/596acres/django-livinglots-notify/@v1.0.0
-git+https://github.com/596acres/django-livinglots-organize/@v1.6.0
-git+https://github.com/596acres/django-livinglots-owners/@v2.0.1
-git+https://github.com/596acres/django-livinglots-pathways/@v0.3.1
-git+https://github.com/596acres/django-livinglots-steward/@v1.0.2
-git+https://github.com/596acres/django-livinglots-usercontent/@v1.1.1
-
-# NYC
-git+https://github.com/596acres/nycdata/@v1.9.0
+django-model-utils==2.5
+# fiona is required by nycdata management commands (loadgardens, loadsilots) but not at runtime
