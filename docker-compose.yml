@@ -1,22 +1,22 @@
 # First-time setup after `docker compose up -d db`:
 #   docker compose run --rm web python manage.py migrate
-#   docker compose exec db psql -U nycommons nycommons -f /docker-entrypoint-initdb.d/create-views.sql
+#   docker compose exec db psql -U nycharealtalk nycharealtalk -f /docker-entrypoint-initdb.d/create-views.sql
 # Then start everything: docker compose up
 
 services:
   db:
     image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_DB: ${NYCHAREALTALK_DB_NAME:-nycommons}
-      POSTGRES_USER: ${NYCHAREALTALK_DB_USER:-nycommons}
-      POSTGRES_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycommons}
+      POSTGRES_DB: ${NYCHAREALTALK_DB_NAME:-nycharealtalk}
+      POSTGRES_USER: ${NYCHAREALTALK_DB_USER:-nycharealtalk}
+      POSTGRES_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycharealtalk}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/create-views.sql:/docker-entrypoint-initdb.d/create-views.sql
     ports:
       - "5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${NYCHAREALTALK_DB_USER:-nycommons}"]
+      test: ["CMD-SHELL", "pg_isready -U ${NYCHAREALTALK_DB_USER:-nycharealtalk}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,9 +40,9 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: "5432"
-      DB_NAME: ${NYCHAREALTALK_DB_NAME:-nycommons}
-      DB_USER: ${NYCHAREALTALK_DB_USER:-nycommons}
-      DB_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycommons}
+      DB_NAME: ${NYCHAREALTALK_DB_NAME:-nycharealtalk}
+      DB_USER: ${NYCHAREALTALK_DB_USER:-nycharealtalk}
+      DB_PASSWORD: ${NYCHAREALTALK_DB_PASSWORD:-nycharealtalk}
       MEMCACHED_HOST: memcached
 
   web:

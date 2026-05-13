@@ -1,10 +1,18 @@
+# -*- coding: utf-8 -*-
 from django.db import models
+from django.db.migrations.state import StateApps
 from django.db.models.signals import class_prepared
 from django.utils.translation import ugettext_lazy as _
 
 def add_remote_fields(sender, **kwargs):
 
     if sender.__name__ not in ('File', 'Note', 'Photo'):
+        return
+
+    # Skip historical models created by the migration runner -- those tables
+    # are built from the migration's own field list, and the usercontent
+    # migrations add these columns explicitly.
+    if isinstance(getattr(sender._meta, 'apps', None), StateApps):
         return
 
     models.BooleanField(
