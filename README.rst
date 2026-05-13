@@ -1,13 +1,9 @@
 nycharealtalk
 =========
 
-This is the code behind nycharealtalk.org. It is built upon the structure
-originally created for nycommons.org, so there are still many references to
-nycommons.
-
-NYCommons.org helps New Yorkers impact decisions about public land and buildings in their neighborhoods. It is a collaboration between Common Cause/NY, the Community Development Project at the Urban Justice Center, and 596 Acres, Inc.
-
-This site uses the `Living Lots <https://github.com/596acres/django-livinglots>`_ ® framework by `596 Acres <https://596acres.org>`_ ®.
+This is the code behind nycharealtalk.org. It is built upon the
+`Living Lots <https://github.com/596acres/django-livinglots>`_ ® framework by `596 Acres <https://596acres.org>`_ ®,
+originally developed for nycommons.org.
 
 
 Development setup
@@ -41,7 +37,7 @@ Prerequisites: `Docker <https://docs.docker.com/get-docker/>`_ with Compose.
 
  4. Create the PostGIS views that TileStache reads::
 
-      docker compose exec db psql -U nycommons nycommons \
+      docker compose exec db psql -U nycharealtalk nycharealtalk \
           -f /docker-entrypoint-initdb.d/create-views.sql
 
  5. Create a superuser::
@@ -55,7 +51,7 @@ Prerequisites: `Docker <https://docs.docker.com/get-docker/>`_ with Compose.
     The site runs at http://localhost:8000. Map tiles are served at
     http://localhost:8080. The database is accessible from the host on port 5434.
 
- 7. Build the frontend assets (in a separate terminal, from ``nycommons/static/``)::
+ 7. Build the frontend assets (in a separate terminal, from ``nycharealtalk/static/``)::
 
       npm install
       grunt dev
@@ -65,7 +61,7 @@ Loading a database snapshot
 
 To restore a production or staging dump into the Docker database::
 
-    docker compose exec -T db psql -U nycommons nycommons < dump.sql
+    docker compose exec -T db psql -U nycharealtalk nycharealtalk < dump.sql
 
 After restoring, re-run the TileStache views step above since they may not be
 included in the dump.
@@ -76,7 +72,7 @@ Manual setup (legacy)
 Prerequisites:
 
  1. Python 2.x with virtualenv/virtualenvwrapper.
- 2. `Postgres <https://www.postgresql.org/>`_ and `PostGIS <http://postgis.net/>`_ installed locally. Create a database and user, both named ``nycommons``, with the PostGIS extension enabled.
+ 2. `Postgres <https://www.postgresql.org/>`_ and `PostGIS <http://postgis.net/>`_ installed locally. Create a database and user, both named ``nycharealtalk``, with the PostGIS extension enabled.
  3. Node LTS 6.10.x and npm.
 
  1. Clone this repo locally.
@@ -87,11 +83,11 @@ Prerequisites:
  3. Copy ``deploy/templates/envvars.sh`` somewhere, fill in the values, and source it.
  4. Run the Django project::
 
-      python nycommons/manage.py runserver_plus
+      python nycharealtalk/manage.py runserver_plus
 
  5. Copy ``deploy/templates/tilestache.cfg`` to ``tilestache/tilestache.cfg`` and update the database credentials. Create the required views::
 
-      psql -U nycommons nycommons -f docker/create-views.sql
+      psql -U nycharealtalk nycharealtalk -f docker/create-views.sql
 
     Then start TileStache::
 
@@ -99,7 +95,7 @@ Prerequisites:
 
  6. Build frontend assets::
 
-      cd nycommons/static && npm install && grunt dev
+      cd nycharealtalk/static && npm install && grunt dev
 
 
 Organization

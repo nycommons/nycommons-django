@@ -51,7 +51,7 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    working_dir: /app/nycommons
+    working_dir: /app/nycharealtalk
     depends_on:
       db:
         condition: service_healthy
@@ -60,7 +60,7 @@ services:
       # Override DB_HOST from .env so the container uses the Docker network
       NYCHAREALTALK_DB_HOST: db
       NYCHAREALTALK_DB_PORT: "5432"
-      DJANGO_SETTINGS_MODULE: nycommons.settings.local
+      DJANGO_SETTINGS_MODULE: nycharealtalk.settings.local
 
 volumes:
   postgres_data:

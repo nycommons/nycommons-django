@@ -1,5 +1,5 @@
 -- Run after migrations to create views used by TileStache.
--- docker compose exec db psql -U nycommons nycommons -f /docker-entrypoint-initdb.d/create-views.sql
+-- docker compose exec db psql -U nycharealtalk nycharealtalk -f /docker-entrypoint-initdb.d/create-views.sql
 
 CREATE OR REPLACE VIEW visible_centroids AS
     SELECT l.id AS id, l.commons_type, l.bbl, l.centroid, l.owner_id, l.priority,

@@ -119,9 +119,9 @@ MIDDLEWARE_CLASSES = (
     'reversion.middleware.RevisionMiddleware',
 )
 
-ROOT_URLCONF = 'nycommons.urls'
+ROOT_URLCONF = 'nycharealtalk.urls'
 
-WSGI_APPLICATION = 'nycommons.wsgi.application'
+WSGI_APPLICATION = 'nycharealtalk.wsgi.application'
 
 INSTALLED_APPS = (
     'admin_tools',
@@ -330,7 +330,7 @@ MIGRATION_MODULES = {
 HONEYPOT_FIELD_NAME = 'homepage_url'
 HONEYPOT_VALUE = 'http://example.com/'
 
-ADMIN_TOOLS_INDEX_DASHBOARD = 'nycommons.admindashboard.LivingLotsDashboard'
+ADMIN_TOOLS_INDEX_DASHBOARD = 'nycharealtalk.admindashboard.LivingLotsDashboard'
 
 LIVING_LOTS = {
     'MODELS': {
