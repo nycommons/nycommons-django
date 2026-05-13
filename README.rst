@@ -58,7 +58,12 @@ Prerequisites: `Docker <https://docs.docker.com/get-docker/>`_ with Compose.
  7. Build the frontend assets (in a separate terminal, from ``nycommons/static/``)::
 
       npm install
-      grunt dev
+      npm run css:dev   # compile LESS once
+      npm run dev       # watch and rebuild JS on changes
+
+    For a one-shot production build::
+
+      npm run build
 
 Loading a database snapshot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,7 +104,10 @@ Prerequisites:
 
  6. Build frontend assets::
 
-      cd nycommons/static && npm install && grunt dev
+      cd nycommons/static
+      npm install
+      npm run css:dev
+      npm run dev
 
 
 Organization
