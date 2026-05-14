@@ -22,7 +22,7 @@
     "leaflet-loading": "^0.1.15",
     "leaflet-plugins": "^1.2.0",
     "leaflet-usermarker": "^1.0.0",
-    "less-plugin-lists": "^1.1.1",
+    "less-plugin-lists": "^1.1.2",
     "livinglots.addlot": "git+https://github.com/596acres/livinglots.addlot#v2.0.0",
     "livinglots.boundaries": "git+https://github.com/596acres/livinglots.boundaries#v1.0.0",
     "livinglots.emailparticipants": "git+https://github.com/596acres/livinglots.emailparticipants#v0.2.3",
@@ -38,42 +38,14 @@
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "browserify": "^8.1.3",
-    "browserify-shim": "^3.8.2",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.3.0",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-copy": "^0.7.0",
-    "grunt-contrib-cssmin": "^0.12.1",
-    "grunt-contrib-handlebars": "^1.0.0",
-    "grunt-contrib-jshint": "^0.11.0",
-    "grunt-contrib-less": "^1.4.1",
-    "grunt-contrib-uglify": "^0.7.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "watchify": "^2.3.0"
+    "@rollup/plugin-inject": "^5.0.0",
+    "less": "~2.7.1",
+    "vite": "^5.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "browser": {
-    "bootstrap_button": "./node_modules/bootstrap/js/button.js",
-    "bootstrap_collapse": "./node_modules/bootstrap/js/collapse.js",
-    "bootstrap_dropdown": "./node_modules/bootstrap/js/dropdown.js",
-    "bootstrap_modal": "./node_modules/bootstrap/js/modal.js",
-    "bootstrap_tooltip": "./node_modules/bootstrap/js/tooltip.js",
-    "bootstrap_transition": "./node_modules/bootstrap/js/transition.js",
-    "leaflet-plugins-bing": "./node_modules/leaflet-plugins/layer/tile/Bing.js"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-shim"
-    ]
-  },
-  "browserify-shim": {
-    "leaflet-plugins-bing": {
-      "depends": [
-        "leaflet:L"
-      ]
-    }
+    "dev": "vite build --watch --mode development",
+    "css:dev": "lessc --plugin=less-plugin-lists --source-map css/style.less css/dist/style.dev.css",
+    "css:watch": "lessc --plugin=less-plugin-lists --watch --source-map css/style.less css/dist/style.dev.css",
+    "build": "lessc --plugin=less-plugin-lists css/style.less css/dist/style.min.css && vite build"
   }
 }
