@@ -1,6 +1,12 @@
 -- Run after migrations to create views used by TileStache.
 -- docker compose exec db psql -U nycharealtalk nycharealtalk -f /docker-entrypoint-initdb.d/create-views.sql
 
+-- PostGIS 3.x removed ST_Distance_Sphere; Django 1.11's GeoDjango still generates that name.
+CREATE OR REPLACE FUNCTION ST_Distance_Sphere(geometry, geometry)
+RETURNS float8 AS $$
+    SELECT ST_DistanceSphere($1, $2);
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
 CREATE OR REPLACE VIEW visible_centroids AS
     SELECT l.id AS id, l.commons_type, l.bbl, l.centroid, l.owner_id, l.priority,
            l.organizing, l.radpact_converted, l.radpact_planned,

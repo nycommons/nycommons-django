@@ -2,6 +2,11 @@
 #   docker compose run --rm web python manage.py migrate
 #   docker compose exec db psql -U nycharealtalk nycharealtalk -f /docker-entrypoint-initdb.d/create-views.sql
 # Then start everything: docker compose up
+#
+# OR instead of migrations:
+#   docker compose exec -T db pg_restore -U nycharealtalk -d nycharealtalk --disable-triggers --no-owner < dump.dump
+#   docker compose exec db psql -U nycharealtalk nycharealtalk -f /docker-entrypoint-initdb.d/create-views.sql
+
 
 services:
   db:

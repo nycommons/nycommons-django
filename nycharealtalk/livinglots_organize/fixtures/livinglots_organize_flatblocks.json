@@ -1,0 +1,38 @@
+[
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "Greetings. There has been a change to something you are organizing.\n\n{{ obj.added_by_name }} wrote \"{{ obj.text }}\" on {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "organize.notifications.organizers.new_note"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "Greetings. There has been a change to something you are organizing.\n\n{{ obj.name }} started organizing on {{ obj.content_object.display_name }}! Check them out at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "organize.notifications.organizers.new_organizer"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "Greetings. There has been a change to something you are organizing.\n\n{{ obj.added_by_name }} added a photo to {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "organize.notifications.organizers.new_photo"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "Greetings. There has been a change to something you are organizing.\n\n{{ obj.added_by_name }} added a file to {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "organize.notifications.organizers.new_file"
+    }
+}
+]

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Stop organizing" %} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div>
+    <h1>{% trans "Stop organizing" %}</h1>
+    <div>
+        <p>
+            {% blocktrans %}
+                Are you sure you want to stop getting updates about
+            {% endblocktrans %}
+            <a href="{{ target.get_absolute_url }}">{{ target.display_name }}</a>?
+        </p>
+        <p>
+            <form action="." method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{{ next_url }}" />
+                <input class="btn btn-default" type="submit" value="Yes, unsubscribe me" />
+            </form>
+        </p>
+    </div>
+</div>
+{% endblock %}
