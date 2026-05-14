@@ -56,7 +56,7 @@ INSTALLED_APPS += (
 # debug toolbar settings
 #
 
-INTERNAL_IPS = ('127.0.0.1',)
+INTERNAL_IPS = type('c', (), {'__contains__': lambda *a: True})()
 
 MIDDLEWARE_CLASSES += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
