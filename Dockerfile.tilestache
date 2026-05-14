@@ -14,7 +14,8 @@ RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/10archive \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir tilestache==1.50.1 psycopg2==2.7.1 shapely
+RUN pip install --no-cache-dir tilestache==1.50.1 shapely python-memcached==1.59 \
+    && pip install --no-cache-dir --no-binary psycopg2 psycopg2==2.8.6
 
 WORKDIR /tilestache
 
