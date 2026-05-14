@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Change the lots you're organizing" %} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div>
+    <h1>{% trans "Change the lots you're organizing" %}</h1>
+    <div>
+
+        {% if organizers %}
+            <p>
+                {% blocktrans %}
+                    Hi <strong>{{ email }}</strong>! You're listed as organizing
+                    in the following lots:
+                {% endblocktrans %}
+                <ul>
+                    {% for organizer in organizers %}
+                    <li class="edit-participant-subscribed-lot">
+                        <a class="subscribed-lot-link" href="{{ organizer.content_object.get_absolute_url }}">
+                            {{ organizer.content_object.display_name|default:"unknown address" }}
+                        </a>
+                        <a class="btn btn-danger btn-xs" href="{% url "organize:delete_organizer" pk=organizer.object_id hash=organizer.email_hash organizer_pk=organizer.pk %}?next_url={{ request.path }}">
+                            {% trans "stop organizing here" %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            </p>
+        {% else %}
+            <p>
+                {% blocktrans %}
+                    Looks like you're not growing community in any lots. Check out 
+                    our <a href="/">map</a> and find a lot near you to watch!
+                {% endblocktrans %}
+            </p>
+        {% endif %}
+
+        <p>
+            {% blocktrans %}
+                If you think this information is incorrect, please
+                <a href="/get-involved/contact-us/">contact us</a>
+                and let us know.
+            {% endblocktrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

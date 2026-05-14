@@ -1,0 +1,47 @@
+[
+{
+    "pk": null,
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "{{ obj.added_by_name }} wrote \"{{ obj.text }}\" on {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "notify.facilitators.new_note"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "{{ obj.name }} started organizing on {{ obj.content_object.display_name }}! Check them out at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "notify.facilitators.new_organizer"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "{{ obj.added_by_name }} added a photo to {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "notify.facilitators.new_photo"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "{{ obj.added_by_name }} added a file to {{ obj.content_object.display_name }}. View it at http://{{ BASE_URL }}{{ obj.content_object.get_absolute_url }}", 
+        "header": "", 
+        "slug": "notify.facilitators.new_file"
+    }
+},
+{
+    "pk": null, 
+    "model": "flatblocks.flatblock", 
+    "fields": {
+        "content": "Someone added a correction (Groundtruth Record) to {{ obj.content_object.display_name }}. The correction won't have any effect until you moderate it.\r\n\r\nClick here to do so (be sure to set the \"use\" field first): http://{{ BASE_URL }}{% url \"admin:groundtruth_groundtruthrecord_change\" obj.pk %}", 
+        "header": "", 
+        "slug": "notify.facilitators.new_groundtruthrecord"
+    }
+}
+]
