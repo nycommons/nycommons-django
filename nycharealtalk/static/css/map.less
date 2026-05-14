@@ -1,0 +1,152 @@
+.map-page {
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+
+    @media (max-width: @screen-xs-max) {
+        margin: 0;
+
+        .navbar {
+            background-color: transparent;
+            padding-top: 0;
+        }
+
+        .navbar-default {
+            border: 0;
+        }
+
+        .navbar-collapse {
+            margin-top: 75px;
+
+            &.collapsing,
+            &.in {
+                background-color: white;
+            }
+        }
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+
+    .map-icon {
+        display: none;
+    }
+
+    #page-header {
+        display: none;
+        @media (max-width: @screen-xs-max) {
+            display: block;
+        }
+    }
+
+    .map-print-image {
+        display: none;
+    }
+
+    .print-mode {
+        background: white;
+        border: 3px solid @blue;
+        display: none;
+        padding: 15px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 400px;
+        z-index: @header-z-index + 1;
+    }
+}
+
+@news-button-height: 50px;
+@news-button-width: 95px;
+@star-height: 150px;
+@star-width: 143px;
+@news-button-z-index: @ui-z-index + 100;
+
+.btn-show-details {
+    .make-md-column(4);
+    .button-variant(@foreground-color; white; @foreground-color);
+}
+
+.details-container {
+    display: none;
+    margin-top: 15px;
+}
+
+.admin-menu,
+.download-menu {
+    display: none;
+}
+
+.map-logo-wrapper {
+    img {
+        margin-left: 15px;
+        width: @header-home-link-width;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        left: 0;
+        width: 100%;
+    }
+}
+
+.map-logo-bar {
+    height: @header-bar-height;
+    width: 100%;
+    background-color: black;
+}
+
+.map-header-btn {
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: none;
+    float: right;
+    height: @header-bar-height;
+    margin-top: -(2 * @header-bar-height);
+    width: @header-bar-height;
+
+    .map-page & {
+        display: block;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        height: 35px;
+        margin-top: 0;
+        position: absolute;
+        top: 17px;
+        width: 35px;
+    }
+}
+
+.map-header-locate-btn {
+    background-image: data-uri("../../img/locate.png");
+
+    @media (max-width: @screen-xs-max) {
+        right: 63px;
+    }
+}
+
+.map-header-search-btn {
+    background-image: data-uri("../../img/search.png");
+    margin-right: @header-bar-height;
+    margin-top: 1 - (2 * @header-bar-height);
+    width: 22px;
+
+    @media (max-width: @screen-xs-max) {
+        right: 110px;
+        margin-top: 0;
+        margin-right: 0;
+        width: 35px;
+    }
+}
+
+.map-header-content-default {
+    color: @header-color;
+    font-size: 12px;
+
+    .map-header-tagline {
+        font-weight: bold;
+        margin-right: 5rem;
+    }
+}

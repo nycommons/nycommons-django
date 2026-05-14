@@ -1,0 +1,192 @@
+.navbar-toggle,
+.navbar-default .navbar-toggle {
+    .icon-bar {
+        background-color: @foreground-color;
+        height: 4px;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        padding: 9px 2px;
+        width: 32px;
+        .icon-bar {
+            margin-top: 4px;
+            width: 100%;
+        }
+    }
+}
+
+.navbar-default {
+    border: none;
+    margin: 0;
+    position: absolute;
+    right: 0;
+    top: 30px;
+
+    @media (max-width: @screen-xs-max) {
+        margin-top: 0;
+    }
+}
+
+.navbar-default .navbar-toggle {
+    border: 0;
+
+    &:hover,
+    &:focus {
+        background: transparent;
+    }
+}
+
+.navbar-default .navbar-nav > li > a {
+    border-bottom: 1px solid transparent;
+
+    &:active,
+    &:focus,
+    &:hover {
+        border-bottom-color: @blue;
+        color: @blue;
+    }
+}
+
+.navbar-nav {
+    font-size: 14px;
+    font-weight: 600;
+    float: right;
+    margin-left: 20px;
+
+    @media (max-width: @screen-xs-max) {
+        float: left;
+        margin-left: 0;
+        margin-top: 0;
+    }
+
+    > li > a {
+        padding: 0;
+        padding-bottom: 5px;
+        text-transform: uppercase;
+
+        @media (max-width: @screen-xs-max) {
+            line-height: 50px;
+        }
+    }
+}
+
+// Smallest screens, use grid to keep logo and collapse button side-by-side
+@media (max-width: @screen-xs-max) {
+    .navbar {
+        background-color: transparent;
+        border: 0;
+        margin-bottom: 0;
+        position: fixed;
+        top: 0;
+        width: 100%;
+    }
+
+    .navbar-default {
+        min-height: 76px;
+        z-index: @header-z-index;
+    }
+
+    .navbar-collapse {
+        background-color: white;
+        margin-top: 75px;
+    }
+
+    .navbar-header {
+        .make-row(0);
+        float: right;
+
+        .page-header-home-link {
+            .make-xs-column(9);
+        }
+    }
+}
+
+.mainmenu-item {
+    margin-left: 15px;
+    margin-right: 15px;
+
+    &:hover,
+    &.open {
+        .submenu {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+    &-parent {
+        cursor: default;
+    }
+}
+
+.submenu {
+    font-size: 12px;
+    line-height: 14px;
+    list-style: none;
+    opacity: 0;
+    padding: 10px;
+    padding-left: 0;
+    position: absolute;
+    transition: visibility 0s, opacity .25s linear;
+    visibility: hidden;
+    z-index: @ui-z-index + 10;
+
+    li {
+        padding: 3px;
+        padding-left: 0;
+    }
+
+    a {
+        color: @blue;
+        font-weight: 600;
+        white-space: nowrap;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    #aside-left & {
+        font-size: 14px;
+    }
+
+    @media (max-width: @screen-xs-max) {
+        margin-left: @xs-padding;
+        opacity: 1;
+        position: static;
+        visibility: visible;
+    }
+}
+
+.social-media {
+    float: right;
+    margin-left: 15px;
+
+    @media (max-width: @screen-xs-max) {
+        display: none;
+    }
+
+    a {
+        background-repeat: no-repeat;
+        background-size: contain;
+        display: inline-block;
+        height: 35px;
+        margin-top: -7px;
+        width: 35px;
+    }
+
+    &-facebook {
+        background-image: data-uri("/static/img/facebook.png");
+    }
+
+    &-github {
+        background-image: data-uri("/static/img/github.png");
+    }
+
+    &-instagram {
+        background-image: data-uri("/static/img/instagram.png");
+    }
+
+    &-twitter {
+        background-image: data-uri("/static/img/twitter.png");
+    }
+}

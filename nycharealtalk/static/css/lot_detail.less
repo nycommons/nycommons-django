@@ -1,0 +1,341 @@
+#lot-detail-map {
+    border: 2px solid #58595b;
+    cursor: pointer;
+    float: left;
+    height: 150px;
+    margin-left: 75px;
+    margin-top: -100px;
+    width: 20%;
+    z-index: 500;
+
+    @media (max-width: @screen-xs-max) {
+        width: 35%;
+        margin-left: 30px;
+    }
+}
+
+.lot-detail {
+    &-page {
+        color: @header-color;
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    &-page .page-wrapper {
+        margin: 50px;
+
+        @media (max-width: @screen-xs-max) {
+            margin: 0;
+            margin-top: 75px;
+        }
+    }
+
+    &-page h1 {
+        .header-font();
+        font-size: 36px;
+        line-height: 49px;
+        margin-top: 15px;
+    }
+
+    &-page .content-wrapper {
+        clear: both;
+    }
+
+    &-page .postal-code {
+        font-size: 20px;
+        margin-left: 10px;
+    }
+
+    &-page h2 {
+        .header-font();
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 27px;
+        margin-top: 15px;
+
+        @media (max-width: @screen-xs-max) {
+            margin: 18px 0;
+        }
+    }
+
+    &-page .alert {
+        margin-top: 20px;
+    }
+
+    &-page .owners-lots-list {
+
+        &-priority,
+        &-organizing {
+            & + .no-lots {
+                display: none;
+            }
+
+            &:empty {
+                & + .no-lots {
+                    display: block;
+                }
+
+                & ~ .lots-exist {
+                    display: none;
+                }
+            }
+        }
+
+    }
+
+    &-section {
+        margin-bottom: 50px;
+        margin-top: 50px;
+    }
+
+    &-main {
+        margin-left: 50px;
+
+        @media (max-width: @screen-xs-max) {
+            margin-left: 0;
+        }
+    }
+
+    &-page #main {
+        @media (max-width: @screen-xs-max) {
+            padding: 0 30px;
+        }
+    }
+
+    &-actions {
+        float: right;
+
+        a {
+            display: inline-block;
+            font-weight: 600;
+            padding: 15px;
+            text-transform: uppercase;
+
+            @media (max-width: @screen-xs-max) {
+                line-height: 20px;
+                padding: 0 15px;
+            }
+        }
+
+        .btn-group {
+            vertical-align: inherit;
+
+            &.open .dropdown-toggle {
+                box-shadow: none;
+            }
+        }
+
+        .dropdown-menu {
+            background: @white;
+            box-shadow: none;
+            margin: 0;
+            min-width: inherit;
+
+            & > li > a {
+                background: @white;
+                color: @foreground-color;
+                padding: 3px 10px;
+
+                &:hover {
+                    background: @white;
+                    color: @foreground-color;
+                }
+            }
+        }
+    }
+
+    &-organizers h2 {
+        background: @fill-color;
+        color: @foreground-color;
+        padding-left: 5px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
+
+    &-page article {
+        padding-top: 0;
+    }
+
+    &-header-image {
+        width: 100%;
+        height: 250px;
+        margin-top: 15px;
+        transition: height 0.5s ease;
+
+        &.no-streetview {
+            height: 100px;
+        }
+
+        @media (max-width: @screen-xs-max) {
+            height: 160px;
+        }
+    }
+
+    &-header-streetview-error {
+        display: none;
+        float: right;
+    }
+
+    &-info-box {
+        background-color: @fill-color;
+        color: @header-color;
+        font-size: 14px;
+        line-height: 18px;
+        margin-top: 15px;
+    }
+
+    .lot-add-page h1 {
+        .header-font();
+        font-size: 56px;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    &-organizer-intro h3 {
+        .header-font();
+        color: @brand-primary;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    &-organizers {
+        .block-lot-detail-organizer-intro {
+            font-size: 14px;
+        }
+
+        .organizer-list {
+            &-private {
+                display: none;
+            }
+        }
+    }
+
+    &-stewardproject {
+        &-organizer-name {
+            .user-content-added-by-name();
+        }
+
+        &-row {
+            .make-row(0);
+        }
+
+        &-left {
+            .make-sm-column(6, 0);
+        }
+
+        &-right {
+            .make-sm-column(6);
+        }
+
+        &-facebook-feed {
+            border: none;
+            overflow: hidden;
+            width: 100%;
+            height: 395px;
+        }
+    }
+}
+
+.lot-detail-page {
+    .lot-detail-icon {
+        border: 1px solid transparent;
+        border-radius: 50%;
+        display: inline-block;
+        height: 25px;
+        margin-left: -40px;
+        margin-top: 10px;
+        position: absolute;
+        width: 25px;
+
+        @media (max-width: @screen-xs-max) {
+            margin-left: -25px;
+        }
+
+        &.priority {
+            border: 1px solid @lot-priority-color;
+        }
+
+        .for-each(@pair in @filters-layers) {
+            @key: at(@pair, 1);
+            @color: at(@pair, 2);
+
+            &.@{key} {
+                background-color: @color;
+            }
+        }
+    }
+
+    .lot-detail-same-owner .lot-detail-icon {
+        height: 15px;
+        margin-left: 0;
+        margin-top: 0;
+        position: inherit;
+        width: 15px;
+    }
+
+    .lot-detail-same-owner ul {
+        list-style: none;
+        -moz-column-count: 2;
+        -webkit-column-count: 2;
+        column-count: 2;
+    }
+
+    .lot-detail-organizing-networks {
+        h2.collapse-collapsing,
+        h2.collapse-expanding {
+            & ~ div h3::before {
+                display: none;
+            }
+        }
+    }
+
+    .lot-detail-organizing-networks-content {
+        margin-left: 25px;
+    }
+
+    .owner-pathway-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .user-content-actions {
+        left: -50px;
+        width: 60px;
+    }
+
+    .lot-detail-landmarks {
+        margin-bottom: 2rem;
+    }
+
+    .development-details {
+        ol {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            // display: grid;
+            // grid-template-columns: 35% 35%;
+            // grid-column-gap: 20%;
+        }
+
+        li {
+            display: grid;
+            grid-template-columns: 200px 300px;
+        }
+
+        .value {
+            font-weight: bold;
+            text-align: right;
+        }
+    }
+}
+
+.nearby-lots-list {
+    list-style: none;
+    padding-left: 0;
+
+    &-item {
+        margin-bottom: 5px;
+        margin-top: 5px;
+    }
+}

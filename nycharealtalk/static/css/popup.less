@@ -1,0 +1,80 @@
+#popup {
+    color: @header-color;
+    font-size: 11px;
+    line-height: 14px;
+    min-height: 120px;
+    width: 300px;
+
+    header {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 18px;
+
+        a {
+            color: @gray;
+        }
+    }
+
+    .btn {
+        margin-top: 10px;
+    }
+
+    .popup {
+        &-streetview {
+            .make-xs-column(6);
+
+            img {
+                max-width: 100%;
+            }
+        }
+
+        &-lot-details {
+            .make-xs-column(6);
+
+            .owner {
+                margin-bottom: 3px;
+
+                &-value {
+                    font-weight: bold;
+                }
+            }
+
+            .size {
+                margin-bottom: 3px;
+            }
+        }
+    }
+
+    .lot-popup-icon {
+        border: 1px solid transparent;
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        width: 10px;
+
+        &.priority {
+            border: 1px solid @lot-priority-color;
+        }
+
+        .for-each(@pair in @filters-layers) {
+            @key: at(@pair, 1);
+            @color: at(@pair, 2);
+
+            &.@{key} {
+                background-color: @color;
+            }
+        }
+    }
+}
+
+.leaflet-popup-content-wrapper {
+    border-left: 1px @light-gray solid;
+    border-right: 1px @light-gray solid;
+    border-bottom: 1px @gray solid;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.leaflet-popup-tip-container {
+    margin-top: -1px;
+}

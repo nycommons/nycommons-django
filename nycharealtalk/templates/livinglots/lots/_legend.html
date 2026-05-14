@@ -1,0 +1,45 @@
+{% load i18n %}
+
+<div>
+    <a class="legend-button filter-button" href="#">
+        {% trans "Filter" %}
+    </a>
+    <a class="legend-button details-button" href="#">
+        {% trans "Details" %}
+    </a>
+    <h2 class="legend-header"><span class="lots-count"></span> {% trans "Properties" %}</h2>
+</div>
+
+<div class="legend-column">
+    <div class="legend-row">
+        <span class="legend-marker legend-marker-priority"></span>
+        <label class="legend-label">
+            {% trans "Development Pending" %}
+        </label>
+        <span class="legend-count legend-count-priority" data-type="priority">0</span>
+    </div>
+    <div class="legend-row">
+        <span class="legend-marker legend-marker-organizing"></span>
+        <label class="legend-label">
+            {% trans "Organizing" %}
+        </label>
+        <span class="legend-count legend-count-organizing" data-type="organizing">0</span>
+    </div>
+    <div class="legend-row">
+        <span class="legend-marker legend-marker-priority-organizing"></span>
+        <label class="legend-label legend-label-priority-organizing">
+            <span class="legend-label-full">{% trans "Organizing & Development Pending" %}</span>
+            <span class="legend-label-abbr">{% trans "Organizing & Dev Pending" %}</span>
+        </label>
+        <span class="legend-count legend-count-priority-organizing" data-type="organizing_priority">0</span>
+    </div>
+</div>
+<div class="legend-column">
+    <div class="legend-row">
+        <span class="legend-marker legend-marker-public_housing"></span>
+        <label class="legend-label legend-label-organized">
+            {% trans "Public Housing Sites" %}
+        </label>
+        <span class="legend-count legend-count-public_housing" data-type="public_housing">0</span>
+    </div>
+</div>

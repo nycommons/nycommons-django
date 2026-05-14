@@ -1,0 +1,51 @@
+{
+  "name": "livinglots-nyc",
+  "version": "0.0.0",
+  "description": "Static media for livinglots-nyc",
+  "author": "Eric Brelsford",
+  "license": "BSD-2-Clause",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/596acres/livinglots-nyc"
+  },
+  "dependencies": {
+    "bootstrap": "^3.3.2",
+    "fancybox": "^2.1.7",
+    "flightjs": "^1.5.1",
+    "handlebars": "^4.0.0",
+    "leaflet": "^1.0.0-rc.2",
+    "leaflet-dataoptions": "^1.0.0",
+    "leaflet-draw": "^1.0.4",
+    "leaflet-geojson-gridlayer": "git+https://github.com/ebrelsford/leaflet-geojson-gridlayer",
+    "leaflet-hash": "^0.2.1",
+    "leaflet-loading": "^0.1.15",
+    "leaflet-plugins": "^1.2.0",
+    "leaflet-usermarker": "^1.0.0",
+    "less-plugin-lists": "^1.1.2",
+    "livinglots.addlot": "git+https://github.com/596acres/livinglots.addlot#v2.0.0",
+    "livinglots.boundaries": "git+https://github.com/596acres/livinglots.boundaries#v1.0.0",
+    "livinglots.emailparticipants": "git+https://github.com/596acres/livinglots.emailparticipants#v0.2.3",
+    "livinglots.parcels": "git+https://github.com/596acres/livinglots.parcels",
+    "moment": "^2.14.1",
+    "numeral": "^1.5.3",
+    "proj4": "^2.3.3",
+    "select2": "^3.5.2-browserify",
+    "spin.js": "^2.0.2",
+    "tinymce": "^4.3.12",
+    "turf-inside": "^1.1.4",
+    "turf-point": "^2.0.1",
+    "underscore": "^1.7.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-inject": "^5.0.0",
+    "less": "~2.7.1",
+    "vite": "^5.0.0"
+  },
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "css:dev": "lessc --plugin=less-plugin-lists --source-map css/style.less css/dist/style.dev.css",
+    "css:watch": "lessc --plugin=less-plugin-lists --watch --source-map css/style.less css/dist/style.dev.css",
+    "build": "lessc --plugin=less-plugin-lists css/style.less css/dist/style.min.css && vite build"
+  }
+}

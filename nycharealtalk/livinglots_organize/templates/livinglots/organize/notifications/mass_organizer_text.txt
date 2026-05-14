@@ -1,0 +1,5 @@
+{% autoescape off %}{{ message }}
+
+--
+
+You are receiving this email because you are organizing {{ target }} on {{ site.name }}. Please go here if you want to change this: http://{{ site.domain }}{{ obj.get_edit_url }}{% endautoescape %}

@@ -1,0 +1,230 @@
+{% load humanize i18n %}
+
+<section class="collapsible">
+    <h2 class="collapsed">{{ lot.name|default:"Property" }} {% trans "Details" %}</h2>
+
+    <div style="display: none;">
+        {% if lot.landmarks or lot.shpo_landmark_eligible or lot.shpo_landmark_listed %}
+            <section class="lot-detail-details lot-detail-landmarks">
+                <h3>{% trans "Landmark" %}</h3>
+                {% if lot.landmarks %}
+                    {% for landmark in lot.landmarks %}
+                        <div>
+                            This property has been designated a New York City Landmark. <a href="{{ landmark.report_url }}" target="_blank">View the designation report PDF</a>. Read more about the Landmarks Preservation Commission and the power of the Landmark designation <a href="/resources/how-organize/protect-designated-landmark/">here</a>.
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if lot.shpo_landmark_eligible or lot.shpo_landmark_listed %}
+                <div>This property is {% if lot.shpo_landmark_listed %} listed {% endif %} {% if lot.shpo_landmark_eligible %} eligible for listing {% endif %} in the National Register of Historic Places. See <a href="/resources/how-organize/protect-designated-landmark/" target="_blank">here</a> for more details.</div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        <section class="development-details">
+            <ol>
+                <li>
+                    <span class="label">
+                        {% trans "# of Current Units" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.current_units|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Number of Units" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.total_units|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Number of Rental Rooms" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.rental_rooms|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Population - Section 8 Transition" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_section_8|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Population - Public Housing" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_public_housing|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Population" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.population_total|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Families On Fixed Income" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.families_fixed_income|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "% of Families on Fixed Income" %}
+                    </span>
+                    <span class="value">
+                        {% widthratio lot.families_fixed_income_percent 1 100 %}%
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Residential Buildings" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_residential|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Non-Residential Buildings" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_nonresidential|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "# of Stories" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.buildings_stories|default_if_none:'' }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Total Area (Sq Ft)" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.total_area|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Bldg/Land Coverage" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.building_land_coverage|default_if_none:0 }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Density (Population/Acre)" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.density|default_if_none:0 }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Development Cost" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.cost_total|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Cost Per Rental Room (As Built)" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.cost_per_room|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Avg. Monthly Gross Rent" %}
+                    </span>
+                    <span class="value">
+                        ${{ lot.rent_avg|default_if_none:0|intcomma }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Senior Development" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.senior_development|default:"no" }}
+                    </span>
+                </li>
+                <li>
+                    <span class="label">
+                        {% trans "Electricity Paid By Residents" %}
+                    </span>
+                    <span class="value">
+                        {{ lot.electricity_residents|yesno }}
+                    </span>
+                </li>
+                {% if lot.radpact_planned or lot.radpact_converted %}
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Status" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_status|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Conversion Date" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_conversion_date|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Developers" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_developers|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT General Contractor" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_general_contractor|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Property Manager" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_property_manager|default:'Unknown' }}
+                        </span>
+                    </li>
+                    <li>
+                        <span class="label">
+                            {% trans "RAD/PACT Social Service Provider" %}
+                        </span>
+                        <span class="value">
+                            {{ lot.radpact_social_service_provider|default:'Unknown' }}
+                        </span>
+                    </li>
+                {% endif %}
+            </ol>
+        </section>
+    </div>
+</section>

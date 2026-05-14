@@ -1,0 +1,99 @@
+// Palette
+@black: #160805;
+@blue: #00AEEF;
+@cream: #f6f8f7;
+@green: #1f9e48;
+@light-gray: #F6F6F6;
+@orange: #F5A623;
+@pink: #e64c9b;
+@purple: #662D91;
+@red: #BF1E2D;
+@white: #FFFFFF;
+@yellow: #CFB933;
+
+// Lot colors
+@lot-priority-color: #EC1D24;
+@lot-access-color: @pink;
+@lot-library-color: #057FC6;
+@lot-park-color: #4def3e;
+@lot-park-building-color: #997940;
+@lot-post-office-color: @purple;
+@lot-public-housing-color: @orange;
+@lot-vacant-lot-color: @green;
+@lot-waterfront-color: #E669EE;
+
+@lot-demolition: #000000;
+@lot-radpact: #057FC6;
+@lot-preservation-trust: #662D91;
+@lot-infill: #00C3FF;
+@lot-section-8: #F66557;
+@lot-new-housing: #4DEF3E;
+@lot-modernization: #E669EE;
+
+@fill-color: @white;
+@foreground-color: @blue;
+
+@body-font-color: #4A4A4A;
+@body-font-family: "Open Sans", sans-serif;
+@header-color: #666666;
+@header-font-family: "Open Sans", sans-serif;
+
+@header-left-padding: 30px;
+
+@xs-padding: 15px;
+
+@header-z-index: 10000;
+@ui-z-index: 5000;
+
+@user-content-actions-width: 10px;
+
+@header-height: 137px;
+@map-header-height: @header-height;
+@map-overlay-side: 15px;
+@map-overlay-top: 15px;
+@map-search-height: 60px;
+
+// CC-BY Jens Windolf http://thenounproject.com/term/link/38265/
+@permalink-image: data-uri("../img/permalink.png");
+
+@footer-color: @light-gray;
+@footer-text-color: #9B9B9B;
+
+@header-bar-height: 17px;
+@header-home-link-width: 200px;
+
+@page-content-vertical-margin: 42px;
+
+@mobile-legend-height: 160px;
+@mobile-legend-height-collapsed: 35px;
+
+@box-shadow: 0px 2px 4px;
+
+@sidebar-width: 280px;
+
+@layers: park, park-building, library, post-office, public-housing, vacant-lot-garden, waterfront;
+
+@filters-layers:
+    park @lot-park-color,
+    park-building @lot-park-building-color,
+    library @lot-library-color,
+    post-offices @lot-post-office-color,
+    public-housing @lot-public-housing-color,
+    vacant-lot @lot-vacant-lot-color,
+    waterfront @lot-waterfront-color,
+    demolition @lot-demolition,
+    radpact @lot-radpact,
+    preservation-trust @lot-preservation-trust,
+    infill @lot-infill,
+    section-8 @lot-section-8,
+    new-housing @lot-new-housing,
+    modernization @lot-modernization;
+
+@legend-layers:
+    park @lot-park-color,
+    park_building @lot-park-building-color,
+    library @lot-library-color,
+    post_office @lot-post-office-color,
+    public_housing @lot-public-housing-color,
+    vacant_lot @lot-vacant-lot-color,
+    waterfront @lot-waterfront-color;

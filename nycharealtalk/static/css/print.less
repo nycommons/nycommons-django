@@ -1,0 +1,183 @@
+.map-print-page-mixin {
+    & {
+        overflow: hidden;
+    }
+
+    .header-print {
+        display: none !important;
+    }
+
+    .logo {
+        height: auto;
+        width: 8cm;
+    }
+
+    .page-header {
+        margin: 0;
+    }
+
+    #map {
+        height: 16cm;
+    }
+
+    .map-sidebar {
+        top: 0;
+        height: 10in;
+        width: 8.5in;
+
+        .sidebar-section {
+            max-height: 3in;
+        }
+
+        .map-header-content {
+            display: block;
+            margin-top: 8in;
+            overflow: hidden;
+
+            &-details {
+                display: block;
+            }
+
+            .details-section .details-header-actions {
+                display: none;
+            }
+
+            .details-section .details-body {
+                min-height: auto;
+            }
+        }
+    }
+
+    #page-header {
+        & .mobile-map-header-content-default {
+            display: none;
+        }
+    }
+}
+
+.map-print-page {
+    .map-print-page-mixin();
+
+    .hidden-print {
+        display: none;
+    }
+
+    .print-mode {
+        display: block;
+    }
+
+    & {
+        margin: 0 auto;
+        width: 8.5in;
+    }
+
+    #map {
+        visibility: hidden;
+    }
+
+    .map-print-image {
+        display: block;
+        margin-top: @map-header-height;
+        max-width: 8.5in;
+        position: absolute;
+        top: 0;
+    }
+
+    .map-sidebar {
+        left: inherit;
+    }
+}
+
+@media print {
+    @page {
+        size: letter;
+        margin: 2cm;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .hidden-print {
+        display: none;
+    }
+
+    .header-print img {
+        max-width: 250px;
+    }
+
+    body {
+        height: 90%;
+        width: 100%;
+    }
+
+    footer {
+        .footer-columns {
+            display: none;
+        }
+
+        .footer-right {
+            display: none;
+        }
+    }
+
+    .map-page {
+        .map-print-page-mixin();
+
+        .print-mode {
+            display: none;
+        }
+    }
+
+    .lot-detail-page {
+        margin: 0;
+
+        header {
+            display: none;
+
+            .header-bar {
+                display: none;
+            }
+        }
+
+        h1 {
+            clear: both;
+        }
+
+        .header-print {
+            width: 100%;
+        }
+
+        .header-print img {
+            max-width: 250px;
+        }
+
+        .header-home-link {
+            position: inherit;
+        }
+
+        .header-bar {
+            position: inherit;
+        }
+
+        .page-wrapper {
+            margin: 0;
+        }
+
+        .lot-detail-main {
+            margin: 0;
+        }
+
+        section.collapsible {
+            h1, h2, h3, h4, h5, h6 {
+                &::before {
+                    display: none;
+                }
+            }
+            div {
+                display: block;
+            }
+        }
+    }
+}

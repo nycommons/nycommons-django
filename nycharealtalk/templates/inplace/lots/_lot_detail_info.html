@@ -1,0 +1,75 @@
+{% load citycouncildistricts_tags communitydistricts_tags communitydistrictsdetails_tags i18n lots_tags %}
+
+<section>
+    <div class="lot-detail-details">
+
+        {% if lot.number_of_lots > 1 %}
+            <div>
+                {% trans "There are" %} {{ lot.number_of_lots }} {% trans "lots grouped here" %}:
+            </div>
+            <ul>
+                {% for child in lot.lots %}
+                    <li>
+                        <div>
+                            {{ child.display_name }}{% if child.address_line1 %} ({{ child.address_line1 }}){% endif %}.
+                            {% get_zola_url for child as zola_url %}
+                            {% if zola_url %}
+                                {% trans "More details at" %}
+                                <a href="{{ zola_url }}" target="_blank">ZOLA</a>.
+                            {% endif %}
+                            {% if "lots.change_lot" in perms %}
+                                <a class="btn btn-xs btn-warning" href="{% url "admin:lots_lot_change" child.pk %}">
+                                    {% trans "Edit this lot" %}
+                                </a>
+                            {% endif %}
+                            {% if "lots.add_lot" in perms %}
+                            <a class="btn btn-xs btn-warning btn-remove-from-group" data-lot="{{ child.pk }}" href="#">
+                                    {% trans "Remove from group" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% ifnotequal lot.owners|length 1 %}
+                            {% if child.owner %}
+                                <div>
+                                    {{ child.owner }}
+                                </div>
+                            {% endif %}
+                        {% endifnotequal %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div>
+            {% if lot.address_line1 %}{{ lot.address_line1|default:"(street address unknown)" }},{% endif %}
+            {{ lot.borough }}{% if lot.postal_code %}, {{ lot.postal_code }}{% endif %}
+        </div>
+
+        {% if lot.bbl and not lot.bbl_is_fake %}
+            <div>
+                {{ lot.borough }}, block {{ lot.block }}, lot {{ lot.lot_number }}
+            </div>
+        {% endif %}
+
+        {% get_zola_url for lot as zola_url %}
+        {% if zola_url %}
+            <div>
+                {% trans "More information about this property at" %}
+                <a href="{{ zola_url }}" target="_blank">ZOLA</a>
+            </div>
+        {% endif %}
+
+        {% if lot.priority %}
+        <div style="margin-top: 0.75rem;">
+            <strong>Public Housing Restructuring</strong>
+
+            <ul>
+                {% for f in lot.nycha_filters %}
+                <li>{{ f }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
