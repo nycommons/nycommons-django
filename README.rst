@@ -1,64 +1,109 @@
 nycharealtalk
 =========
 
-This is the code behind nycharealtalk.org. It is built upon the structure
-originally created for nycommons.org, so there are still many references to
-nycommons.
-
-NYCommons.org helps New Yorkers impact decisions about public land and buildings in their neighborhoods. It is a collaboration between Common Cause/NY, the Community Development Project at the Urban Justice Center, and 596 Acres, Inc.
-
-This site uses the `Living Lots <https://github.com/596acres/django-livinglots>`_ ® framework by `596 Acres <https://596acres.org>`_ ®.
+This is the code behind nycharealtalk.org. It is built upon the
+`Living Lots <https://github.com/596acres/django-livinglots>`_ ® framework by `596 Acres <https://596acres.org>`_ ®,
+originally developed for nycommons.org.
 
 
-Installation
-------------
+Development setup
+-----------------
 
-Prerequisites
-*************
+Docker (recommended)
+********************
 
- 1. Python 2.x.
- 2. `Postgres <https://www.postgresql.org/>`_ and `PostGIS <http://postgis.net/>`_. Depending on your OS this can be relatively painless.
-
-    * Add a user and database specifically for NYCommons with PostGIS enabled on it. It may be easiest to keep both named `nycommons`.
-
-    * Load a development database snapshot.
-
- 3. node LTS version 6.10.* and npm.
-
-Install the NYCommons Django project
-************************************
+Prerequisites: `Docker <https://docs.docker.com/get-docker/>`_ with Compose.
 
  1. Clone this repo locally.
- 2. Create a Python environment where your requirements will be saved with `virtualenv <https://virtualenv.pypa.io/en/stable/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_.
- 3. Install the requirements: `pip install -r requirements/base.txt` and `pip install -r requirements/local.txt`.
- 4. Set all the required environment variables in your shell. Copy `deploy/templates/envvars.sh <https://github.com/nycommons/nycommons-django/blob/master/deploy/templates/envvars.sh>`_ somewhere and source it when developing the project.
- 5. With the virtualenv activated, try to run the Django project: `django-admin runserver_plus`. If there are issues with environment variables, the database, or other requirements, they should appear here.
- 6. The database dump you loaded will have no useful superusers. Create one with `django-admin createsuperuser`.
+ 2. Copy the environment file and fill in values::
 
-Install TileStache
-******************
+      cp .env.example .env
 
-`Tilestache <http://tilestache.org/>`_ serves the points and polygons that appear on the map.
+    The defaults in ``.env.example`` work for local Docker development.
+    ``NYCHAREALTALK_SECRET_KEY`` and ``NYCHAREALTALK_ORGANIZE_PARTICIPANT_SALT``
+    should be set to non-empty strings.
 
- 1. Copy the `tilestache.cfg template <https://github.com/nycommons/nycommons-django/blob/master/deploy/templates/tilestache.cfg/>`_ into a new directory in the project root called `tilestache`. Update the username, database, and password as necessary.
- 2. Create the views needed for TileStache to run (`visible_centroids` and `visible_polygons`). You can either run the SQL manually or copy `Makefile.example <https://github.com/nycommons/nycommons-django/blob/master/deploy/Makefile.example>`_ to a file named `Makefile`, set the `DB_NAME` and `DB_USER`, and run `make install_tilestache_views`.
- 3. When you run `tilestache-server.py -c tilestache/tilestache.cfg` you should get no errors.
+ 3. Start the database and run migrations::
 
-Install the client-side requirements
-************************************
+      docker compose up -d db
+      docker compose run --rm web python manage.py migrate
 
- 1. cd nycommons/static
- 2. npm install
- 3. grunt dev should work without any errors.
+    If ``migrate`` fails with a ``column already exists`` error, the database
+    has partial state from a previous run. Fake the usercontent migrations and
+    retry::
 
-Putting it all together
-***********************
+      docker compose run --rm web python manage.py migrate usercontent --fake
+      docker compose run --rm web python manage.py migrate
 
-Whenever you're developing for the site you'll want the following processes running:
+ 4. Create the PostGIS views that TileStache reads::
 
- 1. Django: django-admin runserver_plus.
- 2. TileStache: tilestache-server.py -c tilestache/tilestache.cfg.
- 3. Grunt: cd nycommons/static && grunt dev.
+      docker compose exec db psql -U nycharealtalk nycharealtalk \
+          -f /docker-entrypoint-initdb.d/create-views.sql
+
+ 5. Create a superuser::
+
+      docker compose run --rm web python manage.py createsuperuser
+
+ 6. Start all services::
+
+      docker compose up
+
+    The site runs at http://localhost:8000. Map tiles are served at
+    http://localhost:8080. The database is accessible from the host on port 5434.
+
+ 7. Build the frontend assets (in a separate terminal, from ``nycharealtalk/static/``)::
+
+      npm install
+      npm run css:dev   # compile LESS once
+      npm run dev       # watch and rebuild JS on changes
+
+    For a one-shot production build::
+
+      npm run build
+
+Loading a database snapshot
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To restore a production or staging dump into the Docker database::
+
+    docker compose exec -T db psql -U nycharealtalk nycharealtalk < dump.sql
+
+After restoring, re-run the TileStache views step above since they may not be
+included in the dump.
+
+Manual setup (legacy)
+*********************
+
+Prerequisites:
+
+ 1. Python 2.x with virtualenv/virtualenvwrapper.
+ 2. `Postgres <https://www.postgresql.org/>`_ and `PostGIS <http://postgis.net/>`_ installed locally. Create a database and user, both named ``nycharealtalk``, with the PostGIS extension enabled.
+ 3. Node LTS 6.10.x and npm.
+
+ 1. Clone this repo locally.
+ 2. Create and activate a virtualenv, then install requirements::
+
+      pip install -r requirements/base.txt -r requirements/local.txt
+
+ 3. Copy ``deploy/templates/envvars.sh`` somewhere, fill in the values, and source it.
+ 4. Run the Django project::
+
+      python nycharealtalk/manage.py runserver_plus
+
+ 5. Copy ``deploy/templates/tilestache.cfg`` to ``tilestache/tilestache.cfg`` and update the database credentials. Create the required views::
+
+      psql -U nycharealtalk nycharealtalk -f docker/create-views.sql
+
+    Then start TileStache::
+
+      tilestache-server.py -c tilestache/tilestache.cfg
+
+ 6. Build frontend assets::
+
+      cd nycommons/static
+      npm install
+      npm run css:dev
+      npm run dev
 
 
 Organization

@@ -1,5 +1,5 @@
 #
-# Required environment variables for nycommons-django
+# Required environment variables for nycharealtalk
 #
 # Copy this file, update the necessary variables, and source the file when
 # developing. You might want to automatically source it after your virtualenv
@@ -10,11 +10,11 @@
 #
 
 # Database (required)
-export NYCOMMONS_DB_NAME='nycommons'
-export NYCOMMONS_DB_USER='nycommons'
-export NYCOMMONS_DB_PASSWORD=''
-export NYCOMMONS_DB_HOST='localhost'
-export NYCOMMONS_DB_PORT=''
+export NYCHAREALTALK_DB_NAME='nycharealtalk'
+export NYCHAREALTALK_DB_USER='nycharealtalk'
+export NYCHAREALTALK_DB_PASSWORD=''
+export NYCHAREALTALK_DB_HOST='localhost'
+export NYCHAREALTALK_DB_PORT=''
 
 # Secret key for Django (required, but you can leave it as is)
 export NYCOMMONS_SECRET_KEY='secret'

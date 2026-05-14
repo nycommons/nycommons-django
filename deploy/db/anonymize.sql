@@ -11,7 +11,7 @@
 
 -- Mask organizers' names, phone numbers, email addresses, and urls (where they 
 -- can edit their organizing status)
-update organize_organizer set name = 'Organizer ' || id, phone = '212555' || 1000 + id, email = 'organizer' || id || '@nycommons.org', url = 'organizer' || id;
+update organize_organizer set name = 'Organizer ' || id, phone = '212555' || 1000 + id, email = 'organizer' || id || '@nycharealtalk.org', url = 'organizer' || id;
 
 -- Set user password hashes to NULL to avoid leaking
 update auth_user set password = 'xxx';
