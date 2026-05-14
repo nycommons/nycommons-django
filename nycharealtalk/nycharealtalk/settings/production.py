@@ -109,6 +109,6 @@ TEMPLATES[0]['OPTIONS']['loaders'] = (
 #
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-MAP_SCREENSHOT_URL = "https://nycommons.org/screenshot/"
+MAP_SCREENSHOT_URL = "https://nycharealtalk.org/screenshot/"
 LOT_TILES_URL = "https://tiles.nycharealtalk.org/lots/{z}/{x}/{y}.json"
 PARCELS_URL = "https://tiles.nycharealtalk.org/parcels/{z}/{x}/{y}.json"

@@ -3,18 +3,18 @@ import contextlib
 from fabric.api import *
 
 
-env.hosts = ['nycommons_nycommons',]
+env.hosts = ['nycharealtalk_nycharealtalk',]
 env.use_ssh_config = True
 
 
 server_project_dirs = {
-    'dev': '/webapps/nycommons_dev/nycommons-django/',
-    'prod': '/webapps/nycommons/nycommons-django/',
+    'dev': '/webapps/nycharealtalk_dev/nycharealtalk-django/',
+    'prod': '/webapps/nycharealtalk/nycharealtalk-django/',
 }
 
 server_virtualenvs = {
-    'dev': 'nycommons_dev',
-    'prod': 'nycommons',
+    'dev': 'nycharealtalk_dev',
+    'prod': 'nycharealtalk',
 }
 
 supervisord_programs = {

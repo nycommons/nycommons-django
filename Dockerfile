@@ -37,8 +37,8 @@ RUN sed -i 's/from django.utils.importlib import import_module/from importlib im
 
 COPY . .
 
-WORKDIR /app/nycommons
+WORKDIR /app/nycharealtalk
 
-ENV DJANGO_SETTINGS_MODULE=nycommons.settings.local
+ENV DJANGO_SETTINGS_MODULE=nycharealtalk.settings.local
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
